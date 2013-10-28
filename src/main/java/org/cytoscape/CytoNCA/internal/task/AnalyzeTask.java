@@ -9,6 +9,7 @@ import org.cytoscape.work.TaskMonitor;
 //import org.cytoscape.CytoEPfinder.internal.algorithm.EC;
 import org.cytoscape.CytoNCA.internal.AnalysisCompletedEvent;
 import org.cytoscape.CytoNCA.internal.AnalysisCompletedListener;
+import org.cytoscape.CytoNCA.internal.ParameterSet;
 import org.cytoscape.CytoNCA.internal.Protein;
 import org.cytoscape.CytoNCA.internal.ProteinUtil;
 import org.cytoscape.CytoNCA.internal.algorithm.Algorithm;
@@ -49,16 +50,18 @@ public class AnalyzeTask implements Task {
 	private static final Logger logger = LoggerFactory
 			.getLogger(AnalyzeTask.class);
 	private HashMap<String, ArrayList<Protein>> proteinSet;
-
+	private final ArrayList<String> algnames;
+	
 	public AnalyzeTask(CyNetwork network, int analyze, int resultId,
 			ArrayList<Algorithm> algSet, ProteinUtil pUtil,
-			AnalysisCompletedListener listener) {
+			AnalysisCompletedListener listener, ArrayList<String> algnames) {
 		this.network = network;
 		this.analyze = analyze;
 		this.resultId = resultId;
 		this.algSet = algSet;
 		this.pUtil = pUtil;
 		this.listener = listener;
+		this.algnames = (ArrayList<String>) algnames.clone();
 	}
 
 	public void run(TaskMonitor taskMonitor) throws Exception {
@@ -66,7 +69,7 @@ public class AnalyzeTask implements Task {
 			throw new IllegalStateException("Task Monitor is not set.");
 		}
 
-		boolean success = false;
+		boolean success = true;
 	//	ArrayList<Protein> resultL;
 		ArrayList<Protein> resultAll = new ArrayList<Protein>();
 		pUtil.getPlist(network, resultAll);
@@ -74,143 +77,309 @@ public class AnalyzeTask implements Task {
 		this.pUtil.resetLoading();
 		try {
 			for(Algorithm alg : algSet){
-				if (alg instanceof CC)//
+				if (alg instanceof CC)
 				{
 
-				    CC algoCC = (CC)alg;
-				    algoCC.setTaskMonitor(taskMonitor, network.getSUID());
-					
-						taskMonitor.setProgress(0);
-						taskMonitor
-								.setStatusMessage("CC Ranking...");
-						algoCC.run(network, resultAll);
+					if(algnames.contains(ParameterSet.CC)){
+				    	algnames.remove(ParameterSet.CC);
+				    	CC algoCC = (CC)alg;
+					    algoCC.setTaskMonitor(taskMonitor, network.getSUID());
 						
+							taskMonitor.setProgress(0);
+							taskMonitor
+									.setStatusMessage("CC Ranking...");
+							algoCC.run(network, resultAll, false);
+							
+						
+							if (interrupted){
+								success = false;
+								return;	
+							}
+				    	
+					}
+				 else if(algnames.contains(ParameterSet.CCW)){
+				    	algnames.remove(ParameterSet.CCW);
+				    	CC algoCC = (CC)alg;
+					    algoCC.setTaskMonitor(taskMonitor, network.getSUID());
+						
+							taskMonitor.setProgress(0);
+							taskMonitor
+									.setStatusMessage("CC(weight) Ranking...");
+							algoCC.run(network, resultAll, true);
+							
+						
+							if (interrupted){
+								success = false;
+								return;	
+							}
+				    	
+				 }
 					
-						if (interrupted)
-							return;					
+					
+					
+											
 
 
-						success = true;
-						if (interrupted)
-							return;
+						
+						
 					} 
 			else if (alg instanceof DC)
 			{
-			    DC algoDC = (DC)alg;
-			    algoDC.setTaskMonitor(taskMonitor, network.getSUID());			
-					taskMonitor.setProgress(0);
-					taskMonitor
-							.setStatusMessage("DC Ranking...");
-					algoDC.run(network, resultAll);	
+			    if(algnames.contains(ParameterSet.DC)){
+			    	algnames.remove(ParameterSet.DC);
+			    	DC algoDC = (DC)alg;
+				    algoDC.setTaskMonitor(taskMonitor, network.getSUID());			
+						taskMonitor.setProgress(0);
+						taskMonitor
+								.setStatusMessage("DC Ranking...");
+						algoDC.run(network, resultAll, false);	
+						
 					
+						
+						if (interrupted){
+							success = false;
+							return;	
+						}
+			    }
+			    else if(algnames.contains(ParameterSet.DCW)){
+			    	algnames.remove(ParameterSet.DCW);
+			    	DC algoDC = (DC)alg;
+				    algoDC.setTaskMonitor(taskMonitor, network.getSUID());			
+						taskMonitor.setProgress(0);
+						taskMonitor
+								.setStatusMessage("DC Ranking...");
+						algoDC.run(network, resultAll, true);	
+						
+					
+						
+						if (interrupted){
+							success = false;
+							return;	
+						}
+			    }
+			    
 				
-					
-					if (interrupted)
-						return;								
-					success = true;
-					if (interrupted)
-						return;
 			}
 			else if (alg instanceof EC)
 			{
-			    EC algoEC = (EC)alg;
-			    algoEC.setTaskMonitor(taskMonitor, network.getSUID());			
-					taskMonitor.setProgress(0);
-					taskMonitor
-							.setStatusMessage("EC Ranking...");
-					algoEC.run(network, resultAll);
+				if(algnames.contains(ParameterSet.EC)){
+			    	algnames.remove(ParameterSet.EC);
+			    	EC algoEC = (EC)alg;
+				    algoEC.setTaskMonitor(taskMonitor, network.getSUID());			
+						taskMonitor.setProgress(0);
+						taskMonitor
+								.setStatusMessage("EC Ranking...");
+						algoEC.run(network, resultAll, false);
+						
 					
+						if (interrupted){
+							success = false;
+							return;	
+						}
+			    	
+			 }
+			 else if(algnames.contains(ParameterSet.ECW)){
+			    	algnames.remove(ParameterSet.ECW);
+			    	EC algoEC = (EC)alg;
+				    algoEC.setTaskMonitor(taskMonitor, network.getSUID());			
+						taskMonitor.setProgress(0);
+						taskMonitor
+								.setStatusMessage("EC(weight) Ranking...");
+						algoEC.run(network, resultAll, true);
+						
+					
+						if (interrupted){
+							success = false;
+							return;	
+						}
+			    	
+			 }
 				
-					if (interrupted)
-						return;								
-					success = true;
-					if (interrupted)
-						return;
+				
+				
 				} 
 			else if (alg instanceof LAC)
 			{
-			    LAC algoLAC = (LAC)alg;
-			    algoLAC.setTaskMonitor(taskMonitor, network.getSUID());			
-					taskMonitor.setProgress(0);
-					taskMonitor
-							.setStatusMessage("LAC Ranking...");
-					algoLAC.run(network, resultAll);	
-				
-				
+				if(algnames.contains(ParameterSet.LAC)){
+			    	algnames.remove(ParameterSet.LAC);
+			    	LAC algoLAC = (LAC)alg;
+				    algoLAC.setTaskMonitor(taskMonitor, network.getSUID());			
+						taskMonitor.setProgress(0);
+						taskMonitor
+								.setStatusMessage("LAC Ranking...");
+						algoLAC.run(network, resultAll, false);	
 					
-					if (interrupted)
-						return;								
-					success = true;
-					if (interrupted)
-						return;
+					
+						
+						if (interrupted){
+							success = false;
+							return;	
+						}
+			    	
+			 }
+			 else if(algnames.contains(ParameterSet.LACW)){
+			    	algnames.remove(ParameterSet.LACW);
+			    	LAC algoLAC = (LAC)alg;
+				    algoLAC.setTaskMonitor(taskMonitor, network.getSUID());			
+						taskMonitor.setProgress(0);
+						taskMonitor
+								.setStatusMessage("LAC(weight) Ranking...");
+						algoLAC.run(network, resultAll, true);	
+					
+					
+						
+						if (interrupted){
+							success = false;
+							return;	
+						}
+			    	
+			 }
+				
+				
+				
 				} 
 			else if (alg instanceof NC)
 			{
-			    NC algoNC = (NC)alg;
-			    algoNC.setTaskMonitor(taskMonitor, network.getSUID());			
-					taskMonitor.setProgress(0);
-					taskMonitor
-							.setStatusMessage("NC Ranking...");
-					algoNC.run(network, resultAll);
+				if(algnames.contains(ParameterSet.NC)){
+			    	algnames.remove(ParameterSet.NC);
+			    	NC algoNC = (NC)alg;
+				    algoNC.setTaskMonitor(taskMonitor, network.getSUID());			
+						taskMonitor.setProgress(0);
+						taskMonitor
+								.setStatusMessage("NC Ranking...");
+						algoNC.run(network, resultAll, false);
+					
+						
+						if (interrupted){
+							success = false;
+							return;	
+						}
+			    	
+				}
+			 else if(algnames.contains(ParameterSet.NCW)){
+			    	algnames.remove(ParameterSet.NCW);
+			    	NC algoNC = (NC)alg;
+				    algoNC.setTaskMonitor(taskMonitor, network.getSUID());			
+						taskMonitor.setProgress(0);
+						taskMonitor
+								.setStatusMessage("NC(weight) Ranking...");
+						algoNC.run(network, resultAll, true);
+					
+						
+						if (interrupted){
+							success = false;
+							return;	
+						}
+			    	
+			 	}
 				
-					
-					
-					if (interrupted)
-						return;								
-					success = true;
-					if (interrupted)
-						return;
-				} 
+				
+				
+			} 
 			else if (alg instanceof SC)
 			{
-			    SC algoSC = (SC)alg;
-			    algoSC.setTaskMonitor(taskMonitor, network.getSUID());			
+				if(algnames.contains(ParameterSet.SC)){
+			    	algnames.remove(ParameterSet.SC);
+			    	SC algoSC = (SC)alg;
+				    algoSC.setTaskMonitor(taskMonitor, network.getSUID());			
 					taskMonitor.setProgress(0);
-					taskMonitor
-							.setStatusMessage("SC Ranking...");
-					algoSC.run(network, resultAll);	
+					taskMonitor.setStatusMessage("SC Ranking...");
+					algoSC.run(network, resultAll, false);	
+			
+					if (interrupted){
+						success = false;
+						return;	
+					}
+			    	
+				}
+			 else if(algnames.contains(ParameterSet.SCW)){
+			    	algnames.remove(ParameterSet.SCW);
+			    	SC algoSC = (SC)alg;
+				    algoSC.setTaskMonitor(taskMonitor, network.getSUID());			
+					taskMonitor.setProgress(0);
+					taskMonitor.setStatusMessage("SC(weight) Ranking...");
+					algoSC.run(network, resultAll, true);	
+			
+					if (interrupted){
+						success = false;
+						return;	
+					}
+			    	
+			 	}
 				
-					
-					if (interrupted)
-						return;								
-					success = true;
-					if (interrupted)
-						return;
-				} 
+				
+				
+			} 
 			else if (alg instanceof BC)
 			{
-			    BC algoBC = (BC)alg;
-			    algoBC.setTaskMonitor(taskMonitor, network.getSUID());			
-					taskMonitor.setProgress(0);
-					taskMonitor
-							.setStatusMessage("BC Ranking...");
-					algoBC.run(network, resultAll);	
+				 if(algnames.contains(ParameterSet.BC)){
+				    	algnames.remove(ParameterSet.BC);
+				    	BC algoBC = (BC)alg;
+					    algoBC.setTaskMonitor(taskMonitor, network.getSUID());			
+						taskMonitor.setProgress(0);
+						taskMonitor.setStatusMessage("BC Ranking...");
+						algoBC.run(network, resultAll, false);	
+
+						if (interrupted){
+							success = false;
+							return;	
+						}
+				    	
+				 }
+				 else if(algnames.contains(ParameterSet.BCW)){
+				    	algnames.remove(ParameterSet.BCW);
+				    	BC algoBC = (BC)alg;
+					    algoBC.setTaskMonitor(taskMonitor, network.getSUID());			
+						taskMonitor.setProgress(0);
+						taskMonitor.setStatusMessage("BC(with weight) Ranking...");
+						algoBC.run(network, resultAll, true);	
+
+						if (interrupted){
+							success = false;
+							return;	
+						}
+				    	
+				 }
+				 
 				
-					
-					if (interrupted)
-						return;								
-					success = true;
-					if (interrupted)
-						return;
-				} 
+			} 
 				
 			else if (alg instanceof IC)
 			{
-			    IC algoIC = (IC)alg;
-			    algoIC.setTaskMonitor(taskMonitor, network.getSUID());			
+			    
+				if(algnames.contains(ParameterSet.IC)){
+			    	algnames.remove(ParameterSet.IC);
+			    	IC algoIC = (IC)alg;
+				    algoIC.setTaskMonitor(taskMonitor, network.getSUID());			
 					taskMonitor.setProgress(0);
-					taskMonitor
-							.setStatusMessage("IC Ranking...");
-					algoIC.run(network, resultAll);	
-				
+					taskMonitor.setStatusMessage("IC Ranking...");
+					algoIC.run(network, resultAll, false);	
 					
-					if (interrupted)
-						return;								
-					success = true;
-					if (interrupted)
-						return;
-				} 
+					if (interrupted){
+						success = false;
+						return;	
+					}
+			    	
+				}
+			 else if(algnames.contains(ParameterSet.ICW)){
+			    	algnames.remove(ParameterSet.ICW);
+			    	IC algoIC = (IC)alg;
+				    algoIC.setTaskMonitor(taskMonitor, network.getSUID());			
+					taskMonitor.setProgress(0);
+					taskMonitor.setStatusMessage("IC(weight) Ranking...");
+					algoIC.run(network, resultAll, true);	
+					
+					if (interrupted){
+						success = false;
+						return;	
+					}
+			    	
+			 	}
 				
+				
+			} 
+			
+			
 			
 	
 				

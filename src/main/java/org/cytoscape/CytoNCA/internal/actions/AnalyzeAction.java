@@ -24,6 +24,7 @@ import org.cytoscape.CytoNCA.internal.AnalysisCompletedEvent;
 import org.cytoscape.CytoNCA.internal.AnalysisCompletedListener;
 import org.cytoscape.CytoNCA.internal.CurrentParameters;
 import org.cytoscape.CytoNCA.internal.ParameterSet;
+import org.cytoscape.CytoNCA.internal.Protein;
 import org.cytoscape.CytoNCA.internal.ProteinGraph;
 import org.cytoscape.CytoNCA.internal.ProteinUtil;
 import org.cytoscape.CytoNCA.internal.algorithm.Algorithm;
@@ -52,6 +53,7 @@ import org.cytoscape.application.swing.CytoPanelState;
 import org.cytoscape.application.swing.events.CytoPanelComponentSelectedEvent;
 import org.cytoscape.application.swing.events.CytoPanelComponentSelectedListener;
 import org.cytoscape.event.CyPayloadEvent;
+import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
@@ -185,6 +187,7 @@ public class AnalyzeAction extends AbstractPAction
         else{  
         	
         	ArrayList de = this.pUtil.detectparalleledges(network);
+        	System.out.println(de.size()+"^^^");
         	if(de.size()!=0){
 				if(JOptionPane.showConfirmDialog(this.swingApplication.getJFrame(),
 	            		"There are parallel edges or loops in the network! \n Do you remove these edge and contine?", "WARNING", JOptionPane.YES_NO_OPTION) == 1)
@@ -200,54 +203,198 @@ public class AnalyzeAction extends AbstractPAction
 			 }
         	
         	final int resultId = this.pUtil.getCurrentResultId();
-        	this.pUtil.getCurrentParameters().setParams(currentParamsCopy, resultId, network.getSUID());
+        	
         	 ArrayList<Algorithm> alg = new ArrayList<Algorithm>();
         	 final ArrayList<String> alg2 = new ArrayList<String>();
+        	// boolean isweight = network.getRow(network.getEdgeList().get(0)).get("weight", Double.class)!=null;
+        	 int flag = 0;
+        	 
         	
-        	for(Entry<String, Boolean> e :currentParamsCopy.getAlgorithmSet().entrySet()){
-        		if(e.getValue().equals(true)){
-        			if(e.getKey().equals(ParameterSet.BC )){
-                		alg.add(new BC(null, this.pUtil));
-        				alg2.add(ParameterSet.BC);		
-        		}
-        			if(e.getKey().equals(ParameterSet.CC )){
-        				alg.add(new CC(null, this.pUtil));
-        				alg2.add(ParameterSet.CC);
-        			}
+        		 if(network.getRow(network.getEdgeList().get(0)).get("weight", Number.class)!=null && 
+        				 (network.getDefaultEdgeTable().getColumn("weight").getType().equals(Double.class) || 
+        				 network.getDefaultEdgeTable().getColumn("weight").getType().equals(Integer.class))){
+        			 
+        			 if(network.getDefaultEdgeTable().getColumn("weight").getType().equals(Integer.class)){   				 
+        				 Integer i;
+							network.getDefaultEdgeTable().createColumn("&^&", Double.class, false);
+							for(CyEdge edge : network.getEdgeList()){
+								
+								if(network.getRow(edge).get("weight", Integer.class) != null){
+									i = network.getRow(edge).get("weight", Integer.class);
+									network.getRow(edge).set("&^&", i.doubleValue());
+								}
+								else 
+									network.getRow(edge).set("&^&", 0.0);								
+							}	
+							network.getDefaultEdgeTable().deleteColumn("weight");
+							network.getDefaultEdgeTable().getColumn("&^&").setName("weight");							
+        			 }else{
+        				 for(CyEdge edge : network.getEdgeList()){
+        					 
+        					 if(network.getRow(edge).get("weight", Double.class) == null){
+        						 network.getRow(edge).set("weight", 0.0);
+        					 }
+        				 }
+        			 }
+        		 
+        			for(Entry<String, Boolean> e :currentParamsCopy.getAlgorithmSet().entrySet()){		
+                		if(e.getValue().equals(true)){        
+                			if(e.getKey().equals(ParameterSet.BCW )){               				
+                				alg.add(new BC(null, this.pUtil));
+                				alg2.add(ParameterSet.BCW);							
+                				
+                					
+                			}
+                			if(e.getKey().equals(ParameterSet.CCW )){
+                				alg.add(new CC(null, this.pUtil));
+                				alg2.add(ParameterSet.CCW);						
+                				
+                			}
+                			if(e.getKey().equals(ParameterSet.DCW )){
+                				
+                				alg.add(new DC(null, this.pUtil));
+                				alg2.add(ParameterSet.DCW);				
+                				
+                			}
+                			if(e.getKey().equals(ParameterSet.ECW )){
+                				
+                				alg.add(new EC(null, this.pUtil));
+                				alg2.add(ParameterSet.ECW);						
+                				
+                			}
+                			if(e.getKey().equals(ParameterSet.LACW )){
+                				
+                				alg.add(new LAC(null, this.pUtil));
+                				alg2.add(ParameterSet.LACW);						
+                				
+                			}
+                			if(e.getKey().equals(ParameterSet.SCW )){
+                				
+                				alg.add(new SC(null, this.pUtil));
+                				alg2.add(ParameterSet.SCW);						
+                				
+                			}
+                			if(e.getKey().equals(ParameterSet.NCW )){
+                				alg.add(new NC(null, this.pUtil));
+                				alg2.add(ParameterSet.NCW);				
+                				
+                			}
+                			if(e.getKey().equals(ParameterSet.ICW )){
+                				alg.add(new IC(null, this.pUtil));
+                				alg2.add(ParameterSet.ICW);					
+                				
+                			}
+                			
+                			if(e.getKey().equals(ParameterSet.BC )){
+                        		alg.add(new BC(null, this.pUtil));
+                				alg2.add(ParameterSet.BC);		
+                			}
+                			if(e.getKey().equals(ParameterSet.CC )){
+                				alg.add(new CC(null, this.pUtil));
+                				alg2.add(ParameterSet.CC);
+                			}
+                        		
+                        	if(e.getKey().equals(ParameterSet.DC )){
+                        		alg.add(new DC(null, this.pUtil));
+                        		alg2.add(ParameterSet.DC);
+                        	}
+                        		
+                        	if(e.getKey().equals(ParameterSet.EC )){
+                        		alg.add(new EC(null, this.pUtil));
+                        		alg2.add(ParameterSet.EC);
+                        	}
+                        		
+                        	if(e.getKey().equals(ParameterSet.LAC )){
+                        		alg.add(new LAC(null, this.pUtil));
+                        		alg2.add(ParameterSet.LAC);
+                        	}
+                        		
+                        	if(e.getKey().equals(ParameterSet.NC )){
+                        		alg.add(new NC(null, this.pUtil));
+                        		alg2.add(ParameterSet.NC);
+                        	}
+                        		
+                        	if(e.getKey().equals(ParameterSet.SC )){
+                        		alg.add(new SC(null, this.pUtil));
+                        		alg2.add(ParameterSet.SC);
+                        	}
+                        		
+                        	if(e.getKey().equals(ParameterSet.IC )){
+                        		alg.add(new IC(null, this.pUtil));
+                        	alg2.add(ParameterSet.IC);
+                        	}
+                		}
                 		
-                	if(e.getKey().equals(ParameterSet.DC )){
-                		alg.add(new DC(null, this.pUtil));
-                		alg2.add(ParameterSet.DC);
                 	}
-                		
-                	if(e.getKey().equals(ParameterSet.EC )){
-                		alg.add(new EC(null, this.pUtil));
-                		alg2.add(ParameterSet.EC);
-                	}
-                		
-                	if(e.getKey().equals(ParameterSet.LAC )){
-                		alg.add(new LAC(null, this.pUtil));
-                		alg2.add(ParameterSet.LAC);
-                	}
-                		
-                	if(e.getKey().equals(ParameterSet.NC )){
-                		alg.add(new NC(null, this.pUtil));
-                		alg2.add(ParameterSet.NC);
-                	}
-                		
-                	if(e.getKey().equals(ParameterSet.SC )){
-                		alg.add(new SC(null, this.pUtil));
-                		alg2.add(ParameterSet.SC);
-                	}
-                		
-                	if(e.getKey().equals(ParameterSet.IC )){
-                		alg.add(new IC(null, this.pUtil));
-                	alg2.add(ParameterSet.IC);
-        		}
-        		}
-        		
-        	}
-   
+        	 }else{
+        		 for(Entry<String, Boolean> e :currentParamsCopy.getAlgorithmSet().entrySet()){		
+             		if(e.getValue().equals(true)){        
+             			if(e.getKey().equals(ParameterSet.BCW ) ||
+             					e.getKey().equals(ParameterSet.CCW ) ||
+             					e.getKey().equals(ParameterSet.DCW ) ||
+             					e.getKey().equals(ParameterSet.ECW ) ||
+             					e.getKey().equals(ParameterSet.LACW ) ||
+             					e.getKey().equals(ParameterSet.SCW ) ||
+             					e.getKey().equals(ParameterSet.NCW ) ||
+             					e.getKey().equals(ParameterSet.ICW )){          				
+             					flag = 1;      				           					
+             			}
+             			
+             			
+             			if(e.getKey().equals(ParameterSet.BC )){
+                     		alg.add(new BC(null, this.pUtil));
+             				alg2.add(ParameterSet.BC);		
+             			}
+             			if(e.getKey().equals(ParameterSet.CC )){
+             				alg.add(new CC(null, this.pUtil));
+             				alg2.add(ParameterSet.CC);
+             			}
+                     		
+                     	if(e.getKey().equals(ParameterSet.DC )){
+                     		alg.add(new DC(null, this.pUtil));
+                     		alg2.add(ParameterSet.DC);
+                     	}
+                     		
+                     	if(e.getKey().equals(ParameterSet.EC )){
+                     		alg.add(new EC(null, this.pUtil));
+                     		alg2.add(ParameterSet.EC);
+                     	}
+                     		
+                     	if(e.getKey().equals(ParameterSet.LAC )){
+                     		alg.add(new LAC(null, this.pUtil));
+                     		alg2.add(ParameterSet.LAC);
+                     	}
+                     		
+                     	if(e.getKey().equals(ParameterSet.NC )){
+                     		alg.add(new NC(null, this.pUtil));
+                     		alg2.add(ParameterSet.NC);
+                     	}
+                     		
+                     	if(e.getKey().equals(ParameterSet.SC )){
+                     		alg.add(new SC(null, this.pUtil));
+                     		alg2.add(ParameterSet.SC);
+                     	}
+                     		
+                     	if(e.getKey().equals(ParameterSet.IC )){
+                     		alg.add(new IC(null, this.pUtil));
+                     		alg2.add(ParameterSet.IC);
+                     	}
+             		}
+             		
+             	} 
+        		 if(flag == 1){
+             		if(JOptionPane.showConfirmDialog(this.swingApplication.getJFrame(),
+     	            		"The weight of edges haven't been uploaded, or the data type of the attibute named weight is not double or integer,  centralities with weight can't be analyzed! \n Do you want to contine?", "WARNING", JOptionPane.YES_NO_OPTION) == 1)
+     				{	
+     					return ;
+     				}
+     				
+             	}
+        	 }
+        
+        	
+        	this.pUtil.getCurrentParameters().setParams(currentParamsCopy, resultId, network.getSUID());
+        	
         	this.pUtil.addNetworkAlgorithm(network.getSUID().longValue());
         	AnalysisCompletedListener listener = new AnalysisCompletedListener(){
         		public void handleEvent(AnalysisCompletedEvent e)
@@ -264,6 +411,37 @@ public class AnalyzeAction extends AbstractPAction
         						resultFound = true;
         						AnalyzeAction.this.pUtil.addNetworkResult(network.getSUID().longValue());
         						
+        						if(!pUtil.getBioinfoColumnNames().isEmpty()){
+        	
+        								for(String s : pUtil.getBioinfoColumnNames()){
+        									
+        									for(Protein p : e.getProteins()){
+                								Double para; 				
+                								if(network.getRow(p.getN()).get(s, Number.class) != null){
+                									Number num = network.getRow(p.getN()).get(s, Number.class);
+             		
+                    								if(network.getDefaultNodeTable().getColumn(s).getType().equals(Integer.class)){
+                    									
+                    										para = num.doubleValue();
+                    								}else
+                    									para = (Double) num;
+                    								
+                								}else{
+                									para = 0.0;
+                								}
+                								p.setBioPara(s, para);
+        									}
+        									alg2.add(s);
+        								
+        								
+        								}
+        								pUtil.getBioinfoColumnNames().clear();
+        						}
+        						
+        						
+        						
+        						
+        						
         						DiscardResultAction discardResultAction = new DiscardResultAction(
         								"Discard Result", 
         								resultId, 
@@ -274,55 +452,10 @@ public class AnalyzeAction extends AbstractPAction
         								AnalyzeAction.this.pUtil);
 
         						resultsPanel = new ResultPanel(e.getProteins(), alg2, AnalyzeAction.this.pUtil, network, networkView, 
-        								resultId, discardResultAction, AnalyzeAction.this.registrar);
+        								resultId, discardResultAction);
         						AnalyzeAction.this.registrar.registerService(resultsPanel, CytoPanelComponent.class, new Properties());
         						
-        					/*	if(pUtil.getAlleprotein() != null && !pUtil.getAlleprotein().isEmpty()){
-        							
-        							System.out.println("@@@@@@@@@");
-        							int eplistId = pUtil.getCurrentEplistId();
-        							AnalyzeAction.this.pUtil.addNetworkEplist(network.getSUID().longValue());
-        							ArrayList<String> Alleprotein = pUtil.getAlleprotein();
-        							ArrayList<Protein> eprotein = pUtil.getCurrentParameters().getParamsCopy(network.getSUID()).getEprotein();
-        							Iterator i = network.getNodeList().iterator();
-        							while (i.hasNext()){
-        								CyNode n = (CyNode)i.next();
-        								String name = network.getRow(n).get("name", String.class);
-        								if(Alleprotein.contains(name)){
-        									Protein p = new Protein(n, network);
-        									eprotein.add(p);
-        								}
-        							}
-        							if(!eprotein.isEmpty()){        							
-        								DiscardEpListAction discardEpListAction = new DiscardEpListAction(
-        										"Discard Panel",
-        										eplistId,
-        										AnalyzeAction.this.applicationManager,
-        										AnalyzeAction.this.swingApplication,
-        										AnalyzeAction.this.netViewManager,
-        										AnalyzeAction.this.registrar,
-        										AnalyzeAction.this.pUtil);
-
-        								eplistPanel = new EpListPanel(
-        										eprotein,
-        										AnalyzeAction.this.pUtil, network,
-        										networkView, eplistId,
-        										discardEpListAction);
-        								AnalyzeAction.this.registrar.registerService(eplistPanel,
-        											CytoPanelComponent.class,
-													new Properties());
-        							}
-        						}
-        						
-        					*/	
-        						
-        					//	ArrayList nodes = new ArrayList();
-        					//    for(Protein p: e.getProteins()){
-        					//    	System.out.println(p.getName());
-        					//    	nodes.add(p.n);
-        					//    	}
-        					//    pg = AnalyzeAction.this.pUtil.createGraph(network, nodes);
-        						
+        					
         						
         						
         						
@@ -349,7 +482,7 @@ public class AnalyzeAction extends AbstractPAction
         		};
                   
         		AnalyzeTaskFactory analyzeTaskFactory = new AnalyzeTaskFactory(network, this.analyze, resultId, alg, 
-                    this.pUtil, listener);
+                    this.pUtil, listener, alg2);
             
         		this.taskManager.execute(analyzeTaskFactory.createTaskIterator());
         	
@@ -441,7 +574,7 @@ public class AnalyzeAction extends AbstractPAction
 		  		if(c.getComponentAt(num) instanceof ResultPanel){
 		  			ResultPanel rp = (ResultPanel) c.getComponentAt(num);
 		  			CytoPanel cytopanel	= pUtil.getSouthCytoPanel();
-		  			EvaluationPanel ep = rp.geteEvaluationPanel();
+		  			EvaluationPanel ep = rp.getEvaluationPanel();
 					if (cytopanel.indexOfComponent(ep) >= 0)
 					{
 						int index = cytopanel.indexOfComponent(ep);

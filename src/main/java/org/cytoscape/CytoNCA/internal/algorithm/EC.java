@@ -23,24 +23,20 @@ public class EC extends Algorithm {
 		super(networkID, pUtil);
 	}
 	@Override
-	public  ArrayList<Protein> run(CyNetwork inputNetwork, ArrayList<Protein> vertex) {
+	public  ArrayList<Protein> run(CyNetwork inputNetwork, ArrayList<Protein> vertex, boolean isweight) {
 		// TODO Auto-generated method stub
+		int i,j;
 		currentNetwork = inputNetwork;
-		int param=0,i,j;
-		
-		
-		List<CyNode> nodes = inputNetwork.getNodeList();
-	
-		param = pUtil.isweight(inputNetwork);
+		this.isweight = isweight;
+		this.vertex = vertex;
 		
 		len=vertex.size();
 		double[] tempData = new double[len * len];
-	//	if(inputNetwork.getRow(nodes.get(0)).get("weight", String.class) != null)
-	//		param=1;
-		if(param==0){
+	
+		if(!isweight){
 			for(i=0;i<vertex.size();i++){
 				for(j=0;j<vertex.size();j++){
-					if(inputNetwork.getConnectingEdgeList(vertex.get(i).getN(), vertex.get(j).getN(), Type.ANY).size()>0){
+					if(!inputNetwork.getConnectingEdgeList(vertex.get(i).getN(), vertex.get(j).getN(), Type.ANY).isEmpty()){
 						tempData[len*i+j]=1;
 					}
 					else{
@@ -53,11 +49,11 @@ public class EC extends Algorithm {
                 x++;
             }
 		}
-		else if(param==1){
+		else if(isweight){
 			for(i=0;i<vertex.size();i++){
 				for(j=0;j<vertex.size();j++){
 					List<CyEdge> edge=inputNetwork.getConnectingEdgeList(vertex.get(i).getN(), vertex.get(j).getN(), Type.ANY);
-					if(edge.size()>0){
+					if(!edge.isEmpty()){
 						tempData[len*i+j]=inputNetwork.getRow(edge.get(0)).get("weight", Double.class);
 					}
 					else{
@@ -104,9 +100,18 @@ public class EC extends Algorithm {
                 x++;
             }
 		}
-		for (i = 0; i < matrix.getNumRows(); i++) {
-			vertex.get(i).setEC(matrix.getElement(i, j));
+		if(!isweight){
+			for (i = 0; i < matrix.getNumRows(); i++) {
+				vertex.get(i).setEC(matrix.getElement(i, j));
+			}
 		}
+		else{
+			for (i = 0; i < matrix.getNumRows(); i++) {
+				vertex.get(i).setECW(matrix.getElement(i, j));
+				System.out.println(matrix.getElement(i, j)+"****");
+			}
+		}
+		
 	}
 }
 

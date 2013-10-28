@@ -19,8 +19,9 @@ public class AnalyzeTaskFactory
   private final ArrayList<Algorithm> algSet;
   private final ProteinUtil pUtil;
   private final AnalysisCompletedListener listener;
+  private final ArrayList<String> algnames;
 
-  public AnalyzeTaskFactory(CyNetwork network, int analyze, int resultId, ArrayList<Algorithm> algSet, ProteinUtil pUtil, AnalysisCompletedListener listener)
+  public AnalyzeTaskFactory(CyNetwork network, int analyze, int resultId, ArrayList<Algorithm> algSet, ProteinUtil pUtil, AnalysisCompletedListener listener, ArrayList<String> algnames)
   {
     this.network = network;
     this.analyze = analyze;
@@ -28,11 +29,12 @@ public class AnalyzeTaskFactory
     this.algSet = algSet;
     this.pUtil = pUtil;
     this.listener = listener;
+    this.algnames = algnames;
   }
 
   public TaskIterator createTaskIterator()
   {
-    return new TaskIterator(new Task[] { new AnalyzeTask(this.network, this.analyze, this.resultId, algSet, this.pUtil, this.listener) });
+    return new TaskIterator(new Task[] { new AnalyzeTask(this.network, this.analyze, this.resultId, algSet, this.pUtil, this.listener, this.algnames) });
   }
 
   public boolean isReady()

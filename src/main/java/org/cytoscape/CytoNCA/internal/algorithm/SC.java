@@ -23,18 +23,17 @@ public class SC extends Algorithm {
 		super(networkID, pUtil);
 	}
 	@Override
-	public ArrayList<Protein> run(CyNetwork inputNetwork, ArrayList<Protein> vertex) {
+	public ArrayList<Protein> run(CyNetwork inputNetwork, ArrayList<Protein> vertex, boolean isweight) {
 		// TODO Auto-generated method stub
+		
+		int i, j;
 		currentNetwork = inputNetwork;
-		int i, j, param = 0;
-		
-		param = pUtil.isweight(inputNetwork);
-	
-		
+		this.isweight = isweight;
+		this.vertex = vertex;
 		
 		len = vertex.size();
 		double[] tempData = new double[len * len];
-		if (param == 0) {
+		if (!isweight) {
 			for (i = 0; i < vertex.size(); i++) {
 				for (j = 0; j < vertex.size(); j++) {
 					if (inputNetwork.getConnectingEdgeList(
@@ -54,7 +53,7 @@ public class SC extends Algorithm {
 				
 				
 			}
-		} else if (param == 1) {
+		} else if (isweight) {
 			for (i = 0; i < vertex.size(); i++) {
 				for (j = 0; j < vertex.size(); j++) {
 					List<CyEdge> edge = inputNetwork.getConnectingEdgeList(
@@ -63,7 +62,7 @@ public class SC extends Algorithm {
 					if (edge.size() > 0) {
 						tempData[len * i + j] = inputNetwork
 								.getRow(edge.get(0))
-								.get("weight", double.class);
+								.get("weight", Double.class);
 					} else {
 						tempData[len * i + j] = 0.0;
 					}
@@ -115,15 +114,31 @@ public class SC extends Algorithm {
                 x++;
             }
 		}
-		for (i = 0; i < matrix.getNumRows(); i++) {
-			result = 0;
-			temp = 0;
-			for (j = 0; j < matrix.getNumColumns(); j++) {
-				temp = matrix.getElement(i, j);
-				result += temp * Math.exp(value[j]) * temp;
+		
+		if(!isweight){
+			for (i = 0; i < matrix.getNumRows(); i++) {
+				result = 0;
+				temp = 0;
+				for (j = 0; j < matrix.getNumColumns(); j++) {
+					temp = matrix.getElement(i, j);
+					result += temp * Math.exp(value[j]) * temp;
+				}
+				vertex.get(i).setSC(result);
 			}
-			vertex.get(i).setSC(result);
 		}
+		else{
+			for (i = 0; i < matrix.getNumRows(); i++) {
+				result = 0;
+				temp = 0;
+				for (j = 0; j < matrix.getNumColumns(); j++) {
+					temp = matrix.getElement(i, j);
+					result += temp * Math.exp(value[j]) * temp;
+				}
+				vertex.get(i).setSCW(result);
+				System.out.println(result+"****");
+			}
+		}
+		
 	}
 }
 

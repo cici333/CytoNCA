@@ -18,7 +18,7 @@ public class CC1 extends Algorithm {
 	}
 	
 	@Override
-	public ArrayList<Protein> run(CyNetwork inputNetwork, ArrayList<Protein> vertex) {
+	public ArrayList<Protein> run(CyNetwork inputNetwork, ArrayList<Protein> vertex, boolean isweight) {
 		currentNetwork = inputNetwork;
 		
 		int k = 0, i, j, m,param=0;

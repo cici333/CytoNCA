@@ -39,12 +39,7 @@ public class CyActivator extends AbstractCyActivator {
 
 
 	public void start(BundleContext bc) {
-/*
-		CySwingApplication cytoscapeDesktopService = getService(bc,CySwingApplication.class);
-		CyApplicationManager cyApplicationManagerServiceRef = getService(bc,CyApplicationManager.class);
-		
 
-*/
 		
 		CyApplicationManager appMgr = (CyApplicationManager)getService(bc, org.cytoscape.application.CyApplicationManager.class);
 		CyNetworkViewManager netViewMgr = (CyNetworkViewManager)getService(bc, org.cytoscape.view.model.CyNetworkViewManager.class);
@@ -63,43 +58,26 @@ public class CyActivator extends AbstractCyActivator {
 		CyTableFactory cyDataTableFactoryServiceRef = getService(bc,CyTableFactory.class);
 		MapTableToNetworkTablesTaskFactory mapNetworkAttrTFServiceRef = getService(bc,MapTableToNetworkTablesTaskFactory.class);
 	
-		
-//		Sample11TaskFactory sample11TaskFactory = new Sample11TaskFactory(cyDataTableFactoryServiceRef,mapNetworkAttrTFServiceRef);
-		
-		
-		
+
 		FileUtil fileUtil = (FileUtil)getService(bc, org.cytoscape.util.swing.FileUtil.class);
 		OpenBrowser openBrowser = (OpenBrowser)getService(bc, org.cytoscape.util.swing.OpenBrowser.class);
 		CyEventHelper eventHelper = (CyEventHelper)getService(bc, org.cytoscape.event.CyEventHelper.class);
 		ProteinUtil clusterUtil = new ProteinUtil(dingRenderingEngineFactory, netViewFactory, rootNetworkMgr, appMgr, netMgr, netViewMgr, visualStyleFactory,
-				visualMappingMgr, swingApp, eventHelper, discreteMappingFactory, continuousMappingFactory, fileUtil,mapNetworkAttrTFServiceRef);
+				visualMappingMgr, swingApp, eventHelper, discreteMappingFactory, continuousMappingFactory, fileUtil,mapNetworkAttrTFServiceRef,serviceRegistrar);
 
 		
-/*		MainPanel mainPanel = new MainPanel(cytoscapeDesktopService, clusterUtil);
-		StartAction m = new StartAction(cytoscapeDesktopService,cyApplicationManagerServiceRef,mainPanel);
-	*/	
-	/*	registerService(bc,mainPanel,CytoPanelComponent.class, new Properties());
-		registerService(bc,m,CyAction.class, new Properties());
-		
-	*/	
-		
-		AnalyzeAction analyzeAction = new AnalyzeAction("Analyze current network", appMgr, swingApp, netViewMgr, serviceRegistrar, taskMgr, null, clusterUtil);
+		AnalyzeAction analyzeAction = new AnalyzeAction("Analyze", appMgr, swingApp, netViewMgr, serviceRegistrar, taskMgr, null, clusterUtil);
 		OpenEplistAction openEplistAction = new OpenEplistAction("Show Essential Protien List", appMgr, swingApp, netViewMgr, serviceRegistrar, clusterUtil);
 		
-		//MCODEHelpAction helpAction = new MCODEHelpAction("Help", appMgr, swingApp, netViewMgr, openBrowser);
-		VisualStyleAction visualStyleAction = new VisualStyleAction("Apply Viz style", appMgr, swingApp, netViewMgr, visualMappingMgr, clusterUtil);
-	//	MCODEAboutAction aboutAction = new MCODEAboutAction("About", appMgr, swingApp, netViewMgr, openBrowser, clusterUtil);
-		//registerService(bc, helpAction, org.cytoscape.application.swing.CyAction.class, new Properties());
-	//	registerService(bc, aboutAction, org.cytoscape.application.swing.CyAction.class, new Properties());
+	
 		registerAllServices(bc, analyzeAction, new Properties());
-		registerService(bc, visualStyleAction, org.cytoscape.application.swing.CyAction.class, new Properties());
-		registerService(bc, visualStyleAction, org.cytoscape.application.swing.events.CytoPanelComponentSelectedListener.class, new Properties());
+
 		OpenTaskFactory openTaskFactory = new OpenTaskFactory(swingApp, serviceRegistrar, clusterUtil, analyzeAction, openEplistAction);
 		Properties openTaskFactoryProps = new Properties();
 		openTaskFactoryProps.setProperty("preferredMenu", "Apps.CytoNCA");
 		openTaskFactoryProps.setProperty("title", "Open");
 		openTaskFactoryProps.setProperty("menuGravity", "1.0");
-	//	openTaskFactoryProps.setProperty("smallIconURL", "logo.jpg");
+	
 		registerService(bc, openTaskFactory, org.cytoscape.work.TaskFactory.class, openTaskFactoryProps);
 		CloseTaskFactory closeTaskFactory = new CloseTaskFactory(swingApp, serviceRegistrar, clusterUtil);
 		Properties closeTaskFactoryProps = new Properties();

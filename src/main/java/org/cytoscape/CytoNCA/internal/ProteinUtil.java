@@ -32,6 +32,7 @@ import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
@@ -42,6 +43,7 @@ import org.cytoscape.model.SavePolicy;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.model.subnetwork.CySubNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.edit.MapTableToNetworkTablesTaskFactory;
 import org.cytoscape.util.swing.FileChooserFilter;
 import org.cytoscape.util.swing.FileUtil;
@@ -68,46 +70,6 @@ import org.slf4j.LoggerFactory;
 
 
 
-
-/**
- * * Copyright (c) 2004 Memorial Sloan-Kettering Cancer Center
- * *
- * * Code written by: Gary Bader
- * * Authors: Gary Bader, Ethan Cerami, Chris Sander
- * *
- * * This library is free software; you can redistribute it and/or modify it
- * * under the terms of the GNU Lesser General Public License as published
- * * by the Free Software Foundation; either version 2.1 of the License, or
- * * any later version.
- * *
- * * This library is distributed in the hope that it will be useful, but
- * * WITHOUT ANY WARRANTY, WITHOUT EVEN THE IMPLIED WARRANTY OF
- * * MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.  The software and
- * * documentation provided hereunder is on an "as is" basis, and
- * * Memorial Sloan-Kettering Cancer Center
- * * has no obligations to provide maintenance, support,
- * * updates, enhancements or modifications.  In no event shall the
- * * Memorial Sloan-Kettering Cancer Center
- * * be liable to any party for direct, indirect, special,
- * * incidental or consequential damages, including lost profits, arising
- * * out of the use of this software and its documentation, even if
- * * Memorial Sloan-Kettering Cancer Center
- * * has been advised of the possibility of such damage.  See
- * * the GNU Lesser General Public License for more details.
- * *
- * * You should have received a copy of the GNU Lesser General Public License
- * * along with this library; if not, write to the Free Software Foundation,
- * * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
- * *
- * * User: Gary Bader
- * * Date: Jun 25, 2004
- * * Time: 7:00:13 PM
- * * Description: Utilities for MCODE
- */
-
-/**
- * Utilities for Clustering
- */
 public class ProteinUtil {
 
     private static boolean INTERRUPTED = false;
@@ -130,6 +92,7 @@ public class ProteinUtil {
 	private final VisualMappingFunctionFactory continuousMappingFactory;
 	private final FileUtil fileUtil;
 	private final Properties props = loadProperties("/mcode.properties");
+	private final CyServiceRegistrar registrar;
 	
 	private final MapTableToNetworkTablesTaskFactory mapNetworkAttrTFServiceRef;
 	private boolean interrupted;
@@ -145,13 +108,14 @@ public class ProteinUtil {
 	//private boolean isEvaluation;
 	private Map createdSubNetworks;
 	private ArrayList<String> Alleprotein;
+	private ArrayList<String> bioinfoColumnNames;
 	
 	private static final Logger logger = LoggerFactory.getLogger(org.cytoscape.CytoNCA.internal.ProteinUtil.class);
 
 	public ProteinUtil(RenderingEngineFactory renderingEngineFactory, CyNetworkViewFactory networkViewFactory, CyRootNetworkManager rootNetworkMgr, CyApplicationManager applicationMgr, CyNetworkManager networkMgr, CyNetworkViewManager networkViewMgr, VisualStyleFactory visualStyleFactory, 
 			VisualMappingManager visualMappingMgr, CySwingApplication swingApplication, CyEventHelper eventHelper,
 			VisualMappingFunctionFactory discreteMappingFactory, VisualMappingFunctionFactory continuousMappingFactory,
-			FileUtil fileUtil,MapTableToNetworkTablesTaskFactory mapNetworkAttrTFServiceRef)
+			FileUtil fileUtil,MapTableToNetworkTablesTaskFactory mapNetworkAttrTFServiceRef, CyServiceRegistrar registrar)
 	{
 		this.renderingEngineFactory = renderingEngineFactory;
 		this.networkViewFactory = networkViewFactory;
@@ -167,6 +131,8 @@ public class ProteinUtil {
 		this.continuousMappingFactory = continuousMappingFactory;
 		this.fileUtil = fileUtil;
 		this.mapNetworkAttrTFServiceRef=mapNetworkAttrTFServiceRef;
+		this.registrar = registrar;
+		bioinfoColumnNames = new ArrayList<String>();
 		reset();
 		
 	}
@@ -226,6 +192,13 @@ public class ProteinUtil {
         
         String fileName = null;
         FileWriter fout = null;
+        
+        for(String alg : allalg){
+        	network.getTable(CyNode.class, CyNetwork.DEFAULT_ATTRS).createColumn(alg, Double.class, false);
+        }
+        
+        
+        
         try
         {
           Collection filters = new ArrayList();
@@ -243,6 +216,11 @@ public class ProteinUtil {
             fout.write("Date: " + DateFormat.getDateTimeInstance().format(new Date()) + lineSep + lineSep);
             for (int i = 0; i < eproteins.size(); i++) {         	
             	Protein p = (Protein)eproteins.get(i);
+            	for(String alg : allalg){
+            		network.getRow(p.getN()).set(alg, p.getPara(alg));
+                }
+            	
+            	
                 fout.write((i + 1) + "\t"); //rank
           //      NumberFormat nf = NumberFormat.getInstance();
         //        nf.setMaximumFractionDigits(3);
@@ -322,66 +300,19 @@ public class ProteinUtil {
      * @param height height of the image
      * @return place holder
      */
-    public static Image getPlaceHolderImage(int width, int height) {
-        //We only want to generate a place holder image once so that memory is not eaten up
-        if (placeHolderImage == null) {
-            Image image;
-            image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-            Graphics2D g2 = (Graphics2D) image.getGraphics();
-            int fontSize = 10;
-            g2.setFont(new Font("Arial", Font.PLAIN, fontSize));
-            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-            Font f = g2.getFont();
-            FontMetrics fm = g2.getFontMetrics(f);
-
-            //Place Holder text
-            String placeHolderText = "The complex is too large to visualize";
-            //We want to center the text vertically in the top 20 pixels
-            height = 20;
-            //White outline
-            g2.setColor(Color.BLACK);
-            g2.drawString(placeHolderText, (width / 2) - (fm.stringWidth(placeHolderText) / 2) - 1, (height / 2) + (fontSize / 2) - 1);
-            g2.drawString(placeHolderText, (width / 2) - (fm.stringWidth(placeHolderText) / 2) - 1, (height / 2) + (fontSize / 2) + 1);
-            g2.drawString(placeHolderText, (width / 2) - (fm.stringWidth(placeHolderText) / 2) + 1, (height / 2) + (fontSize / 2) - 1);
-            g2.drawString(placeHolderText, (width / 2) - (fm.stringWidth(placeHolderText) / 2) + 1, (height / 2) + (fontSize / 2) + 1);
-            //Red text
-            g2.setColor(Color.BLUE);
-            g2.drawString(placeHolderText, (width / 2) - (fm.stringWidth(placeHolderText) / 2), (height / 2) + (fontSize / 2));
-
-            placeHolderImage = image;
-        }
-        return placeHolderImage;
-    }
+   
     
-    
-    
-    
-    
-    
-    
-    
-    
+  
 	public int getCurrentResultId()
 	{
 		return currentResultId;
 	}
     
- /*   public int getcurrentEvaluationId()
-	{
-		return currentEvaluationId;
-	}
-	*/
 	public int getCurrentEplistId()
 	{
 		return currentEplistId;
 	}
 	
-	/*public int setCurrentEplistId(int currentEplistId)
-	{
-		return this.currentEplistId = currentEplistId;
-	}*/
-
 	public String getProperty(String key)
 	{
 		return props.getProperty(key);
@@ -488,11 +419,6 @@ public class ProteinUtil {
 		networkAlgorithms.remove(Long.valueOf(suid));
 	}
 
-/*	public boolean containsNetworkResult(long suid)
-	{
-		return networkResults.containsKey(Long.valueOf(suid));
-	}
-*/
 	public Set getNetworkResults(long suid)
 	{
 		Set ids = (Set)networkResults.get(Long.valueOf(suid));
@@ -790,47 +716,7 @@ public class ProteinUtil {
     
     
 	 // public VisualStyle getAppStyle(double maxScore) {
-	  public VisualStyle getAppStyle() {
-		    if (this.appStyle == null) {
-		      this.appStyle = this.visualStyleFactory.createVisualStyle("MCODE");
-
-		      DiscreteMapping nodeShapeDm = (DiscreteMapping)this.discreteMappingFactory
-		        .createVisualMappingFunction("MCODE_Node_Status", String.class, BasicVisualLexicon.NODE_SHAPE);
-
-		      nodeShapeDm.putMapValue("Clustered", NodeShapeVisualProperty.ELLIPSE);
-		      nodeShapeDm.putMapValue("Seed", NodeShapeVisualProperty.RECTANGLE);
-		      nodeShapeDm.putMapValue("Unclustered", NodeShapeVisualProperty.DIAMOND);
-
-		      for (VisualPropertyDependency dep : this.appStyle.getAllVisualPropertyDependencies()) {
-		        if ((dep.getParentVisualProperty() == BasicVisualLexicon.NODE_SIZE) && 
-		          (dep.getVisualProperties().contains(BasicVisualLexicon.NODE_WIDTH)) && 
-		          (dep.getVisualProperties().contains(BasicVisualLexicon.NODE_HEIGHT))) {
-		          dep.setDependency(true);
-		        }
-		      }
-		      this.appStyle.addVisualMappingFunction(nodeShapeDm);
-		    }
-
-		    this.appStyle.setDefaultValue(BasicVisualLexicon.NODE_FILL_COLOR, Color.WHITE);
-
-		    this.appStyle.removeVisualMappingFunction(BasicVisualLexicon.NODE_FILL_COLOR);
-
-		    ContinuousMapping nodeColorCm = (ContinuousMapping)this.continuousMappingFactory
-		      .createVisualMappingFunction("MCODE_Score", Double.class, BasicVisualLexicon.NODE_FILL_COLOR);
-
-		    Color MIN_COLOR = Color.BLACK;
-		    Color MAX_COLOR = Color.RED;
-
-		    nodeColorCm.addPoint(Double.valueOf(0.0D), new BoundaryRangeValues(Color.WHITE, Color.WHITE, MIN_COLOR));
-
-		  //  nodeColorCm.addPoint(Double.valueOf(maxScore), new BoundaryRangeValues(MAX_COLOR, MAX_COLOR, MAX_COLOR));
-
-		    this.appStyle.addVisualMappingFunction(nodeColorCm);
-
-		    return this.appStyle;
-		  }
-
-	
+	 
 	  public CytoPanel getEastCytoPanel()
 	  {
 	    return this.swingApplication.getCytoPanel(CytoPanelName.EAST);
@@ -856,17 +742,7 @@ public class ProteinUtil {
 	    return panels;
 	  }
 	  
-	  protected Collection getEvaluationPanels()
-		{
-			Collection panels = new ArrayList();
-			CytoPanel cytoPanel = getSouthCytoPanel();
-			int count = cytoPanel.getCytoPanelComponentCount();
-			for (int i = 0; i < count; i++)
-				if (cytoPanel.getComponentAt(i) instanceof EvaluationPanel)
-					panels.add((EvaluationPanel)cytoPanel.getComponentAt(i));
-
-			return panels;
-		}
+	 
 		
 	  
 	  public Collection<EpListPanel> getEpListPanels()
@@ -897,68 +773,53 @@ public class ProteinUtil {
 
 		    return null;
 		  }
-	  public EvaluationPanel getEvaluationPanel(int evaluationId)
-		{
-			for (Iterator iterator = getEvaluationPanels().iterator(); iterator.hasNext();)
-			{
-				EvaluationPanel panel = (EvaluationPanel)iterator.next();
-				if (panel.getEvaluationId() == evaluationId)
-					return panel;
-			}
-
-			return null;
-		}
+	 
 	  
 	  public ArrayList detectparalleledges(CyNetwork n){
-		 List<CyEdge> edges = n.getEdgeList();
-		 Map<Long, Long> emap = new HashMap<Long, Long>(); 
-		 ArrayList e = new ArrayList();
+		 List<CyEdge> edges = n.getEdgeList(); 
+		 ArrayList<HashSet<Long>> tempa = new ArrayList<HashSet<Long>>();
+		 ArrayList<CyIdentifiable> e = new ArrayList<CyIdentifiable>();
 		 
 		 Iterator i = edges.iterator();
 		 while(i.hasNext()){
 			 CyEdge temp = (CyEdge) i.next();
-			 Long l = temp.getSource().getSUID() > temp.getTarget().getSUID() ? temp.getSource().getSUID() : temp.getTarget().getSUID();
-			 Long s = temp.getSource().getSUID() > temp.getTarget().getSUID() ? temp.getTarget().getSUID() : temp.getSource().getSUID();
-		//	 System.out.println(l+"    "+s+"  rrrrrrrrrRRRR");
+			 Long l = temp.getSource().getSUID();
+			 Long s = temp.getTarget().getSUID();
+			 HashSet<Long> a = new HashSet<Long>();
+			 a.add(l);
+			 a.add(s);
 			 
-			 
-			 if((emap.containsKey(l) && emap.get(l).longValue() == s) || (l == s)){
+			 if(tempa.contains(a) || (l == s)){
 				 e.add(temp);
-				 if(l == s){
-					 e.add(temp);
+				 if(l == s){				
 					 e.add(n.getNode(l));
 				 }				
-				 else{
-					 e.add(temp);
+				 else{				
 					 e.add(n.getNode(l));
 					 e.add(n.getNode(s));
 				 }
-				 return e;
+				
 			 }
 			 else
-				 emap.put(l, s); 	
+				 tempa.add(a); 	
 		 }
 		 return e;
 	  }
 	  
 	  
-	  public void deleteparalleledges(CyNetwork n,  ArrayList a){
-		  Collection allElements = new ArrayList(n.getNodeList());
+	  public void deleteparalleledges(CyNetwork n,  ArrayList<CyIdentifiable> a){
 		
-			CyIdentifiable nodeOrEdge;
-			boolean select;
-			if(a != null){
-				for (Iterator iterator = allElements.iterator(); iterator.hasNext();)
-				{
-					nodeOrEdge = (CyIdentifiable)iterator.next();
-					if(a.contains(nodeOrEdge)){
-						a.remove(nodeOrEdge);
-					}
-				}
-				n.removeEdges(a);
-			}
-	  
-			
+		  
+		  ArrayList<CyEdge> b = new ArrayList<CyEdge>();
+		  Iterator it = a.iterator();
+		  
+		  while(it.hasNext()){
+			  CyIdentifiable nodeOrEdge = (CyIdentifiable) it.next();
+			  if( nodeOrEdge instanceof CyEdge)
+				  b.add((CyEdge) nodeOrEdge);
+		  }
+		  n.removeEdges(b);
+		  
 			eventHelper.flushPayloadEvents();
 			Collection netViews = networkViewMgr.getNetworkViews(n);
 			CyNetworkView view;
@@ -989,7 +850,10 @@ public class ProteinUtil {
 	  }
     
 	  public void sortVertex(List<Protein> vertex, String alg) {
-		  
+
+		  final String al = alg;
+
+		
 		  
 		  if(alg.equals(ParameterSet.BC)){
 			  Collections.sort(vertex, new Comparator<Protein>() {				
@@ -1113,6 +977,144 @@ public class ProteinUtil {
 				});
 		  }
 		  
+		  else if(alg.equals(ParameterSet.BCW)){
+			  Collections.sort(vertex, new Comparator<Protein>() {				
+					@Override
+					public int compare(Protein o1, Protein o2) {
+						// TODO Auto-generated method stub
+						if (o1.getBCW() - o2.getBCW() > 0) {
+							return -1;
+						} else if (o1.getBCW() - o2.getBCW() == 0) {
+							return 0;
+						} else {
+							return 1;
+						}
+					}
+				});
+		  }
+		  
+		  else if(alg.equals(ParameterSet.CCW)){
+			  Collections.sort(vertex, new Comparator<Protein>() {				
+					@Override
+					public int compare(Protein o1, Protein o2) {
+						// TODO Auto-generated method stub
+						if (o1.getCCW() - o2.getCCW() > 0) {
+							return -1;
+						} else if (o1.getCCW() - o2.getCCW() == 0) {
+							return 0;
+						} else {
+							return 1;
+						}
+					}
+				});
+		  }
+		  else if(alg.equals(ParameterSet.DCW)){
+			  Collections.sort(vertex, new Comparator<Protein>() {				
+					@Override
+					public int compare(Protein o1, Protein o2) {
+						// TODO Auto-generated method stub
+						if (o1.getDCW() - o2.getDCW() > 0) {
+							return -1;
+						} else if (o1.getDCW() - o2.getDCW() == 0) {
+							return 0;
+						} else {
+							return 1;
+						}
+					}
+				});
+		  }
+		  else if(alg.equals(ParameterSet.ECW)){
+			  Collections.sort(vertex, new Comparator<Protein>() {				
+					@Override
+					public int compare(Protein o1, Protein o2) {
+						// TODO Auto-generated method stub
+						if (o1.getECW() - o2.getECW() > 0) {
+							return -1;
+						} else if (o1.getECW() - o2.getECW() == 0) {
+							return 0;
+						} else {
+							return 1;
+						}
+					}
+				});
+		  }
+		  else if(alg.equals(ParameterSet.LACW)){
+			  Collections.sort(vertex, new Comparator<Protein>() {				
+					@Override
+					public int compare(Protein o1, Protein o2) {
+						// TODO Auto-generated method stub
+						if (o1.getLACW() - o2.getLACW() > 0) {
+							return -1;
+						} else if (o1.getLACW() - o2.getLACW() == 0) {
+							return 0;
+						} else {
+							return 1;
+						}
+					}
+				});
+		  }
+		  else if(alg.equals(ParameterSet.NCW)){
+			  Collections.sort(vertex, new Comparator<Protein>() {				
+					@Override
+					public int compare(Protein o1, Protein o2) {
+						// TODO Auto-generated method stub
+						if (o1.getNCW() - o2.getNCW() > 0) {
+							return -1;
+						} else if (o1.getNCW() - o2.getNCW() == 0) {
+							return 0;
+						} else {
+							return 1;
+						}
+					}
+				});
+		  }
+		  else if(alg.equals(ParameterSet.SCW)){
+			  Collections.sort(vertex, new Comparator<Protein>() {				
+					@Override
+					public int compare(Protein o1, Protein o2) {
+						// TODO Auto-generated method stub
+						if (o1.getSCW() - o2.getSCW() > 0) {
+							return -1;
+						} else if (o1.getSCW() - o2.getSCW() == 0) {
+							return 0;
+						} else {
+							return 1;
+						}
+					}
+				});
+		  }
+		  else if(alg.equals(ParameterSet.ICW)){
+			  Collections.sort(vertex, new Comparator<Protein>() {				
+					@Override
+					public int compare(Protein o1, Protein o2) {
+						// TODO Auto-generated method stub
+						if (o1.getICW() - o2.getICW() > 0) {
+							return -1;
+						} else if (o1.getICW() - o2.getICW() == 0) {
+							return 0;
+						} else {
+							return 1;
+						}
+					}
+				});
+				
+		  }
+		  else{
+			  Collections.sort(vertex, new Comparator<Protein>() {				
+					@Override
+					public int compare(Protein o1, Protein o2) {
+						// TODO Auto-generated method stub
+						if (o1.getBioPara(al) - o2.getBioPara(al) > 0) {
+							return -1;
+						} else if (o1.getBioPara(al) - o2.getBioPara(al) == 0) {
+							return 0;
+						} else {
+							return 1;
+						}
+					}
+				});
+		  }
+		  
 			
 		}
 
@@ -1145,6 +1147,51 @@ public class ProteinUtil {
 	public void setAlleprotein(ArrayList<String> alleprotein) {
 		Alleprotein = alleprotein;
 	}
-   
+
+
+
+	public CyServiceRegistrar getRegistrar() {
+		return registrar;
+	}
+
+
+
+	public CyApplicationManager getApplicationMgr() {
+		return applicationMgr;
+	}
+
+
+
+	public CyNetworkViewManager getNetworkViewMgr() {
+		return networkViewMgr;
+	}
+
+
+
+	public CySwingApplication getSwingApplication() {
+		return swingApplication;
+	}
+
+
+
+	public ArrayList<String> getBioinfoColumnNames() {
+		return bioinfoColumnNames;
+	}
+
+
+
+	public void setBioinfoColumnNames(ArrayList<String> bioinfoColumnNames) {
+		this.bioinfoColumnNames = bioinfoColumnNames;
+	}
+
+
+
+	
+
+
+
+
+
+	
 	
 }

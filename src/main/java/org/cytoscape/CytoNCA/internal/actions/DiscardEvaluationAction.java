@@ -12,28 +12,27 @@ import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.application.swing.CytoPanelState;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkViewManager;
+import org.jfree.chart.ChartFrame;
 
 
-public class DiscardEvaluationAction extends AbstractPAction
+public class DiscardEvaluationAction  extends AbstractPAction
 {
 
-	private static final long serialVersionUID = 0x43a98ed598054cbL;
-	public static final String REQUEST_USER_CONFIRMATION_COMMAND = "requestUserConfirmation";
-	private final int evaluationId;
-	private final CyServiceRegistrar registrar;
-	private final ProteinUtil pUtil;
 
-	public DiscardEvaluationAction(String name, int evaluationId, CyApplicationManager applicationManager, CySwingApplication swingApplication, CyNetworkViewManager netViewManager, CyServiceRegistrar registrar, ProteinUtil pUtil)
+	private final ProteinUtil pUtil;
+	private final EvaluationPanel panel;
+
+	public DiscardEvaluationAction(EvaluationPanel panel, ProteinUtil pUtil)
 	{
-		super(name, applicationManager, swingApplication, netViewManager, "always");
-		this.evaluationId = evaluationId;
-		this.registrar = registrar;
+		super("Discard Panel", pUtil.getApplicationMgr(), pUtil.getSwingApplication(), pUtil.getNetworkViewMgr(), "always");
 		this.pUtil = pUtil;
+		this.panel = panel;
+		
 	}
 
 	public void actionPerformed(java.awt.event.ActionEvent event)
 	{
-		EvaluationPanel panel = pUtil.getEvaluationPanel(this.evaluationId);
+		
 		if (panel != null)
 		{
 			int evaluationId = panel.getEvaluationId();
@@ -49,10 +48,13 @@ public class DiscardEvaluationAction extends AbstractPAction
 			if (confirmed.intValue() == 0)
 			{
 			 
-				panel.setVisible(false);
-				
-			//	registrar.unregisterService(panel, CytoPanelComponent.class);
-		//		pUtil.removeNetworkResult(resultId);
+				if(panel.chartfs !=null && !panel.chartfs.isEmpty())
+					for(ChartFrame cf : panel.chartfs)
+						if(cf != null)
+							cf.dispose();			
+				pUtil.getRegistrar().unregisterService(panel, CytoPanelComponent.class);
+				pUtil.getResultPanel(evaluationId).setEvaluationPanel(null);
+	
 				
 			
 			}

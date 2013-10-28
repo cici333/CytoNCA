@@ -130,8 +130,8 @@ public CytoPanelName getCytoPanelName()
 
 public Icon getIcon()
 {
-  URL iconURL = Resources.getUrl(Resources.ImageName.LOGO_SMALL);
-  return new ImageIcon(iconURL);
+	ImageIcon icon = new ImageIcon(getClass().getResource("/images/logo.jpg"));
+	return icon;
 }
 
 public String getTitle()
@@ -363,7 +363,7 @@ public void discard(final boolean requestUserConfirmation) {
 					networkView.getNodeView(n).setLockedValue(BasicVisualLexicon.NODE_SHAPE,NodeShapeVisualProperty.HEXAGON);
 					networkView.getNodeView(n).setLockedValue(BasicVisualLexicon.NODE_SIZE, ns*1.7);
 					
-					System.out.println(nodesize);
+				//	System.out.println(nodesize);
 					
 					List<CyNode> neibors = network.getNeighborList(n, Type.ANY);
 					if(neibors !=null){

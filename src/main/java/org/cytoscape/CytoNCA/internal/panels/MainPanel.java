@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Frame;
 import java.awt.GridLayout;
 import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
@@ -39,8 +40,10 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
+import javax.swing.JTextField;
 import javax.swing.JToolTip;
 import javax.swing.SwingConstants;
+import javax.swing.border.Border;
 
 
 
@@ -74,21 +77,30 @@ public class MainPanel extends JPanel implements CytoPanelComponent {
 	private JPanel bottomPanel;
 	private OpenfilePanel openfilePanel;
 	private JPanel scopePanel;
-	private JPanel advancedOptionsPanel;
-	JCheckBox BCButton;
-	JCheckBox CCButton;
-	JCheckBox DCButton;
-	JCheckBox ECButton;
-	JCheckBox LACButton;
-	JCheckBox NCButton;
-	JCheckBox SCButton; 
-	JCheckBox ICButton;
-	JCheckBox SelectAll;
-	  
- //   ClusterPlugin.MainPanelAction trigger;
-//    ClusterVisualStyle vistyle;
-    DecimalFormat decimal; // used in the formatted text fields
-    JScrollPane algorithmPanel;
+	//private JPanel advancedOptionsPanel;
+	
+	private JCheckBox BCButton;
+	private JCheckBox CCButton;
+	private JCheckBox DCButton;
+	private JCheckBox ECButton;
+	private JCheckBox LACButton;
+	private JCheckBox NCButton;
+	private JCheckBox SCButton; 
+	private JCheckBox ICButton;
+	private JCheckBox SelectAll;
+	private JCheckBox BCButtonW;
+	private JCheckBox CCButtonW;
+	private JCheckBox DCButtonW;
+	private JCheckBox ECButtonW;
+	private JCheckBox LACButtonW;
+	private JCheckBox NCButtonW;
+	private JCheckBox SCButtonW; 
+	private JCheckBox ICButtonW;
+	private JCheckBox SelectAllW;
+	private DecimalFormat decimal; // used in the formatted text fields
+	private JScrollPane algorithmPanel;
+	private UploadBioinfoPanel uploadbioinfopanel;
+	private JButton uploadBioinfButton;
  
 
     
@@ -107,12 +119,17 @@ public class MainPanel extends JPanel implements CytoPanelComponent {
 
 		JScrollPane algorithmPanel = createAlgorithmPanel();
 		this.openfilePanel = new OpenfilePanel();
+		this.uploadbioinfopanel = null;
+		
+		uploadBioinfButton = new JButton("Upload Bioinformation");
+		uploadBioinfButton.addActionListener(new UploadBioinfoAciton());
+		
 	
 		this.add(algorithmPanel, BorderLayout.NORTH);
 		add(getBottomPanel(), BorderLayout.CENTER);
 		this.add(openfilePanel, BorderLayout.SOUTH);
 		
-		
+	//	getBottomPanel().add(uploadBioinfButton);
 		
 		this.setVisible(true);
 		this.setPreferredSize(new Dimension(300, 700));
@@ -122,14 +139,40 @@ public class MainPanel extends JPanel implements CytoPanelComponent {
         
 	  }
 
+	 public Component getComponent() {
+			return this;
+		}
+
+
+	 public CytoPanelName getCytoPanelName() {
+			return CytoPanelName.WEST;
+		}
+
+
+	 public String getTitle() {
+			return "CytoNCA";
+		}
+
+
+	 public Icon getIcon() {
+			ImageIcon icon = new ImageIcon(getClass().getResource("/images/logo.jpg"));
+			return icon;
+		}
+
+		
+	 public ParameterSet getCurrentParamsCopy() {
+			    return this.currentParamsCopy;
+			  }
+
 
 	 
 	 private JPanel getBottomPanel()
 	  {
 	    if (this.bottomPanel == null) {
 	      this.bottomPanel = new JPanel();
-	      setPreferredSize(new Dimension(270, 50));
+	      setPreferredSize(new Dimension(270, 100));
 	      this.bottomPanel.setLayout(new FlowLayout());
+	    //  this.bottomPanel.setLayout(new BoxLayout(this.bottomPanel, BoxLayout.X_AXIS));
 	    }
 
 	    return this.bottomPanel;
@@ -139,18 +182,20 @@ public class MainPanel extends JPanel implements CytoPanelComponent {
 	private JScrollPane createAlgorithmPanel() {
 		JPanel choicePanel = new JPanel();
         choicePanel.setLayout(new BoxLayout(choicePanel, BoxLayout.Y_AXIS));
-        choicePanel.setPreferredSize(new Dimension(270, 220));
+        choicePanel.setPreferredSize(new Dimension(270, 420));
 	
-		CCButton = new JCheckBox("Closeness Centrality (CC)");
-        DCButton = new JCheckBox("Degree Centrality (DC)");
-        ECButton = new JCheckBox("Eigenvector Centrality (EC)");
-        LACButton = new JCheckBox("Local Average Connectivity-based method (LAC)");
-        NCButton = new JCheckBox("Network Centrality (NC)");
-        SCButton = new JCheckBox("Subgraph Centrality (SC)");
-        BCButton = new JCheckBox("Betweeness Centrality (BC)");
-        ICButton = new JCheckBox("Information Centrality (IC)");
-        SelectAll= new JCheckBox("SelectAll");
         
+        
+        CCButton = new JCheckBox("without weight");
+        DCButton = new JCheckBox("without weight");
+        ECButton = new JCheckBox("without weight");
+        LACButton = new JCheckBox("without weight");
+        NCButton = new JCheckBox("without weight");
+        SCButton = new JCheckBox("without weight");
+        BCButton = new JCheckBox("without weight");
+        ICButton = new JCheckBox("without weight");
+        SelectAll= new JCheckBox("without weight");
+    /*    
         CCButton.setToolTipText("Closeness Centrality (CC)");
         DCButton.setToolTipText("Degree Centrality (DC)");
         ECButton.setToolTipText("Eigenvector Centrality (EC)");
@@ -160,7 +205,7 @@ public class MainPanel extends JPanel implements CytoPanelComponent {
         BCButton.setToolTipText("Betweeness Centrality (BC)");
         ICButton.setToolTipText("Information Centrality (IC)");
         SelectAll.setToolTipText("Select All Algorithms");
-
+*/
      
         CCButton.addItemListener(new AlgorithmAction());
         DCButton.addItemListener(new AlgorithmAction());
@@ -172,26 +217,100 @@ public class MainPanel extends JPanel implements CytoPanelComponent {
         ICButton.addItemListener(new AlgorithmAction());
         SelectAll.addItemListener(new AlgorithmAction());
        
-
-        choicePanel.add(BCButton);
-        choicePanel.add(CCButton);
-        choicePanel.add(DCButton);
-        choicePanel.add(ECButton);
-        choicePanel.add(LACButton);
-        choicePanel.add(NCButton);
-        choicePanel.add(SCButton);
-        choicePanel.add(ICButton);
-        choicePanel.add(SelectAll);
         
-              
-        choicePanel.setToolTipText("Please select an algorithm");
+        CCButtonW = new JCheckBox("with weight");
+        DCButtonW = new JCheckBox("with weight");
+        ECButtonW = new JCheckBox("with weight");
+        LACButtonW = new JCheckBox("with weight");
+        NCButtonW = new JCheckBox("with weight");
+        SCButtonW = new JCheckBox("with weight");
+        BCButtonW = new JCheckBox("with weight");
+        ICButtonW = new JCheckBox("with weight");
+        SelectAllW= new JCheckBox("with weight");
+
+
+        
+        JPanel bcP = new JPanel(new GridLayout(1,2));
+        bcP.add(BCButton);
+        bcP.add(BCButtonW);
+        JPanel ccP = new JPanel(new GridLayout(1,2));
+        ccP.add(CCButton);
+        ccP.add(CCButtonW);
+        JPanel dcP = new JPanel(new GridLayout(1,2));
+        dcP.add(DCButton);
+        dcP.add(DCButtonW);
+        JPanel ecP = new JPanel(new GridLayout(1,2));
+        ecP.add(ECButton);
+        ecP.add(ECButtonW);
+        JPanel lacP = new JPanel(new GridLayout(1,2));
+        lacP.add(LACButton);
+        lacP.add(LACButtonW);
+        JPanel ncP = new JPanel(new GridLayout(1,2));
+        ncP.add(NCButton);
+        ncP.add(NCButtonW);
+        JPanel scP = new JPanel(new GridLayout(1,2));
+        scP.add(SCButton);
+        scP.add(SCButtonW);
+        JPanel icP = new JPanel(new GridLayout(1,2));
+        icP.add(ICButton);
+        icP.add(ICButtonW);
+        JPanel selectP = new JPanel(new GridLayout(1,2));
+        selectP.add(SelectAll);
+        selectP.add(SelectAllW);
+        
+          
+        CCButtonW.addItemListener(new AlgorithmWithWeightAction());
+        DCButtonW.addItemListener(new AlgorithmWithWeightAction());
+        ECButtonW.addItemListener(new AlgorithmWithWeightAction());
+        LACButtonW.addItemListener(new AlgorithmWithWeightAction());
+        NCButtonW.addItemListener(new AlgorithmWithWeightAction());
+        SCButtonW.addItemListener(new AlgorithmWithWeightAction());
+        BCButtonW.addItemListener(new AlgorithmWithWeightAction());
+        ICButtonW.addItemListener(new AlgorithmWithWeightAction());
+        SelectAllW.addItemListener(new AlgorithmWithWeightAction());
+       
+     
+       
+        ccP.setToolTipText("Closeness Centrality (CC)");
+        dcP.setToolTipText("Degree Centrality (DC)");
+        ecP.setToolTipText("Eigenvector Centrality (EC)");
+        lacP.setToolTipText("Local Average Connectivity-based method (LAC)");
+        ncP.setToolTipText("Network Centrality (NC)");
+        scP.setToolTipText("Subgraph Centrality (SC)");
+        bcP.setToolTipText("Betweeness Centrality (BC)");
+        icP.setToolTipText("Information Centrality (IC)");
+        selectP.setToolTipText("Select All Algorithms");
+       
+        bcP.setBorder(BorderFactory.createTitledBorder("Betweeness(BC)"));
+        choicePanel.add(bcP);
+        ccP.setBorder(BorderFactory.createTitledBorder("Closeness(CC)"));
+        choicePanel.add(ccP);
+        dcP.setBorder(BorderFactory.createTitledBorder("Degree(DC)"));
+        choicePanel.add(dcP);
+        ecP.setBorder(BorderFactory.createTitledBorder("Eigenvector(EC)"));
+        choicePanel.add(ecP);
+        lacP.setBorder(BorderFactory.createTitledBorder("Local Average Connectivity-based method (LAC)"));
+        choicePanel.add(lacP);
+        ncP.setBorder(BorderFactory.createTitledBorder("Network(NC)"));
+        choicePanel.add(ncP);
+        scP.setBorder(BorderFactory.createTitledBorder("Subgraph(SC)"));
+        choicePanel.add(scP);
+        icP.setBorder(BorderFactory.createTitledBorder("Information(IC)"));
+        choicePanel.add(icP);
+        selectP.setBorder(BorderFactory.createTitledBorder("Select All Centralities"));
+        choicePanel.add(selectP);
+        
+      //  choicePanel.setToolTipText("Please select one or more centralities.");
+        
+       
   
         JPanel p=new JPanel();
         p.setLayout(new BorderLayout());
         
-        p.add(choicePanel,BorderLayout.NORTH);
+        p.add(choicePanel);
+       
         JScrollPane scrollPanel = new JScrollPane(p);
-        scrollPanel.setBorder(BorderFactory.createTitledBorder("Algorithm"));
+        scrollPanel.setBorder(BorderFactory.createTitledBorder("Centralities"));
         return scrollPanel;
     }
 	
@@ -206,13 +325,15 @@ public class MainPanel extends JPanel implements CytoPanelComponent {
      * @see CollapsiblePanel
      */
 	private class OpenfilePanel extends JPanel{
-		JLabel filenamelabel = new JLabel();
+		JTextField filenamelabel = new JTextField();
 		
 		OpenfilePanel() {
-			setPreferredSize(new Dimension(270, 300));
+			setPreferredSize(new Dimension(270, 120));
 			setBorder(BorderFactory.createTitledBorder("Evaluation"));
 	        this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 	       // panel2.setLayout(new BoxLayout(panel2, BoxLayout.X_AXIS));
+	        filenamelabel.setEditable(false);
+	        filenamelabel.setPreferredSize(new Dimension(270, 15));
 	        JLabel openfilelabel = new JLabel("Import essential protein information file");
 	        JButton openfileButton = new JButton("Choose file");
 	        openfileButton.addActionListener(new OpenfileAction());
@@ -293,6 +414,7 @@ public class MainPanel extends JPanel implements CytoPanelComponent {
     	if(name == ParameterSet.analyze){
     		JButton bt = new JButton(action);
     	    getBottomPanel().add(bt);
+    	    getBottomPanel().add(uploadBioinfButton);
     	}
        	if(name == ParameterSet.openeplist){
        		JButton bt = new JButton(action);
@@ -344,23 +466,7 @@ public class MainPanel extends JPanel implements CytoPanelComponent {
             		
             }
             else{
-            	if(alg.equals(CCButton))
-            		currentParamsCopy.getAlgorithmSet().put(ParameterSet.CC, false);
-            	else if(alg.equals(DCButton))
-            		currentParamsCopy.getAlgorithmSet().put(ParameterSet.DC, false);
-            	else if(alg.equals(ECButton))
-            		currentParamsCopy.getAlgorithmSet().put(ParameterSet.EC, false);
-            	else if(alg.equals(LACButton))
-            		currentParamsCopy.getAlgorithmSet().put(ParameterSet.LAC, false);
-            	else if(alg.equals(NCButton))
-            		currentParamsCopy.getAlgorithmSet().put(ParameterSet.NC, false);
-            	else if(alg.equals(SCButton))
-            		currentParamsCopy.getAlgorithmSet().put(ParameterSet.SC, false);   
-            	else if(alg.equals(BCButton))
-            		currentParamsCopy.getAlgorithmSet().put(ParameterSet.BC, false);
-            	else if(alg.equals(ICButton))
-            		currentParamsCopy.getAlgorithmSet().put(ParameterSet.IC, false);
-            	else if(alg.equals(SelectAll)){
+            	if(alg.equals(SelectAll)){
             		CCButton.setSelected(false);
             		DCButton.setSelected(false);
             		ECButton.setSelected(false);
@@ -369,41 +475,133 @@ public class MainPanel extends JPanel implements CytoPanelComponent {
             		SCButton.setSelected(false);
             		BCButton.setSelected(false);
             		ICButton.setSelected(false);
+            		
+            	}else{
+            	//	SelectAll.setSelected(false);
+            		if(alg.equals(CCButton))
+                		currentParamsCopy.getAlgorithmSet().put(ParameterSet.CC, false);
+                	else if(alg.equals(DCButton))
+                		currentParamsCopy.getAlgorithmSet().put(ParameterSet.DC, false);
+                	else if(alg.equals(ECButton))
+                		currentParamsCopy.getAlgorithmSet().put(ParameterSet.EC, false);
+                	else if(alg.equals(LACButton))
+                		currentParamsCopy.getAlgorithmSet().put(ParameterSet.LAC, false);
+                	else if(alg.equals(NCButton))
+                		currentParamsCopy.getAlgorithmSet().put(ParameterSet.NC, false);
+                	else if(alg.equals(SCButton))
+                		currentParamsCopy.getAlgorithmSet().put(ParameterSet.SC, false);   
+                	else if(alg.equals(BCButton))
+                		currentParamsCopy.getAlgorithmSet().put(ParameterSet.BC, false);
+                	else if(alg.equals(ICButton))
+                		currentParamsCopy.getAlgorithmSet().put(ParameterSet.IC, false);
             	}
+            	
+            	
             }
         }
     }
 
+    private class AlgorithmWithWeightAction implements ItemListener {
+    	
+    	public void itemStateChanged(ItemEvent e) {
+            JCheckBox alg = (JCheckBox) e.getSource();
+            if(alg.isSelected()){
+            	if(alg.equals(CCButtonW))
+            		currentParamsCopy.getAlgorithmSet().put(ParameterSet.CCW, true);
+            	else if(alg.equals(DCButtonW))
+            		currentParamsCopy.getAlgorithmSet().put(ParameterSet.DCW, true);
+            	else if(alg.equals(ECButtonW))
+            		currentParamsCopy.getAlgorithmSet().put(ParameterSet.ECW, true);
+            	else if(alg.equals(LACButtonW))
+            		currentParamsCopy.getAlgorithmSet().put(ParameterSet.LACW, true);
+            	else if(alg.equals(NCButtonW))
+            		currentParamsCopy.getAlgorithmSet().put(ParameterSet.NCW, true);
+            	else if(alg.equals(SCButtonW))
+            		currentParamsCopy.getAlgorithmSet().put(ParameterSet.SCW, true);   
+            	else if(alg.equals(BCButtonW))
+            		currentParamsCopy.getAlgorithmSet().put(ParameterSet.BCW, true);
+            	else if(alg.equals(ICButtonW))
+            		currentParamsCopy.getAlgorithmSet().put(ParameterSet.ICW, true);
+            	else if(alg.equals(SelectAllW)){
+            		CCButtonW.setSelected(true);
+            		DCButtonW.setSelected(true);
+            		ECButtonW.setSelected(true);
+            		LACButtonW.setSelected(true);
+            		NCButtonW.setSelected(true);
+            		SCButtonW.setSelected(true);
+            		BCButtonW.setSelected(true);
+            		ICButtonW.setSelected(true);
+            	}
+            		
+            }
+            else{
+            	if(alg.equals(SelectAllW)){
+            		CCButtonW.setSelected(false);
+            		DCButtonW.setSelected(false);
+            		ECButtonW.setSelected(false);
+            		LACButtonW.setSelected(false);
+            		NCButtonW.setSelected(false);
+            		SCButtonW.setSelected(false);
+            		BCButtonW.setSelected(false);
+            		ICButtonW.setSelected(false);
+            	}else{
+            	//	SelectAllW.setSelected(false);
+            		if(alg.equals(CCButtonW))
+                		currentParamsCopy.getAlgorithmSet().put(ParameterSet.CCW, false);
+                	else if(alg.equals(DCButtonW))
+                		currentParamsCopy.getAlgorithmSet().put(ParameterSet.DCW, false);
+                	else if(alg.equals(ECButtonW))
+                		currentParamsCopy.getAlgorithmSet().put(ParameterSet.ECW, false);
+                	else if(alg.equals(LACButtonW))
+                		currentParamsCopy.getAlgorithmSet().put(ParameterSet.LACW, false);
+                	else if(alg.equals(NCButtonW))
+                		currentParamsCopy.getAlgorithmSet().put(ParameterSet.NCW, false);
+                	else if(alg.equals(SCButtonW))
+                		currentParamsCopy.getAlgorithmSet().put(ParameterSet.SCW, false);   
+                	else if(alg.equals(BCButtonW))
+                		currentParamsCopy.getAlgorithmSet().put(ParameterSet.BCW, false);
+                	else if(alg.equals(ICButtonW))
+                		currentParamsCopy.getAlgorithmSet().put(ParameterSet.ICW, false);
+            	}
+            	
+            	
+           
+            }
+        }
+    }
+
+    private class UploadBioinfoAciton extends AbstractAction{
+
+	@Override
+		public void actionPerformed(ActionEvent e) {
+			// TODO Auto-generated method stub
+			if(uploadbioinfopanel == null || !uploadbioinfopanel.isDisplayable()){
+				if(pUtil.getApplicationMgr().getCurrentNetwork() != null){
+					uploadbioinfopanel = new UploadBioinfoPanel(pUtil);
+				}
+				else{
+					JOptionPane.showMessageDialog(null/*Cytoscape.getDesktop()*/,
+		                    "Network has not been loaded!", "Error", JOptionPane.WARNING_MESSAGE);
+		            return;
+				}
+					
+			}else if(uploadbioinfopanel.getState() == Frame.ICONIFIED){
+				uploadbioinfopanel.setState(Frame.NORMAL);			
+			}
+		}
+	   
+   }
+
+
+	public UploadBioinfoPanel getUploadbioinfopanel() {
+		return uploadbioinfopanel;
+	}
+
+	public void setUploadbioinfopanel(UploadBioinfoPanel uploadbioinfopanel) {
+		this.uploadbioinfopanel = uploadbioinfopanel;
+	}
+
    
 
-   
-
-	public Component getComponent() {
-		return this;
-	}
-
-
-	public CytoPanelName getCytoPanelName() {
-		return CytoPanelName.WEST;
-	}
-
-
-	public String getTitle() {
-		return "CytoNCA";
-	}
-
-
-	public Icon getIcon() {
-		ImageIcon icon = new ImageIcon(getClass().getResource("/images/logo.jpg"));
-		return icon;
-	}
-
-
-
-
 	
-	
-	 public ParameterSet getCurrentParamsCopy() {
-		    return this.currentParamsCopy;
-		  }
 }

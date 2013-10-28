@@ -31,7 +31,8 @@ public abstract class Algorithm {
     protected long lastScoreTime;	//the time taken by the last score operation
     protected long lastFindTime;	//the time taken by the last find operation
     protected long findCliquesTime=0;//time used to find maximal cliques
-    
+    protected ArrayList<Protein> vertex;
+    protected boolean isweight;
     protected ProteinUtil pUtil;
    /*
      * The constructor.
@@ -47,22 +48,15 @@ public abstract class Algorithm {
     	this.params = this.pUtil.getCurrentParameters().getParamsCopy(networkID);
         this.taskMonitor = taskMonitor;
     }
-    public long getLastScoreTime() {
-        return lastScoreTime;
-    }
-    public long getLastFindTime() {
-        return lastFindTime;
-    }
+ 
     public ParameterSet getParams() {
         return params;
     }
     public void setCancelled(boolean cancelled) {
         this.cancelled = cancelled;
     }    
-    public long getFindCliquesTIme() {
-		return findCliquesTime;
-	}
-    abstract ArrayList<Protein> run(CyNetwork network, ArrayList<Protein> resultAll);
+
+    abstract ArrayList<Protein> run(CyNetwork network, ArrayList<Protein> resultAll, boolean isweigght);
  
 	
 }

@@ -8,6 +8,7 @@ import javax.swing.JOptionPane;
 
 
 import org.cytoscape.CytoNCA.internal.ProteinUtil;
+import org.cytoscape.CytoNCA.internal.panels.AnalysisPanel;
 import org.cytoscape.CytoNCA.internal.panels.EvaluationPanel;
 import org.cytoscape.CytoNCA.internal.panels.ResultPanel;
 import org.cytoscape.application.CyApplicationManager;
@@ -43,7 +44,8 @@ public class DiscardResultAction extends AbstractPAction
 	public void actionPerformed(java.awt.event.ActionEvent event)
 	{
 		ResultPanel rpanel = pUtil.getResultPanel(this.resultId);
-		EvaluationPanel epanel = rpanel.geteEvaluationPanel();
+		EvaluationPanel epanel = rpanel.getEvaluationPanel();
+		AnalysisPanel apanel = rpanel.geteAnalysisPanel();
 		//if (rpanel != null && epanel != null)
 		if (rpanel != null )
 		{
@@ -59,8 +61,7 @@ public class DiscardResultAction extends AbstractPAction
 			}
 			if (confirmed.intValue() == 0)
 			{
-			
-				epanel.discard();
+				
 				
 				if(rpanel.chartfs !=null && !rpanel.chartfs.isEmpty())
 					for(ChartFrame cf : rpanel.chartfs)
@@ -69,7 +70,14 @@ public class DiscardResultAction extends AbstractPAction
 				pUtil.setSelected(null, rpanel.getNetwork());
 				registrar.unregisterService(rpanel, CytoPanelComponent.class);
 				pUtil.removeNetworkResult(resultId);
-				registrar.unregisterService(epanel, CytoPanelComponent.class);
+				
+				apanel.discard();
+				registrar.unregisterService(apanel, CytoPanelComponent.class);
+				if(epanel != null){
+					epanel.discard(requestUserConfirmation);
+					registrar.unregisterService(epanel, CytoPanelComponent.class);
+				}
+					
 				
 			
 			}

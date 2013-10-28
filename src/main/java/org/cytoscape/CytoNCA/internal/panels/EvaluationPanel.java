@@ -51,6 +51,9 @@ import org.cytoscape.CytoNCA.internal.Protein;
 import org.cytoscape.CytoNCA.internal.ProteinUtil;
 import org.cytoscape.CytoNCA.internal.Resources;
 import org.cytoscape.CytoNCA.internal.Resources.ImageName;
+import org.cytoscape.CytoNCA.internal.actions.DiscardEpListAction;
+import org.cytoscape.CytoNCA.internal.actions.DiscardEvaluationAction;
+
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.model.CyNetwork;
@@ -83,8 +86,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-public class EvaluationPanel extends JPanel
-implements CytoPanelComponent
+public class EvaluationPanel extends JPanel implements CytoPanelComponent
 {
 private	List<Protein> proteins; 
 private List<Protein> sproteins;
@@ -109,13 +111,14 @@ private ArrayList<Integer> percentagesNum;
 private ArrayList<Integer> percentages;
 private int epsize = 0;
 private Double maxY;
-private ArrayList<ChartFrame> chartfs;
-public ArrayList<String> selectedAlgs ;
+public ArrayList<ChartFrame> chartfs;
+public ArrayList<String> selectedAlgs;
 public int  pIndex = -1;
 private XYSeries idealxys;
 private HashMap<String, Integer> AUCmap;
 private HashMap<String, ArrayList<Integer>> eproteinNumMap;
-
+private DiscardEvaluationAction discardevaluationaction;
+private JButton discard;
 public EvaluationPanel(int evaluationId){
 	this.setVisible(false);
 	this.pUtil = null;
@@ -129,7 +132,7 @@ public EvaluationPanel(int evaluationId){
 	 
 }
 
-public EvaluationPanel(List<Protein> proteins, int selectnum,  ProteinUtil pUtil, CyNetwork network, CyNetworkView networkView, int evaluationId, ArrayList<String> alg)
+public EvaluationPanel(List<Protein> proteins, int selectnum,  ProteinUtil pUtil, CyNetwork network, CyNetworkView networkView, int evaluationId, ArrayList<String> alg, HashMap<String, List<Protein>> sortResults)
 {
   //setLayout(new BorderLayout());
 
@@ -142,11 +145,11 @@ public EvaluationPanel(List<Protein> proteins, int selectnum,  ProteinUtil pUtil
   this.eplist = pUtil.getAlleprotein();
   this.proteins = proteins;
   this.selectnum = selectnum;
+  this.sortResults = sortResults;
   AUCmap = new HashMap<String, Integer>(); 
   eproteinNumMap = new HashMap<String, ArrayList<Integer>>();
   allsize = proteins.size();
   setPercentageList();
-  SortResults();
   initialChartMap();
   chartfs = new ArrayList<ChartFrame>();
   
@@ -177,8 +180,9 @@ public CytoPanelName getCytoPanelName()
 
 public Icon getIcon()
 {
-  URL iconURL = Resources.getUrl(Resources.ImageName.LOGO_SMALL);
-  return new ImageIcon(iconURL);
+ 
+	ImageIcon icon = new ImageIcon(getClass().getResource("/images/logo.jpg"));
+	return icon;
 }
 
 public String getTitle()
@@ -202,6 +206,23 @@ public BrowserPanel getBrowserPanel() {
 	return this.browserPanel;
 }
 
+public void discard(final boolean requestUserConfirmation) {
+	  SwingUtilities.invokeLater(new Runnable()
+	  {
+	    public void run()
+	    {
+	      boolean oldRequestUserConfirmation = Boolean.valueOf(EvaluationPanel.this.discardevaluationaction
+	        .getValue("requestUserConfirmation").toString()).booleanValue();
+
+	      EvaluationPanel.this.discardevaluationaction.putValue("requestUserConfirmation", 
+	        Boolean.valueOf(requestUserConfirmation));
+	      EvaluationPanel.this.discard.doClick();
+	      EvaluationPanel.this.discardevaluationaction.putValue("requestUserConfirmation", 
+	        Boolean.valueOf(oldRequestUserConfirmation));
+	    }
+	  });
+	}
+
 private void setPercentageList(){
 	  
 	  percentagesNum = new ArrayList<Integer>();
@@ -223,14 +244,6 @@ private void setPercentageList(){
 	  
 }
 
-private synchronized void SortResults(){
-	sortResults = new HashMap<String, List<Protein>>();
-	  for(String s : alg){
-		  List<Protein> temp = pUtil.copyList(proteins);
-		  pUtil.sortVertex(temp, s);
-		  sortResults.put(s, temp);
-	  }
-}
 
 
 private void initialChartMap(){
@@ -247,22 +260,26 @@ private void initialChartMap(){
 
 private JPanel CreateButtonPanel(){
 	  JPanel buttonpanel = new JPanel();
-	  buttonpanel.setLayout(new GridLayout(2,1));
+	  buttonpanel.setLayout(new GridLayout(3,1));
 	  
 	  JPanel p1 = new JPanel();
 	  JPanel p2 = new JPanel();
+	  JPanel p3 = new JPanel();
  
 
 	  
 	  p1.setBorder(BorderFactory.createEtchedBorder());
 	  p2.setBorder(BorderFactory.createEtchedBorder());
+	  p3.setBorder(BorderFactory.createEtchedBorder());
 	 
 	  
 	  JButton createChar = new JButton();
 	  JButton createlineChart = new JButton();
+	  discard = new JButton();
 	  
 	  createChar.setPreferredSize(new Dimension(110,25));
 	  createlineChart.setPreferredSize(new Dimension(110,25));
+	  discard.setPreferredSize(new Dimension(110,25));
 	 
 	  
 
@@ -270,41 +287,37 @@ private JPanel CreateButtonPanel(){
 	  
 	  createChar.setAction(new CreateChart());
 	  createlineChart.setAction(new CreateLineChart());
+	  //discard.setAction(new DiscardAction());
+	  
+	  discardevaluationaction = new DiscardEvaluationAction(EvaluationPanel.this, pUtil);
+	  discardevaluationaction.putValue("requestUserConfirmation",
+				Boolean.valueOf(true));
+	  discard.setAction(discardevaluationaction);
 	  
 	  createChar.setMargin(new Insets(0, 0, 0, 0));
 	  createlineChart.setMargin(new Insets(0, 0, 0, 0));
+	  discard.setMargin(new Insets(0, 0, 0, 0));
 	  
 	  createChar.setText("Create Column Chart");
 	  createChar.setToolTipText("To show the statistical measure values of selected centralities with column chart.");
 	  createlineChart.setText("Create Line Chart");
 	  createlineChart.setToolTipText("To show essential proteins number of selected centralities with column chart.");
+	  discard.setText("Discard");
 	  
-	//  p1.add(new JLabel("Create Line Chart"));
+	
 	  p1.add(createChar);
-	//  p2.add(new JLabel());
 	  p2.add(createlineChart);
-	  buttonpanel.setPreferredSize(new Dimension(120,600));
+	  p3.add(discard);
+	  
+	  buttonpanel.setPreferredSize(new Dimension(130,600));
 	  buttonpanel.add(p1);
 	  buttonpanel.add(p2);
+	  buttonpanel.add(p3);
 	  return buttonpanel;
 }
-/*public void discard(final boolean requestUserConfirmation) {
-  SwingUtilities.invokeLater(new Runnable()
-  {
-    public void run()
-    {
-      boolean oldRequestUserConfirmation = Boolean.valueOf(EpListPanel.this.discardEpListAction
-        .getValue("requestUserConfirmation").toString()).booleanValue();
 
-      this.discardEvaluationAction.putValue("requestUserConfirmation", 
-        Boolean.valueOf(requestUserConfirmation));
-      this.closeButton.doClick();
-      this.discardEvaluationAction.putValue("requestUserConfirmation", 
-        Boolean.valueOf(oldRequestUserConfirmation));
-    }
-  });
-}
 
+/*
 	private JPanel createBottomPanel() {
 		
 		JPanel panel = new JPanel();
@@ -747,152 +760,7 @@ private JPanel CreateButtonPanel(){
 	}
 	
 	
-/*	
-private class SelectionHandler implements MouseListener{
-		
-		
-		@Override
-		public void mouseClicked(MouseEvent e) {
-			// TODO Auto-generated method stub
-			selectedAlgs = new ArrayList<String>();
-			pIndex = 0;
-			for(int i : browserPanel.getTable().getSelectedRows()){
-				selectedAlgs.add(alg.get(i));
-				
-			}
-			 pIndex = browserPanel.getTable().getSelectedColumn()-1;
-			 
-			 CellRenderer tcr = new CellRenderer(selectedAlgs, pIndex);
-			 
-			 for(int i = 0; i < browserPanel.browserModel.columnNames.length; i++) {
-				 browserPanel.table.getColumn(browserPanel.browserModel.columnNames[i]).setCellRenderer(tcr);
-		        }
-	
-			
-		}
 
-		@Override
-		public void mousePressed(MouseEvent e) {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public void mouseReleased(MouseEvent e) {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public void mouseEntered(MouseEvent e) {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public void mouseExited(MouseEvent e) {
-			// TODO Auto-generated method stub
-			
-		}
-		
-
-		
-		
-	}
-	
-	*/
-	
-	
-/*	private class TableRowSelectionHandler implements ListSelectionListener
-	{
-		Paint nvp;
-		ArrayList<CyNode> selectednodes;
-		private TableRowSelectionHandler()
-		{
-			nvp = networkView.getNodeView(network.getNodeList().get(1)).getVisualProperty(BasicVisualLexicon.NODE_FILL_COLOR);
-			selectednodes = new ArrayList<CyNode>();
-		}
-
-		public void valueChanged(ListSelectionEvent e)
-		{
-			System.out.println("haaaaaaaaaaa");
-			
-			if (e.getValueIsAdjusting()) 
-				return;
-			
-			System.out.println("bbbbbbbb");
-			
-			if(!selectednodes.isEmpty()){
-				
-				System.out.println("ccccccccc");
-				
-				for(CyNode sn : selectednodes)
-					networkView.getNodeView(sn).setVisualProperty(BasicVisualLexicon.NODE_FILL_COLOR, nvp);
-				selectednodes.clear();
-				
-			}
-			
-			int[] sr = browserPanel.getTable().getSelectedRows();
-			if(sr.length != 0)
-			for(int i=0 ; i<sr.length; i++){
-				int selectedRow = sr[i];
-				
-				Protein p = eprotein.get(selectedRow);
-				CyNode n = p.getN();
-				selectednodes.add(n);
-				networkView.getNodeView(n).setVisualProperty(BasicVisualLexicon.NODE_FILL_COLOR, java.awt.Color.RED);
-				
-				List<CyNode> neibors = network.getNeighborList(n, Type.ANY);
-				if(neibors !=null){
-					for(CyNode neibor : neibors){
-						networkView.getNodeView(neibor).setVisualProperty(BasicVisualLexicon.NODE_FILL_COLOR, java.awt.Color.YELLOW);
-						selectednodes.add(neibor);
-					}
-					
-				}
-    		 
-				networkView.fitContent();
-				networkView.updateView();
-				
-			}
-			*/	
-		/*	
-			ListSelectionModel lsm = (ListSelectionModel)e.getSource();
-			if (!lsm.isSelectionEmpty()) {		 
-				int selectedRow = lsm.getMinSelectionIndex();
-				Protein p = eprotein.get(selectedRow);
-				CyNode n = p.getN();
-				selectednodes.add(n);
-				networkView.getNodeView(n).setVisualProperty(BasicVisualLexicon.NODE_FILL_COLOR, java.awt.Color.RED);
-				
-				List<CyNode> neibors = network.getNeighborList(n, Type.ANY);
-				if(neibors !=null){
-					for(CyNode neibor : neibors){
-						networkView.getNodeView(neibor).setVisualProperty(BasicVisualLexicon.NODE_FILL_COLOR, java.awt.Color.YELLOW);
-						selectednodes.add(neibor);
-					}
-					
-				}
-    		 
-				networkView.fitContent();
-				networkView.updateView();
-        
-			}
-		
-		
-		}	
-	}/*
-	private class resetnetviewAction extends AbstractAction {
-		resetnetviewAction(){
-			
-		}
-		public void actionPerformed(ActionEvent evt) {
-			browserPanel.getTable().clearSelection();
-			networkView.updateView();
-		}
-	}
-	*/
-	
 	
 	private void calChartParams(ArrayList<String> algs){
 		for(Integer sublength : percentagesNum){
@@ -925,14 +793,14 @@ private class SelectionHandler implements MouseListener{
 		
 		return dataset;
 	}
-
+/*
 	public void discard(){
 		if(chartfs !=null && !chartfs.isEmpty())
 			for(ChartFrame cf : chartfs)
 				if(cf != null)
 					cf.dispose();
 	}
-	
+*/	
 	
 	public synchronized ArrayList<Integer> calEproteinNum(String algname){
 		ArrayList<Integer> eproteinNum = new ArrayList<Integer>();
@@ -1025,6 +893,38 @@ private class SelectionHandler implements MouseListener{
 		}
 	}
 	
+/*	
+	private class DiscardAction extends AbstractAction{
+
+		DiscardAction(){
+			
+		}
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			// TODO Auto-generated method stub
+			discard();
+			
+			
+				String message = (new StringBuilder("You are about to dispose of Evaluation ")).append(evaluationId).append(".\nDo you wish to continue?").toString();
+				Integer confirmed = Integer.valueOf(JOptionPane.showOptionDialog(null, ((Object) (new Object[] {
+					message
+				})), "Confirm", 0, 3, null, null, null));
+			
+			if (confirmed.intValue() == 0)
+			{
+				discard();
+				pUtil.getRegistrar().unregisterService(EvaluationPanel.this, CytoPanelComponent.class);
+				pUtil.getResultPanel(evaluationId).setEvaluationPanel(null);
+			
+			//	registrar.unregisterService(panel, CytoPanelComponent.class);
+		//		pUtil.removeNetworkResult(resultId);
+				
+			
+			}
+		}
+		
+	}
+	*/
 	private class CreateLineChart extends AbstractAction{
 		
 		

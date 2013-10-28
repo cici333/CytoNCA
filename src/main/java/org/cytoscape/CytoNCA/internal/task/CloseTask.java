@@ -28,6 +28,8 @@ public class CloseTask
      MainPanel mainPanel = this.pUtil.getMainPanel();
 
       if (mainPanel != null) {
+    	  if(mainPanel.getUploadbioinfopanel() != null)
+    		  mainPanel.getUploadbioinfopanel().dispose();
         this.registrar.unregisterService(mainPanel, CytoPanelComponent.class);
       }
 

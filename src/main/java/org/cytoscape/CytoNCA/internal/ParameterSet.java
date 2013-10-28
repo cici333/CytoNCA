@@ -14,14 +14,27 @@ public class ParameterSet
   private int defaultRowHeight;
   private ArrayList<Protein> eprotein;
   
-  public static String BC = "BC";
-  public static String CC = "CC";
-  public static String DC = "DC";
-  public static String EC = "EC";
+  public static String BC = "Betweeness";
+  public static String CC = "Closeness";
+  public static String DC = "Degree";
+  public static String EC = "Eigenvector";
   public static String LAC = "LAC";
-  public static String NC = "NC";
-  public static String SC = "SC";
-  public static String IC = "IC";
+  public static String NC = "Network";
+  public static String SC = "Subgragh";
+  public static String IC = "Information";
+  
+  public static String BCW = "Betweeness(Weight)";
+  public static String CCW = "Closeness(Weight)";
+  public static String DCW = "Degree(Weight)";
+  public static String ECW = "Eigenvector(Weight)";
+  public static String LACW = "LACW(Weight)";
+  public static String NCW = "Network(Weight)";
+  public static String SCW = "Subgragh(Weight)";
+  public static String ICW = "Information(Weight)";
+  
+  public static String weight = "Weight of node";
+  public static String domainNum = "Domain numbers";
+  public static String sequencelength = "Sequence length";
   
   public static int analyze = 1;
   public static int openeplist = 2;
@@ -56,6 +69,15 @@ public class ParameterSet
     algorithmSet.put(ParameterSet.NC, false);
     algorithmSet.put(ParameterSet.SC, false);
     algorithmSet.put(ParameterSet.IC, false);
+    
+    algorithmSet.put(ParameterSet.BCW, false);
+    algorithmSet.put(ParameterSet.CCW, false);
+    algorithmSet.put(ParameterSet.DCW, false);
+    algorithmSet.put(ParameterSet.ECW, false);
+    algorithmSet.put(ParameterSet.LACW, false);
+    algorithmSet.put(ParameterSet.NCW, false);
+    algorithmSet.put(ParameterSet.SCW, false);
+    algorithmSet.put(ParameterSet.ICW, false);
 	  
 	  
 	  setAllAlgorithmParams(NETWORK,  new Long[0], algorithmSet, new ArrayList<Protein>()); 

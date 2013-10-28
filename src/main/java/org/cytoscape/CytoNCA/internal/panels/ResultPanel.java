@@ -16,6 +16,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.net.URL;
 import java.text.DecimalFormat;
+import java.text.Format;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -123,54 +124,59 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ResultPanel extends JPanel implements CytoPanelComponent{
-	// private static final String SCORE_ATTR = "MCODE_Score";
-	// private static final String NODE_STATUS_ATTR = "MCODE_Node_Status";
-	// private static final String CLUSTER_ATTR = "MCODE_Cluster";
-	private static final int graphPicSize = 80;
-	private static final int defaultRowHeight = 88;
+
+
 	private final int resultId;
 	private ArrayList<String> alg;
 	private String curalg;
 	private final List<Protein> proteins;
 	private List<Protein> sproteins;
-	private List<CyNode> nodes;
-	private ProteinGraph pg;
+	//private List<CyNode> nodes;
+	//private ProteinGraph pg;
 	private final CyNetwork network;
 	private CyNetworkView networkView;
 	private CollapsiblePanel explorePanel;
 	private JPanel[] exploreContent;
 	private JButton closeButton;
 	private ParameterSet currentParamsCopy;
-	private int enumerationSelection = 0;
-	private BrowserPanel browserPanel;
-	//private EvaluationPanel evaluationPanel;
+
+	public BrowserPanel browserPanel;
 	private EvaluationPanel evaluationPanel;
+	private AnalysisPanel analysisPanel;
 	private ProteinUtil pUtil;
 	private final DiscardResultAction discardResultAction;
-	private static final Logger logger = LoggerFactory
-			.getLogger(ResultPanel.class);
+
 	private ArrayList<String> eplist;
-	private int selectNum = 1;
-	private CyServiceRegistrar registrar;
+	//private List<Integer> indexs;
+	private int selectNum = 0;
+
 	public ArrayList<ChartFrame> chartfs;
 	private int maxY;
+	private HashMap<String, List<Protein>> sortResults;
+	public static JComboBox<String> algselect;
+	public boolean issortwholenet = true;
+	private String curSetName;
+	
 	public ResultPanel(ArrayList<Protein> resultL, ArrayList<String> alg,
 			ProteinUtil pUtil, CyNetwork network, CyNetworkView networkView,
-			int resultId, DiscardResultAction discardResultAction, CyServiceRegistrar registrar) {
+			int resultId, DiscardResultAction discardResultAction) {
 		setLayout(new BorderLayout());
 
-		this.registrar = registrar;
 		this.pUtil = pUtil;
 		this.alg = alg;
 		this.curalg = alg.get(0);
-		System.out.println(curalg+"   $$$$$$$$$$$");
+		
+	
 		
 		this.resultId = resultId;
 		this.proteins = Collections.synchronizedList(resultL);
 		this.network = network;
-		pUtil.sortVertex(proteins, curalg);
-		this.sproteins = this.proteins;
-		this.selectNum = sproteins.size();
+		SortResults();		
+		this.sproteins = pUtil.copyList(sortResults.get(curalg));
+		selectNum = this.sproteins.size();
+		this.curSetName = this.curalg +"(Top"+ sproteins.size() +")";
+		System.out.println(curSetName);
+		
 		chartfs = new ArrayList<ChartFrame>();
 		
 		this.networkView = networkView;
@@ -178,7 +184,7 @@ public class ResultPanel extends JPanel implements CytoPanelComponent{
 		this.currentParamsCopy = pUtil.getCurrentParameters().getResultParams(
 				resultId);
 		this.eplist = pUtil.getAlleprotein();
-		
+		this.evaluationPanel = null;
 
 		this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
@@ -190,16 +196,14 @@ public class ResultPanel extends JPanel implements CytoPanelComponent{
 				.toString()));
 
 	
-	//	this.evaluationPanel = new EvaluationPanel();
-		this.setPreferredSize(new Dimension(400, 500));
-		//add(createSelectPanel());
+
+		this.setPreferredSize(new Dimension(400, 700));
+
 		add(this.browserPanel);
 		add(createBottomPanel());
-	//	add(evaluationPanel);
+
 		setColumnColor(2);
-		
-		ceateEvaluationPanel();
-		
+		ceateAnalysisPanel();
 
 	}
 
@@ -212,8 +216,8 @@ public class ResultPanel extends JPanel implements CytoPanelComponent{
 	}
 
 	public Icon getIcon() {
-		URL iconURL = Resources.getUrl(Resources.ImageName.LOGO_SMALL);
-		return new ImageIcon(iconURL);
+		ImageIcon icon = new ImageIcon(getClass().getResource("/images/logo.jpg"));
+		return icon;
 	}
 
 	public String getTitle() {
@@ -224,9 +228,7 @@ public class ResultPanel extends JPanel implements CytoPanelComponent{
 		return this.resultId;
 	}
 
-	public CyNetworkView getNetworkView() {
-		return this.networkView;
-	}
+	
 
 	public CyNetwork getNetwork() {
 		return this.network;
@@ -237,8 +239,16 @@ public class ResultPanel extends JPanel implements CytoPanelComponent{
 	}
 	
 	
-	
 
+	private synchronized void SortResults(){
+		sortResults = new HashMap<String, List<Protein>>();
+		  for(String s : alg){
+			  List<Protein> temp = pUtil.copyList(proteins);
+			  pUtil.sortVertex(temp, s);
+			  sortResults.put(s, temp);
+		  }
+	}
+	
 	public void discard(final boolean requestUserConfirmation) {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
@@ -258,32 +268,14 @@ public class ResultPanel extends JPanel implements CytoPanelComponent{
 		});
 	}
 	
-	//private JPanel createSelectPanel() {
-//		JPanel selectPanel = new JPanel();
-	//	JComboBox<Integer> select = new JComboBox<Integer>();
-	//	for(int i = 1; i<= proteins.size(); i++)
-	//		select.addItem(i);
-	//	select.setSelectedIndex(selectNum - 1);
-	//	select.addItemListener(new SelectAction());	
-	//	selectPanel.add(select);
-///		JTextField select = new JTextField(6);
-//		select.setText(proteins.size()+"");
-	//	selectPanel.add(select);
-//		return selectPanel;
-		
-//	}
-	
+
 	
 	
 
 	private JPanel createBottomPanel() {
 		JPanel panel = new JPanel();
 		panel.setLayout(new BorderLayout());
-
-		// this.explorePanel = new CollapsiblePanel("Explore");
-		// this.explorePanel.setCollapsed(false);
-		// this.explorePanel.setVisible(false);
-
+		
 		JPanel buttonPanel = new JPanel();
 
 		JButton exportButton = new JButton("Export");
@@ -294,181 +286,201 @@ public class ResultPanel extends JPanel implements CytoPanelComponent{
 		this.discardResultAction.putValue("requestUserConfirmation",
 				Boolean.valueOf(true));
 
-		JButton columnchartButton = new JButton("Centralitiy distribution");
+		JButton columnchartButton = new JButton("Value Distribution");
 		columnchartButton.addActionListener(new createChartAction());
 		columnchartButton.setToolTipText("Visualizing the distribution of the selected centrality’ value with histogram.");
 		
-		buttonPanel.add(exportButton);
-		
+		buttonPanel.add(exportButton);	
 		buttonPanel.add(columnchartButton);
 		buttonPanel.add(this.closeButton);
 		
+
 		
-	//	JPanel closepanel = new JPanel();
-	//	closepanel.add(this.closeButton);
-		// panel.add(this.explorePanel, "North");
-		panel.add(createBottomExplorePanel(), "North");
-		panel.add(buttonPanel, "Center");
-	//	panel.add(closepanel,"South");
+		panel.add(createSelectByRankPanel(), "North");
+		panel.add(createSelectByValuePanel(), "Center");
+		panel.add(buttonPanel, "South");
 		
        
 		return panel;
 	}
 
-	private JPanel createBottomExplorePanel() {
+	private JPanel createSelectPanel(){
 		JPanel panel = new JPanel();
-		JPanel panel2 = new JPanel();
+		panel.add(createSelectByRankPanel());
+		panel.add(createSelectByValuePanel());
+		return panel;
+	}
+	private JPanel createSelectByRankPanel() {
+		JPanel panel = new JPanel();
+		panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
+			
+		JPanel panel2 = new JPanel();		
 		panel2.setLayout(new BoxLayout(panel2, BoxLayout.X_AXIS));
-		JButton createChildButton = new JButton("Create Sub-Network");
-		createChildButton.addActionListener(new CreateSubNetworkAction(this));
-		createChildButton.setToolTipText("Generating the new sub network of selected nodes.");
 		
-		JPanel selectPanel = new JPanel();
+		JPanel panel3 = new JPanel();
+		panel3.setLayout(new BoxLayout(panel3, BoxLayout.X_AXIS));
+ 
 		JTextField selectT = new JTextField(6);
 		selectT.setText(proteins.size()+"");
-		selectPanel.add(selectT);
 		
-		panel2.add(new JLabel("Top", SwingConstants.RIGHT));
-		panel2.add(selectPanel);
-		panel2.add(new JLabel("Proteins", SwingConstants.LEFT));
+		JTextField selectTP = new JTextField(4);
+		selectTP.setText("100");
+		
+		panel2.add(new JLabel("Top"));
+		panel2.add(selectT);
+		panel2.add(new JLabel("Proteins"));
+		
 		JButton select  = new JButton("Select");
-		select.addActionListener(new SelectAction(selectT));
+		select.addActionListener(new SelectByRankAction(selectT, selectTP, 0));
 		panel2.add(select);
 		panel2.setBorder(BorderFactory.createTitledBorder(""));
+	
+		panel3.add(new JLabel("Top"));
+		panel3.add(selectTP);
+		panel3.add(new JLabel("% Proteins"));
 		
+		JButton selectP  = new JButton("Select");
+		selectP.addActionListener(new SelectByRankAction(selectT, selectTP, 1));
+		panel3.add(selectP);
+		panel3.setBorder(BorderFactory.createTitledBorder(""));
+		
+		panel.setBorder(BorderFactory.createTitledBorder("Select by rank"));
 		panel.add(panel2);
-		panel.add(createChildButton);
-		
+		panel.add(panel3);
+	
 		return panel;
 	}
 
-	public void selectProteins(CyNetwork custerNetwork) {
-		if (custerNetwork != null) {
-			this.pUtil.setSelected(custerNetwork.getNodeList(), this.network);
-		} else {
-			this.pUtil.setSelected(new ArrayList(), this.network);
-		}
+	private JPanel createSelectByValuePanel() {
+		JPanel panel = new JPanel();
+		panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
+		
+		algselect = new JComboBox<String>();
+		JTextField maxv = new JTextField(4);
+		JTextField minv = new JTextField(4);
+		
+		
+		for(String alg : sortResults.keySet())
+			algselect.addItem(alg);
+		algselect.addActionListener(new SelectAlgAction(maxv, minv));
+		
+		JButton selectB = new JButton("Select");
+		selectB.addActionListener(new SelectByValueAction(maxv,minv));
+		
+		panel.add(algselect);
+		panel.add(new JLabel(" Max "));
+		panel.add(maxv);
+		panel.add(new JLabel(" ~ Min "));
+		panel.add(minv);
+		panel.add(selectB);
+		
+		panel.setBorder(BorderFactory.createTitledBorder("Select by value"));
+		algselect.setSelectedIndex(0);
+		return panel;
 	}
-
-	private class CreateSubNetworkAction extends AbstractAction {
-		// int selectedRow;
-		ResultPanel trigger;
-
-		CreateSubNetworkAction(ResultPanel trigger) {
-			// this.selectedRow = selectedRow;
-			this.trigger = trigger;
+	
+	private class SelectByValueAction extends AbstractAction {
+		JTextField maxv,minv;
+		
+		
+		SelectByValueAction(JTextField maxv, JTextField minv){
+			this.maxv = maxv;
+			this.minv = minv;
+			
 		}
 
-		public void actionPerformed(ActionEvent evt) {
-			// NumberFormat nf = NumberFormat.getInstance();
-			// nf.setMaximumFractionDigits(3);
-			// final Cluster cluster =
-			// (Cluster)ResultPanel.this.clusters.get(this.selectedRow);
-			if( pg !=null){
-				final CyNetwork pNetwork = pg.getSubNetwork();
-				final String title = this.trigger.getResultId()
-						+"("+ curalg + ")";
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			// TODO Auto-generated method stub
+			double max=0, min=0;
+			String ca = (String) ResultPanel.algselect.getSelectedItem();
+			List<Protein> l =  sortResults.get(ca);
+		
+			if(maxv.getText() != null && minv.getText() != null &&!maxv.getText().trim().isEmpty() && !minv.getText().trim().isEmpty()){
+				try{
+					max = Double.parseDouble(maxv.getText().trim());
+					min = Double.parseDouble(minv.getText().trim());
+				}
+				catch(NumberFormatException er){
+					JOptionPane.showMessageDialog(null,
+		            		"Please input integer or decimal!", "Interrupted", JOptionPane.WARNING_MESSAGE);
+					return;
+				}
+				if(max < min ){
+					JOptionPane.showMessageDialog(null,
+		            		"Please input legal value!", "Interrupted", JOptionPane.WARNING_MESSAGE);
+					return;
+				}
+				
+				curalg = ca;
+				curSetName = curalg+"["+max+"~"+min+"]";
+				System.out.println(curSetName);
+				sproteins.clear();
+				for(Protein p :l){
+					if(p.getPara(ca) <= max)
+						sproteins.add(p);
+					if(p.getPara(ca) < min)
+						break;				
+				}
+				
+				
+				if (ResultPanel.this.sproteins != null) {
+					browserPanel.updateTable(browserPanel.browserModel.getColumnIndex(ca));
+					browserPanel.changeSortingRange(false);
+					
 
-				SwingWorker worker = new SwingWorker() {
-					protected CyNetworkView doInBackground() throws Exception {
-						CySubNetwork newNetwork = ResultPanel.this.pUtil
-								.createSubNetwork(pNetwork, pNetwork.getNodeList(),
-										SavePolicy.SESSION_FILE);
-						newNetwork.getRow(newNetwork).set("name", title);
-
-						VisualStyle vs = ResultPanel.this.pUtil
-								.getNetworkViewStyle(ResultPanel.this.networkView);
-						CyNetworkView newNetworkView = ResultPanel.this.pUtil
-								.createNetworkView(newNetwork, vs);
-
-						newNetworkView.setVisualProperty(
-								BasicVisualLexicon.NETWORK_CENTER_X_LOCATION,
-								Double.valueOf(0.0D));
-						newNetworkView.setVisualProperty(
-								BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION,
-								Double.valueOf(0.0D));
-
-						ResultPanel.this.pUtil.displayNetworkView(newNetworkView);
-
-						boolean layoutNecessary = false;
-						// CyNetworkView clusterView = cluster.getView();
-
-						for (View nv : newNetworkView.getNodeViews()) {
-							CyNode node = (CyNode) nv.getModel();
-
-							double w = ((Double) newNetworkView
-									.getVisualProperty(BasicVisualLexicon.NETWORK_WIDTH))
-									.doubleValue();
-							double h = ((Double) newNetworkView
-									.getVisualProperty(BasicVisualLexicon.NETWORK_HEIGHT))
-									.doubleValue();
-
-							nv.setVisualProperty(
-									BasicVisualLexicon.NODE_X_LOCATION,
-									Double.valueOf(w * Math.random()));
-							nv.setVisualProperty(
-									BasicVisualLexicon.NODE_Y_LOCATION,
-									Double.valueOf((h + 100.0D) * Math.random()));
-
-							layoutNecessary = true;
-							String name = network.getRow(node).get("name",
-									String.class);
-
-							if (eplist != null && !eplist.isEmpty()) {
-
-								System.out.println("SSSSSSSSSS");
-								if (eplist.contains(name)) {
-									nv.setVisualProperty(
-											BasicVisualLexicon.NODE_FILL_COLOR,
-											java.awt.Color.RED);
-									System.out.println(name + "        RED");
-								} else {
-									System.out.println(name + "        BLUE");
-									nv.setVisualProperty(
-											BasicVisualLexicon.NODE_FILL_COLOR,
-											java.awt.Color.BLUE);
-								}
-							} else
-								System.out.println("RRRRRRRRR");
-
-						}
-
-						if (layoutNecessary) {
-							SpringEmbeddedLayouter lay = new SpringEmbeddedLayouter(
-									newNetworkView);
-							lay.doLayout(0.0D, 0.0D, 0.0D, null);
-						}
-
-						newNetworkView.fitContent();
-						newNetworkView.updateView();
-
-						return newNetworkView;
-					}
-				};
-				worker.execute();
-			}
-			else{
+				} else {
+					System.err.println("list null");
+				}
+				
+			}else{
 				JOptionPane.showMessageDialog(null,
-	            		"Please push select button to select several protiens first!", "Interrupted", JOptionPane.WARNING_MESSAGE);
+	            		"Please input integer or decimal first!", "Interrupted", JOptionPane.WARNING_MESSAGE);
 				return;
 			}
 			
+			
+			
+			
+			
 		}
+		
 	}
-
+	private class SelectAlgAction extends AbstractAction{
+		JTextField maxv,minv;
+		
+		SelectAlgAction(JTextField maxv, JTextField minv){
+			this.maxv = maxv;
+			this.minv = minv;
+		}
+		
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			// TODO Auto-generated method stub
+			JComboBox<String> jcb = (JComboBox<String>) e.getSource();
+			String ca = (String) jcb.getSelectedItem();
+			List<Protein> l =  sortResults.get(ca);
+			maxv.setText(l.get(0).getPara(ca)+"");
+			minv.setText(l.get(l.size()-1).getPara(ca)+"");
+						
+		}
+		
+	}
+	
 	private class ExportAction extends AbstractAction {
 		private ExportAction() {
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			pUtil.exportResults(alg, curalg, proteins, network);
+			pUtil.exportResults(alg, curalg, sortResults.get(curalg), network);
 		}
 	}
 
 	
-	private class BrowserPanel extends JPanel {
+	public class BrowserPanel extends JPanel {
 		private final BrowserTableModel browserModel;
 		private final JTable table;
+		private JRadioButton Sortselectnodes, Sortwholenodes;
 		public BrowserPanel() {
 			setLayout(new BorderLayout());
 			setBorder(BorderFactory.createTitledBorder("Proteins Browser"));
@@ -489,6 +501,24 @@ public class ResultPanel extends JPanel implements CytoPanelComponent{
 			JScrollPane tableScrollPane = new JScrollPane(this.table);	
 			
 			tableScrollPane.getViewport().setBackground(Color.WHITE);
+			
+			Sortselectnodes = new JRadioButton("Sorting in select nodes");
+			Sortselectnodes.addItemListener(new SortingrangeAction());
+			
+			Sortwholenodes = new JRadioButton("Sorting in whole network");
+			Sortwholenodes.addItemListener(new SortingrangeAction());
+			Sortwholenodes.setSelected(true);
+			
+			ButtonGroup sbg = new ButtonGroup();
+			sbg.add(Sortwholenodes);
+			sbg.add(Sortselectnodes);
+			
+			JPanel spanel = new JPanel();
+			spanel.setLayout(new BoxLayout(spanel, BoxLayout.X_AXIS));
+			spanel.add(Sortselectnodes);
+			spanel.add(Sortwholenodes);
+			
+			add(spanel,"North");
 			add(tableScrollPane, "Center");
 			
 			fitTableColumns(table);
@@ -496,6 +526,18 @@ public class ResultPanel extends JPanel implements CytoPanelComponent{
 			
 			
 			
+		}
+		
+		public void updateTable(Integer tableColumn ){
+			browserPanel.getTable().removeAll();
+			browserPanel.getBrowserTableModel().listIt(sproteins);
+			fitTableColumns(browserPanel.getTable());
+			browserPanel.getBrowserTableModel().fireTableDataChanged();
+			if(tableColumn != null)
+				setColumnColor(tableColumn);
+			ResultPanel.this.browserPanel.updateUI();
+			((JPanel) ResultPanel.this.browserPanel.getParent()).updateUI();
+			analysisPanel.updateNet(curalg, curSetName);
 		}
 
 		public int getSelectedRow() {
@@ -526,230 +568,204 @@ public class ResultPanel extends JPanel implements CytoPanelComponent{
 			          setHorizontalAlignment(SwingConstants.LEFT);
 			  }
 			}
-	}
-
-	private class BrowserTableModel extends AbstractTableModel {
-		private final String[] columnNames = new String[2+alg.size()];
-		private Object[][] data;
-
-		public BrowserTableModel() {
-			columnNames[0] = "No.";
-			columnNames[1] = "Name";
-			int i = 2;
-			for(String s : alg){
-				columnNames[i] = s;
-				i++;
+		
+		public void fitTableColumns(JTable table) {
+			JTableHeader header = table.getTableHeader();
+			int rowCount = table.getRowCount();
+			Enumeration columns = table.getColumnModel().getColumns();
+			while (columns.hasMoreElements()) {
+				TableColumn column = (TableColumn) columns.nextElement();
+				int col = header.getColumnModel().getColumnIndex(column.getIdentifier());
+				int width = (int) table.getTableHeader().getDefaultRenderer()
+						.getTableCellRendererComponent(table,column.getIdentifier(), false, false, -1, col).getPreferredSize().getWidth();
+				for (int row = 0; row < rowCount; row++) {
+					int preferedWidth = (int) table.getCellRenderer(row, col)
+							.getTableCellRendererComponent(table,
+									table.getValueAt(row, col), false, false, row,col).getPreferredSize().getWidth();
+					width = Math.max(width, preferedWidth);
+				}
+				header.setResizingColumn(column); 
+				column.setWidth(width + table.getIntercellSpacing().width + 30);
+				
 			}
-			listIt(proteins);
-			
 		}
+		
+		
+		private class BrowserTableModel extends AbstractTableModel {
+			private final String[] columnNames = new String[2+alg.size()];
+			private Object[][] data;
 
-		public void listIt(List<Protein> sproteins) {
-			ResultPanel.this.exploreContent = new JPanel[ResultPanel.this.sproteins
-					.size()];
-			this.data = new Object[ResultPanel.this.sproteins.size()][this.columnNames.length];
-
-			for (int i = 0; i < ResultPanel.this.sproteins.size(); i++) {
-				Protein p = sproteins.get(i);
-				this.data[i][0] = i + 1;
-				this.data[i][1] = p.getName();
-				int j = 2;
+			public BrowserTableModel() {
+				columnNames[0] = "No.";
+				columnNames[1] = "Name";
+				int i = 2;
 				for(String s : alg){
-					this.data[i][j] = String.valueOf(p.getPara(s));
-					j++;
+					columnNames[i] = s;
+					i++;
+				}
+				listIt(sproteins);
+				
+			}
+
+			public void listIt(List<Protein> sproteins) {
+				ResultPanel.this.exploreContent = new JPanel[ResultPanel.this.sproteins
+						.size()];
+				this.data = new Object[sproteins.size()][this.columnNames.length];
+
+				for (int i = 0; i < sproteins.size(); i++) {
+					Protein p = sproteins.get(i);
+					this.data[i][0] = i + 1;
+					this.data[i][1] = p.getName();
+					int j = 2;
+					for(String s : alg){
+						this.data[i][j] = String.valueOf(p.getPara(s));
+						j++;
+					}
 				}
 			}
-		}
 
-		public String getColumnName(int col) {
-			return this.columnNames[col];
-		}
-
-		public int getColumnCount() {
-			return this.columnNames.length;
-		}
-
-		public int getRowCount() {
-			return this.data.length;
-		}
-
-		public Object getValueAt(int row, int col) {
-			return this.data[row][col];
-		}
-
-		public void setValueAt(Object object, int row, int col) {
-			this.data[row][col] = object;
-			fireTableCellUpdated(row, col);
-		}
-
-		public Class<?> getColumnClass(int c) {
-			return getValueAt(0, c).getClass();
-		}
-	}
-/*
-	private class EvaluationPanel extends JPanel {
-
-		JLabel TPlabel = new JLabel("TP:", SwingConstants.CENTER);
-
-		JLabel FPlabel = new JLabel("FP:", SwingConstants.CENTER);
-		JLabel TNlabel = new JLabel("TN:", SwingConstants.CENTER);
-		JLabel FNlabel = new JLabel("FN:", SwingConstants.CENTER);
-
-		JLabel SNlabel = new JLabel("SN:", SwingConstants.CENTER);
-		JLabel SPlabel = new JLabel("SP:", SwingConstants.CENTER);
-		JLabel PPVlabel = new JLabel("PPV:", SwingConstants.CENTER);
-		JLabel NPVlabel = new JLabel("NPV:", SwingConstants.CENTER);
-		JLabel Flabel = new JLabel("F:", SwingConstants.CENTER);
-		JLabel ACClabel = new JLabel("ACC:", SwingConstants.CENTER);
-
-		JTextField TPtext = new JTextField("0.0 ");
-		JTextField FPtext = new JTextField("0.0");
-		JTextField TNtext = new JTextField("0.0");
-		JTextField FNtext = new JTextField("0.0");
-
-		JTextField SNtext = new JTextField("0.0");
-		JTextField SPtext = new JTextField("0.0");
-		JTextField PPVtext = new JTextField("0.0");
-		JTextField NPVtext = new JTextField("0.0");
-		JTextField Ftext = new JTextField("0.0");
-		JTextField ACCtext = new JTextField("0.0");
-
-		JPanel p1 = new JPanel(new GridLayout(5, 2));
-		JPanel p2 = new JPanel(new GridLayout(5, 2));
-
-		EvaluationPanel()
-
-		{
-			this.setLayout(new GridLayout(1, 2, 100, 0));
-			p1.add(TPlabel);
-			p1.add(TPtext);
-			p1.add(TNlabel);
-			p1.add(TNtext);
-			p1.add(SNlabel);
-			p1.add(SNtext);
-			p1.add(PPVlabel);
-			p1.add(PPVtext);
-			p1.add(Flabel);
-			p1.add(Ftext);
-
-			p2.add(FPlabel);
-			p2.add(FPtext);
-			p2.add(FNlabel);
-			p2.add(FNtext);
-			p2.add(SPlabel);
-			p2.add(SPtext);
-			p2.add(NPVlabel);
-			p2.add(NPVtext);
-			p2.add(ACClabel);
-			p2.add(ACCtext);
-
-			this.add(p1);
-			this.add(p2);
-			update();
-		}
-
-		private int calEvaluationparams() {
-			int flag = 1;
-			double eplength = 0, splength = 0, alllength = 0, count = 0;
-			if (eplist == null || eplist.isEmpty()) {
-				flag = 0;
-				return flag;
+			public String getColumnName(int col) {
+				return this.columnNames[col];
 			}
 
-			splength = sproteins.size();
-			alllength = proteins.size();
-
-			Iterator i1 = sproteins.iterator();
-			while (i1.hasNext()) {
-				Protein p = (Protein) i1.next();
-				if (eplist.contains(p.getName()))
-					count++;
+			public int getColumnCount() {
+				return this.columnNames.length;
 			}
 
-			Iterator i2 = proteins.iterator();
-			while (i2.hasNext()) {
-				Protein p = (Protein) i2.next();
-				if (eplist.contains(p.getName()))
-					eplength++;
+			public int getRowCount() {
+				return this.data.length;
 			}
 
-			TP = count;
-			FP = splength - count;
-			FN = eplength - count;
-			TN = alllength - FN - TP - FP;
+			public Object getValueAt(int row, int col) {
+				return this.data[row][col];
+			}
 
-			SN = TP / (TP + FN);
-			SP = TN / (TN + FP);
-			PPV = TP / (TP + TN);
-			NPV = TN / (TP + FN);
-			F = (2 * SN * PPV) / (SN + PPV);
-			ACC = (TP + TN) / alllength;
-			return flag;
+			public void setValueAt(Object object, int row, int col) {
+				this.data[row][col] = object;
+				fireTableCellUpdated(row, col);
+			}
+
+			public Class<?> getColumnClass(int c) {
+				return getValueAt(0, c).getClass();
+			}
+			
+			public Integer getColumnIndex(String name) {
+				
+				for(int i=2; i < columnNames.length; i++){
+					if(this.columnNames[i].equals(name)){
+						return i;
+					}
+				}
+				return null;
+			}
+			
+			
 		}
+	
+	
+		private class SortingrangeAction implements ItemListener{
 
-		private void update() {
-			if (calEvaluationparams() == 1) {
-				this.TPtext.setText(String.valueOf(TP));
-				this.FPtext.setText(String.valueOf(FP));
-				this.FNtext.setText(String.valueOf(FN));
-				this.TNtext.setText(String.valueOf(TN));
-				this.SNtext.setText(String.valueOf(SN));
-				this.SPtext.setText(String.valueOf(SP));
-				this.PPVtext.setText(String.valueOf(PPV));
-				this.NPVtext.setText(String.valueOf(NPV));
-				this.Ftext.setText(String.valueOf(F));
-				this.ACCtext.setText(String.valueOf(ACC));
-				this.updateUI();
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				// TODO Auto-generated method stub
+				JRadioButton jr = (JRadioButton) e.getSource();
+				if(jr.isSelected()){
+					System.out.println(jr.getText());
+					if(jr.getText().equals("Sorting in select nodes"))
+						issortwholenet = false;
+					if(jr.getText().equals("Sorting in whole network"))
+						issortwholenet = true;
+				}
 			}
+
+					
+		}
+	
+		public void changeSortingRange(boolean issortwhole){
+			if(issortwhole){
+				Sortwholenodes.setSelected(true);
+			}else
+				Sortselectnodes.setSelected(true);
 		}
 	}
 
-	*/
-	private class SelectAction extends AbstractAction {
+
+
+	private class SelectByRankAction extends AbstractAction {
 		//JTable browserTable;
 	//	ResultPanel.BrowserTableModel modelBrowser;
 		JTextField selectT;
+		JTextField selectTP;
 		int num = 0;
-
+		int flag = 0;// 0 by rank ;1 by percent
 		
-		SelectAction(JTextField selectT){
+		SelectByRankAction(JTextField selectT,JTextField selectTP,int flag){
 			this.selectT = selectT;
+			this.selectTP = selectTP;
+			this.flag = flag;
+			
+			
 		}
 		@Override
 		public void actionPerformed(ActionEvent e) throws NumberFormatException {
 			// TODO Auto-generated method stub
-			String s = selectT.getText();
+			String s = null;
+			if(flag == 0)
+				 s = selectT.getText();
+			if(flag == 1)
+				s = selectTP.getText();
+			
 			int size = proteins.size();
 			if(s != null && !s.trim().isEmpty()){
 				s = s.trim();
 				try{
-					num = Integer.parseInt(s);
+					if(flag == 0)
+						num = Integer.parseInt(s);
+					if(flag ==1)
+						num = (int) Math.ceil(Double.parseDouble(s) * size * 0.01);
 				}
 				catch(NumberFormatException er){
-					JOptionPane.showMessageDialog(null,
+					if(flag == 0)
+						JOptionPane.showMessageDialog(null,
     	            		"Please input integer!", "Interrupted", JOptionPane.WARNING_MESSAGE);
+					if(flag ==1)
+						JOptionPane.showMessageDialog(null,
+	    	            		"Please input integer or decimal!", "Interrupted", JOptionPane.WARNING_MESSAGE);
     				return;
 				}
 				
-				if(num > size){
+				if(num > size ){
+					if(flag == 0)
 					JOptionPane.showMessageDialog(null,
     	            		"Please input integer less than "+ size +"!", "Interrupted", JOptionPane.WARNING_MESSAGE);
-    				return;
+					if(flag ==1)
+						JOptionPane.showMessageDialog(null,
+	    	            		"Please input integer or decimal less than 100 as percentage!", "Interrupted", JOptionPane.WARNING_MESSAGE);
+					return;
 				}
-					
 				
+					
+				if(flag == 0)
+					selectTP.setText(String.format( "%.1f", (double)num/(double)size *100 ));
+				if(flag ==1)
+					selectT.setText(num+"");
+				
+				
+				sproteins.clear();			
 				selectNum = num;
-				sproteins = proteins.subList(0, num);
+				curSetName = curalg+"(Top"+num+")";
+				System.out.println(curSetName+"^^^");
+				List<Protein> temp = sortResults.get(curalg).subList(0, num);
+				for(Protein p : temp){
+					sproteins.add(p);
+					
+				}
+				
+			
 			
 				if (ResultPanel.this.sproteins != null) {
-					browserPanel.getTable().removeAll();
-					browserPanel.getBrowserTableModel().listIt(sproteins);
-					fitTableColumns(browserPanel.getTable());
-					browserPanel.getBrowserTableModel().fireTableDataChanged();
-					ResultPanel.this.browserPanel.updateUI();
-					((JPanel) ResultPanel.this.browserPanel.getParent()).updateUI();
-					updateNet();
-					if(pUtil.getAlleprotein() != null && !pUtil.getAlleprotein().isEmpty()){
+					browserPanel.updateTable(null);
+					if(pUtil.getAlleprotein() != null && !pUtil.getAlleprotein().isEmpty() && evaluationPanel != null){
 						evaluationPanel.update(selectNum);
 						System.out.println("not null!");
 					}
@@ -769,7 +785,7 @@ public class ResultPanel extends JPanel implements CytoPanelComponent{
 		}
 	}
 	
-	public void updateNet() {
+	/*public void updateNet() {
 		nodes = new ArrayList();
 		Iterator i = sproteins.iterator();
 		while (i.hasNext()) {
@@ -780,7 +796,7 @@ public class ResultPanel extends JPanel implements CytoPanelComponent{
 		selectProteins(pg.getSubNetwork());
 
 	}
-	
+	*/
 	private class SortAction implements MouseListener{
 	
 		@Override
@@ -790,18 +806,27 @@ public class ResultPanel extends JPanel implements CytoPanelComponent{
 			if(tableColumn > 1){
 				String salg = alg.get(tableColumn-2);
 				curalg = salg;
-				pUtil.sortVertex(proteins, salg);
-				sproteins = proteins.subList(0, selectNum);
+				
+				
+			//	pUtil.sortVertex(proteins, salg);
+				if(issortwholenet){
+					sproteins.clear();
+					List<Protein> temp = sortResults.get(curalg).subList(0, selectNum);
+					for(Protein p : temp){
+						sproteins.add(p);
+						curSetName = curalg+"(Top"+selectNum+")";
+					}
+				}
+				else{
+					pUtil.sortVertex(sproteins, curalg);
+				}
+				
+				
+					
 				
 				if (ResultPanel.this.sproteins != null) {
-					browserPanel.getTable().removeAll();
-					browserPanel.getBrowserTableModel().listIt(sproteins);
-					fitTableColumns(browserPanel.getTable());
-					browserPanel.getBrowserTableModel().fireTableDataChanged();
-					setColumnColor(tableColumn);							
-					ResultPanel.this.browserPanel.updateUI();
-					((JPanel) ResultPanel.this.browserPanel.getParent()).updateUI();
-					updateNet();
+					algselect.setSelectedItem(curalg);
+					browserPanel.updateTable(tableColumn);
 				} else {
 					System.err.println("list null");
 				}
@@ -840,29 +865,7 @@ public class ResultPanel extends JPanel implements CytoPanelComponent{
 		
 		JTable table;
 		table = browserPanel.getTable();
-	/*	TableColumn sc = browserPanel.getTable().getColumn(s);
-		DefaultTableCellRenderer backFontColor = new DefaultTableCellRenderer();  
-        backFontColor.setForeground(Color.red);   
-        sc.setCellRenderer(backFontColor);  
-*/
-	/*	
-		
-		DefaultTableCellRenderer backFontColor1 = new DefaultTableCellRenderer();  
-        backFontColor1.setForeground(Color.red); 
-        DefaultTableCellRenderer backFontColor2 = new DefaultTableCellRenderer();  
-        backFontColor2.setForeground(Color.black);
-        
-		
-		for(int i = 2; i < table.getColumnCount(); i++){
-			TableColumn sc = table.getColumn(alg.get(i-2));	
-			if(i == n)
-				sc.setCellRenderer(backFontColor1); 
-			else
-				sc.setCellRenderer(backFontColor2);
-		}
-		
-		*/
-		
+	
 		CellRenderer tcr = new CellRenderer(n);			
         //设置列表现器------------------------//
         for(int i = 0; i < browserPanel.browserModel.columnNames.length; i++) {
@@ -899,33 +902,66 @@ public class ResultPanel extends JPanel implements CytoPanelComponent{
    }
 	
 	
-	
+
 	public synchronized void ceateEvaluationPanel(){
-		if(pUtil.getAlleprotein() != null && !pUtil.getAlleprotein().isEmpty()){
+		if(evaluationPanel == null){
+			if(pUtil.getAlleprotein() != null && !pUtil.getAlleprotein().isEmpty()){
+				
+				
+				evaluationPanel = new EvaluationPanel(proteins, selectNum, pUtil, network, networkView, resultId, alg, sortResults);
+				pUtil.getRegistrar().registerService(evaluationPanel,
+						CytoPanelComponent.class,
+						new Properties());
+				CytoPanel cytopanel	= pUtil.getSouthCytoPanel();
+		
+				if (cytopanel.indexOfComponent(evaluationPanel) >= 0)
+				{
+					int index = cytopanel.indexOfComponent(evaluationPanel);
+					cytopanel.setSelectedIndex(index);
+		
+					if (cytopanel.getState() == CytoPanelState.HIDE) 
+						cytopanel.setState(CytoPanelState.DOCK);
+				}
+
+				
+			}
+			else{
+				
+				JOptionPane.showMessageDialog(null,
+	            		"Please upload essential protein list first!", "Interrupted", JOptionPane.WARNING_MESSAGE);
+				return;
+				
+			}
+		}
+		else{
+			CytoPanel cytopanel	= pUtil.getSouthCytoPanel();
+			int index = cytopanel.indexOfComponent(evaluationPanel);
+			cytopanel.setSelectedIndex(index);
+		}
+		
 			
-			evaluationPanel = new EvaluationPanel(proteins, selectNum, pUtil, network, networkView, resultId, alg);
-			registrar.registerService(evaluationPanel,
+	}
+	
+	
+	public synchronized void ceateAnalysisPanel(){
+		
+			
+			analysisPanel = new AnalysisPanel(resultId, network, networkView, sortResults, pUtil, eplist, curalg, sproteins, curSetName);
+			pUtil.getRegistrar().registerService(analysisPanel,
 					CytoPanelComponent.class,
 					new Properties());
 			CytoPanel cytopanel	= pUtil.getSouthCytoPanel();
-		//	CytoPanel cytopanel2 = pUtil.getControlCytoPanel();
-			if (cytopanel.indexOfComponent(evaluationPanel) >= 0)
+		
+			if (cytopanel.indexOfComponent(analysisPanel) >= 0)
 			{
-				int index = cytopanel.indexOfComponent(evaluationPanel);
+				int index = cytopanel.indexOfComponent(analysisPanel);
 				cytopanel.setSelectedIndex(index);
-		//		cytopanel2.setState(CytoPanelState.FLOAT);
+		
 				if (cytopanel.getState() == CytoPanelState.HIDE) 
 					cytopanel.setState(CytoPanelState.DOCK);
 			}
 
-			
-		}
-		else{
-			evaluationPanel = new EvaluationPanel(resultId);
-			registrar.registerService(evaluationPanel,
-					CytoPanelComponent.class,
-					new Properties());
-		}
+		
 			
 	}
 	
@@ -963,30 +999,17 @@ public class ResultPanel extends JPanel implements CytoPanelComponent{
 	}
 	
 	
-	public EvaluationPanel geteEvaluationPanel(){
+	public EvaluationPanel getEvaluationPanel(){
 		return this.evaluationPanel;
 	}
-	
-	public void fitTableColumns(JTable table) {
-		JTableHeader header = table.getTableHeader();
-		int rowCount = table.getRowCount();
-		Enumeration columns = table.getColumnModel().getColumns();
-		while (columns.hasMoreElements()) {
-			TableColumn column = (TableColumn) columns.nextElement();
-			int col = header.getColumnModel().getColumnIndex(column.getIdentifier());
-			int width = (int) table.getTableHeader().getDefaultRenderer()
-					.getTableCellRendererComponent(table,column.getIdentifier(), false, false, -1, col).getPreferredSize().getWidth();
-			for (int row = 0; row < rowCount; row++) {
-				int preferedWidth = (int) table.getCellRenderer(row, col)
-						.getTableCellRendererComponent(table,
-								table.getValueAt(row, col), false, false, row,col).getPreferredSize().getWidth();
-				width = Math.max(width, preferedWidth);
-			}
-			header.setResizingColumn(column); // 此行很重要
-			column.setWidth(width + table.getIntercellSpacing().width + 30);
-			System.out.println("with : "+width +"    "+table.getIntercellSpacing().width);
-		}
+	public void setEvaluationPanel(EvaluationPanel e){
+		this.evaluationPanel = e;
 	}
+	public AnalysisPanel geteAnalysisPanel(){
+		return this.analysisPanel;
+	}
+	
+	
 	
 	
 	
@@ -1061,155 +1084,158 @@ public class ResultPanel extends JPanel implements CytoPanelComponent{
 			
 		}
 		
+	
+		public DefaultCategoryDataset calChartData(){
+			//HashMap<Float, Integer> chartdataMap = new HashMap<Float, Integer>();
+			DefaultCategoryDataset dataset = new DefaultCategoryDataset();
+			
+			ArrayList<Float> a = new ArrayList<Float>();
+			ArrayList<Float> b = new ArrayList<Float>();
+			
+			DecimalFormat df;
+			List<Protein> temp = sortResults.get(curalg);
+			float max = (float) temp.get(0).getPara(curalg);
+			float min = (float) temp.get(temp.size()-1).getPara(curalg);
+			int avg = temp.size()/20;
+			
+			float interval = (max - min)/20;
+			
+			
+			
+			float[]  chartdata = calDateList(temp,20);
+			
+			float tempin = 0;
+			float tempsum = 0;
+			
+			for(int j=0; j<20; j++){
+					
+
+					if(chartdata[j] < avg && j !=0 && a.get(a.size()-1) < 2*avg){
+						tempin += interval;
+						tempsum += chartdata[j];
+						
+						a.set(a.size()-1, a.get(a.size()-1) + chartdata[j]);
+						b.set(b.size()-1, b.get(b.size()-1) + interval);
+					} 
+					
+					else if(chartdata[j] > 5*avg){
+						//float t = chartdata[j]/avg;
+						float t = 20;
+						
+						float[]  subchartdata = calDateList( temp.subList((int)tempsum , (int)(tempsum + chartdata[j])), t);
+						for(int i=0; i<20; i++){
+							
+							tempin += interval/t;
+							tempsum += subchartdata[i];
+							
+							if(subchartdata[i] < avg && i !=0){
+								a.set(a.size()-1, a.get(a.size()-1) + subchartdata[i]);
+								b.set(b.size()-1, b.get(b.size()-1) + (interval/t));
+							}
+							else{
+								a.add(subchartdata[i]);
+								b.add(interval/t);
+							}
+							
+						}
+					
+					
+					}
+					
+					else{
+						tempin += interval;
+						tempsum += chartdata[j];
+						
+						//System.out.println(tempsum - chartdata[j]+"    $$     "+tempsum);
+					//	System.out.println(tempin - interval+"    $$     "+tempin);
+						a.add(chartdata[j]);
+						b.add(interval);
+					}
+		
+					
+		
+			}
+			
+			
+			tempin = 0;
+			ArrayList<String> temparr = new ArrayList<String>();
+			for(int j=0; j<a.size(); j++){
+			
+					if(a.get(j) > maxY)
+						maxY =  a.get(j).intValue();
+					
+					tempin += b.get(j);	
+					
+					
+					interval = b.get(j);	
+					if(curalg != ParameterSet.IC){
+						if(interval < 0.01)
+							df = new DecimalFormat("#.####");
+						else if(interval < 0.1)
+							df = new DecimalFormat("#.##");
+						else 
+							df = new DecimalFormat("#.#");
+						
+						temparr.add( df.format(max-tempin) +"- "+df.format(max-(tempin-b.get(j))));
+					//	dataset.addValue(a.get(j).intValue(), curalg, df.format(max-(tempin-b.get(j))) +"- "+ df.format(max-tempin));
+					}
+					else{
+						//df = new DecimalFormat("0.00000E");  
+						//dataset.addValue(a.get(j).intValue(), curalg, df.format(max-tempin+b.get(j)) +"- "+ df.format(max-tempin));
+					//	dataset.addValue(a.get(j).intValue(), curalg, (max-tempin+b.get(j)) +"- "+ (max-tempin));
+						temparr.add((max-tempin) +"- "+(max-tempin+b.get(j)) );
+					}
+			}
+			
+			for(int j=a.size()-1; j>=0; j--){
+				dataset.addValue(a.get(j).intValue(), curalg, temparr.get(j));
+			}
+			
+			return dataset;
+		}
+		
+		
+		
+		
+		public float[] calDateList( List<Protein> proteins, float t){
+			float[] chartdata = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+			float max = (float) proteins.get(0).getPara(curalg);
+			float min = (float) proteins.get(proteins.size()-1).getPara(curalg);
+			
+			
+			float interval = (max - min)/t;
+			int i = 1;
+			
+			
+			
+			for(Protein p : proteins){
+				if(p.getPara(curalg) >= (max-interval*i)){
+					chartdata[i-1]++;	
+				}
+				else{
+					while(true){
+						i++;
+						float fi = max-interval*i;
+						if(i == 20)
+							 fi = min;
+							
+						if(p.getPara(curalg) >= fi){
+							chartdata[i-1]++;
+							break;
+						}
+					}
+				}
+			}
+			
+			
+			
+			return chartdata;
+		}
 	}
 	
 
 	
 	
-	public DefaultCategoryDataset calChartData(){
-		//HashMap<Float, Integer> chartdataMap = new HashMap<Float, Integer>();
-		DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-		
-		ArrayList<Float> a = new ArrayList<Float>();
-		ArrayList<Float> b = new ArrayList<Float>();
-		
-		DecimalFormat df;
-		float max = (float) proteins.get(0).getPara(curalg);
-		float min = (float) proteins.get(proteins.size()-1).getPara(curalg);
-		int avg = proteins.size()/20;
-		
-		float interval = (max - min)/20;
-		
-		
-		
-		float[]  chartdata = calDateList(proteins,20);
-		
-		float tempin = 0;
-		float tempsum = 0;
-		
-		for(int j=0; j<20; j++){
-				
 
-				if(chartdata[j] < avg && j !=0 && a.get(a.size()-1) < 2*avg){
-					tempin += interval;
-					tempsum += chartdata[j];
-					
-					a.set(a.size()-1, a.get(a.size()-1) + chartdata[j]);
-					b.set(b.size()-1, b.get(b.size()-1) + interval);
-				} 
-				
-				else if(chartdata[j] > 5*avg){
-					//float t = chartdata[j]/avg;
-					float t = 20;
-					
-					float[]  subchartdata = calDateList( proteins.subList((int)tempsum , (int)(tempsum + chartdata[j])), t);
-					for(int i=0; i<20; i++){
-						
-						tempin += interval/t;
-						tempsum += subchartdata[i];
-						
-						if(subchartdata[i] < avg && i !=0){
-							a.set(a.size()-1, a.get(a.size()-1) + subchartdata[i]);
-							b.set(b.size()-1, b.get(b.size()-1) + (interval/t));
-						}
-						else{
-							a.add(subchartdata[i]);
-							b.add(interval/t);
-						}
-						
-					}
-				
-				
-				}
-				
-				else{
-					tempin += interval;
-					tempsum += chartdata[j];
-					
-					//System.out.println(tempsum - chartdata[j]+"    $$     "+tempsum);
-				//	System.out.println(tempin - interval+"    $$     "+tempin);
-					a.add(chartdata[j]);
-					b.add(interval);
-				}
-	
-				
-	
-		}
-		
-		
-		tempin = 0;
-		ArrayList<String> temparr = new ArrayList<String>();
-		for(int j=0; j<a.size(); j++){
-		
-				if(a.get(j) > maxY)
-					maxY =  a.get(j).intValue();
-				
-				tempin += b.get(j);	
-				
-				
-				interval = b.get(j);	
-				if(curalg != ParameterSet.IC){
-					if(interval < 0.01)
-						df = new DecimalFormat("#.####");
-					else if(interval < 0.1)
-						df = new DecimalFormat("#.##");
-					else 
-						df = new DecimalFormat("#.#");
-					
-					temparr.add( df.format(max-tempin) +"- "+df.format(max-(tempin-b.get(j))));
-				//	dataset.addValue(a.get(j).intValue(), curalg, df.format(max-(tempin-b.get(j))) +"- "+ df.format(max-tempin));
-				}
-				else{
-					//df = new DecimalFormat("0.00000E");  
-					//dataset.addValue(a.get(j).intValue(), curalg, df.format(max-tempin+b.get(j)) +"- "+ df.format(max-tempin));
-				//	dataset.addValue(a.get(j).intValue(), curalg, (max-tempin+b.get(j)) +"- "+ (max-tempin));
-					temparr.add((max-tempin) +"- "+(max-tempin+b.get(j)) );
-				}
-		}
-		
-		for(int j=a.size()-1; j>=0; j--){
-			dataset.addValue(a.get(j).intValue(), curalg, temparr.get(j));
-		}
-		
-		return dataset;
-	}
-	
-	
-	
-	
-	public float[] calDateList( List<Protein> proteins, float t){
-		float[] chartdata = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-		float max = (float) proteins.get(0).getPara(curalg);
-		float min = (float) proteins.get(proteins.size()-1).getPara(curalg);
-		
-		
-		float interval = (max - min)/t;
-		int i = 1;
-		
-		
-		
-		for(Protein p : proteins){
-			if(p.getPara(curalg) >= (max-interval*i)){
-				chartdata[i-1]++;	
-			}
-			else{
-				while(true){
-					i++;
-					float fi = max-interval*i;
-					if(i == 20)
-						 fi = min;
-						
-					if(p.getPara(curalg) >= fi){
-						chartdata[i-1]++;
-						break;
-					}
-				}
-			}
-		}
-		
-		
-		
-		return chartdata;
-	}
 	
 }
