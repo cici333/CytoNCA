@@ -16,7 +16,7 @@ import org.cytoscape.model.CyNode;
 
 
 public class EC extends Algorithm {
-
+/*************************/
 	double x = 0;
 	int len;
 	public EC(Long networkID,ProteinUtil pUtil){
