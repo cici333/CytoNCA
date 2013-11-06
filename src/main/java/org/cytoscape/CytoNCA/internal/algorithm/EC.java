@@ -6,6 +6,7 @@ import java.util.List;
 
 
 
+
 import org.cytoscape.CytoNCA.internal.Protein;
 import org.cytoscape.CytoNCA.internal.ProteinUtil;
 import org.cytoscape.CytoNCA.internal.algorithm.javaalgorithm.Matrix;
@@ -89,7 +90,10 @@ public class EC extends Algorithm {
 			double[] value) {
 		double max = Double.MIN_VALUE;
 		int i = 0, j = 0;
+		
+		
 		for (i = 0; i < value.length; i++) {
+			System.out.println(value[i]+"%%%%%");
 			if (value[i] > max) {
 				max = value[i];
 				j = i;
@@ -100,15 +104,16 @@ public class EC extends Algorithm {
                 x++;
             }
 		}
+		
 		if(!isweight){
 			for (i = 0; i < matrix.getNumRows(); i++) {
-				vertex.get(i).setEC(matrix.getElement(i, j));
+				vertex.get(i).setEC(0-matrix.getElement(i, j));
 			}
 		}
 		else{
 			for (i = 0; i < matrix.getNumRows(); i++) {
-				vertex.get(i).setECW(matrix.getElement(i, j));
-				System.out.println(matrix.getElement(i, j)+"****");
+				vertex.get(i).setECW(0-matrix.getElement(j, i));
+			
 			}
 		}
 		

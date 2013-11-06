@@ -6,6 +6,7 @@ import java.util.List;
 
 
 
+
 import org.cytoscape.CytoNCA.internal.Protein;
 import org.cytoscape.CytoNCA.internal.ProteinUtil;
 import org.cytoscape.CytoNCA.internal.algorithm.javaalgorithm.Matrix;
@@ -99,6 +100,11 @@ public class SC extends Algorithm {
 		int i = 0, j = 0;
 		double result = 0;
 		double temp = 0;
+		
+		for (i = 0; i < value.length; i++) {
+			System.out.println(value[i]+"*******");
+			}
+		
 		for (i = 0; i < matrix.getNumColumns(); i++) {
 			flag[i] = true;
 			for (j = 0; j < i - 1; j++) {

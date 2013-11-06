@@ -177,7 +177,12 @@ public class BC extends Algorithm {
 				for (Iterator itt = currentNetwork.getNeighborList(v, Type.ANY).iterator(); itt.hasNext(); ) { 
 					CyNode w = (CyNode) itt.next();
 					double dis = currentNetwork.getRow(currentNetwork.getConnectingEdgeList(w, v, Type.ANY).get(0)).get("weight", Double.class);
-					System.out.println("##"+dis);
+					if(dis !=0 )
+						dis = 1/ dis;
+					else {
+						cancelled = true;
+						return;
+					}
 					if (((BSData)decorator.get(w)).distance < 0.0D) {
 						queue.add(w);
 						((BSData)decorator.get(w)).distance = ((BSData)decorator.get(v)).distance + dis;

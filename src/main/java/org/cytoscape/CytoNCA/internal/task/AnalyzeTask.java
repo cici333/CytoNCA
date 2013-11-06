@@ -92,6 +92,7 @@ public class AnalyzeTask implements Task {
 							
 						
 							if (interrupted){
+								System.out.println("cC IN");
 								success = false;
 								return;	
 							}
@@ -137,6 +138,7 @@ public class AnalyzeTask implements Task {
 					
 						
 						if (interrupted){
+							System.out.println("DC IN");
 							success = false;
 							return;	
 						}
@@ -173,6 +175,7 @@ public class AnalyzeTask implements Task {
 						
 					
 						if (interrupted){
+							System.out.println("cC IN");
 							success = false;
 							return;	
 						}
@@ -212,6 +215,7 @@ public class AnalyzeTask implements Task {
 					
 						
 						if (interrupted){
+							System.out.println("laC IN");
 							success = false;
 							return;	
 						}
@@ -251,6 +255,7 @@ public class AnalyzeTask implements Task {
 					
 						
 						if (interrupted){
+							System.out.println("nC IN");
 							success = false;
 							return;	
 						}
@@ -287,6 +292,7 @@ public class AnalyzeTask implements Task {
 					algoSC.run(network, resultAll, false);	
 			
 					if (interrupted){
+						System.out.println("sC IN");
 						success = false;
 						return;	
 					}
@@ -321,6 +327,7 @@ public class AnalyzeTask implements Task {
 						algoBC.run(network, resultAll, false);	
 
 						if (interrupted){
+							System.out.println("bC IN");
 							success = false;
 							return;	
 						}
@@ -356,6 +363,7 @@ public class AnalyzeTask implements Task {
 					algoIC.run(network, resultAll, false);	
 					
 					if (interrupted){
+						System.out.println("DC IN");
 						success = false;
 						return;	
 					}
