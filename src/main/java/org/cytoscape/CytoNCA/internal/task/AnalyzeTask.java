@@ -51,6 +51,8 @@ public class AnalyzeTask implements Task {
 			.getLogger(AnalyzeTask.class);
 	private HashMap<String, ArrayList<Protein>> proteinSet;
 	private final ArrayList<String> algnames;
+	private final ArrayList<String> Successfelalgnames;
+	private String results;
 	
 	public AnalyzeTask(CyNetwork network, int analyze, int resultId,
 			ArrayList<Algorithm> algSet, ProteinUtil pUtil,
@@ -61,7 +63,9 @@ public class AnalyzeTask implements Task {
 		this.algSet = algSet;
 		this.pUtil = pUtil;
 		this.listener = listener;
-		this.algnames = (ArrayList<String>) algnames.clone();
+		this.Successfelalgnames = algnames;
+		this.algnames = (ArrayList<String>) algnames.clone(); 
+		results = "";
 	}
 
 	public void run(TaskMonitor taskMonitor) throws Exception {
@@ -92,7 +96,7 @@ public class AnalyzeTask implements Task {
 							
 						
 							if (interrupted){
-								System.out.println("cC IN");
+								
 								success = false;
 								return;	
 							}
@@ -138,7 +142,7 @@ public class AnalyzeTask implements Task {
 					
 						
 						if (interrupted){
-							System.out.println("DC IN");
+							
 							success = false;
 							return;	
 						}
@@ -175,9 +179,15 @@ public class AnalyzeTask implements Task {
 						
 					
 						if (interrupted){
-							System.out.println("cC IN");
+							
 							success = false;
 							return;	
+						}
+						
+						if(algoEC.isCancelled()){
+							
+							Successfelalgnames.remove(ParameterSet.EC);
+							results += "Can't calculate" + ParameterSet.EC + ": fail to compute eigenvector. </br>";  
 						}
 			    	
 			 }
@@ -195,6 +205,13 @@ public class AnalyzeTask implements Task {
 							success = false;
 							return;	
 						}
+						
+						if(algoEC.isCancelled()){
+							
+							Successfelalgnames.remove(ParameterSet.EC);
+							results += "Can't calculate" + ParameterSet.EC + ": fail to compute eigenvector. </br>";  
+						}
+						
 			    	
 			 }
 				
@@ -215,7 +232,7 @@ public class AnalyzeTask implements Task {
 					
 						
 						if (interrupted){
-							System.out.println("laC IN");
+							
 							success = false;
 							return;	
 						}
@@ -255,7 +272,7 @@ public class AnalyzeTask implements Task {
 					
 						
 						if (interrupted){
-							System.out.println("nC IN");
+							
 							success = false;
 							return;	
 						}
@@ -292,10 +309,16 @@ public class AnalyzeTask implements Task {
 					algoSC.run(network, resultAll, false);	
 			
 					if (interrupted){
-						System.out.println("sC IN");
+					
 						success = false;
 						return;	
 					}
+					
+					if(algoSC.isCancelled()){
+						
+							Successfelalgnames.remove(ParameterSet.SC);
+							results += "Can't calculate" + ParameterSet.SC + ": fail to compute eigenvector. </br>";  
+						}
 			    	
 				}
 			 else if(algnames.contains(ParameterSet.SCW)){
@@ -310,7 +333,12 @@ public class AnalyzeTask implements Task {
 						success = false;
 						return;	
 					}
-			    	
+					if(algoSC.isCancelled()){
+						
+						Successfelalgnames.remove(ParameterSet.SCW);
+						results += "Can't calculate" + ParameterSet.SCW + ": fail to compute eigenvector. </br>";  
+					}
+					
 			 	}
 				
 				
@@ -327,9 +355,12 @@ public class AnalyzeTask implements Task {
 						algoBC.run(network, resultAll, false);	
 
 						if (interrupted){
-							System.out.println("bC IN");
+							
 							success = false;
 							return;	
+						}
+						if(algoBC.isCancelled()){
+							cancelForSingleAlg(algoBC);
 						}
 				    	
 				 }
@@ -344,6 +375,12 @@ public class AnalyzeTask implements Task {
 						if (interrupted){
 							success = false;
 							return;	
+						}
+						if(algoBC.isCancelled()){
+							
+						//	cancelForSingleAlg(algoBC);
+							Successfelalgnames.remove(ParameterSet.BCW);
+							results += "Can't calculate" + ParameterSet.BCW + ": it can be calculated only if edge weights are greater then zero. </br>";  
 						}
 				    	
 				 }
@@ -363,7 +400,7 @@ public class AnalyzeTask implements Task {
 					algoIC.run(network, resultAll, false);	
 					
 					if (interrupted){
-						System.out.println("DC IN");
+						
 						success = false;
 						return;	
 					}
@@ -404,7 +441,7 @@ public class AnalyzeTask implements Task {
 
 			if (this.listener != null)
 				this.listener.handleEvent(new AnalysisCompletedEvent(success,
-						resultAll));
+						resultAll, results));
 		}
 	}
 	
@@ -422,6 +459,11 @@ public class AnalyzeTask implements Task {
 	}
 
 	public String getTitle() {
-		return "Network Cluster Detection";
+		return "Analysis";
+	}
+	
+	public void cancelForSingleAlg(Algorithm alg){
+		algSet.remove(alg);
+	
 	}
 }

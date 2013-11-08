@@ -180,7 +180,7 @@ public class BC extends Algorithm {
 					if(dis !=0 )
 						dis = 1/ dis;
 					else {
-						cancelled = true;
+						setCancelled(true);
 						return;
 					}
 					if (((BSData)decorator.get(w)).distance < 0.0D) {

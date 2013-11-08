@@ -277,11 +277,11 @@ public class MainPanel extends JPanel implements CytoPanelComponent {
         lacP.setToolTipText("Local Average Connectivity-based method (LAC)");
         ncP.setToolTipText("Network Centrality (NC)");
         scP.setToolTipText("Subgraph Centrality (SC)");
-        bcP.setToolTipText("Betweeness Centrality (BC)");
+        bcP.setToolTipText("Betweenness Centrality (BC)");
         icP.setToolTipText("Information Centrality (IC)");
         selectP.setToolTipText("Select All Algorithms");
        
-        bcP.setBorder(BorderFactory.createTitledBorder("Betweeness(BC)"));
+        bcP.setBorder(BorderFactory.createTitledBorder("Betweenness(BC)"));
         choicePanel.add(bcP);
         ccP.setBorder(BorderFactory.createTitledBorder("Closeness(CC)"));
         choicePanel.add(ccP);

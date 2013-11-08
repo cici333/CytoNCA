@@ -78,10 +78,12 @@ public class EC extends Algorithm {
 			if (matx.computeEvSymTri(bArray2, cArray2, mtxQ2, 60, 0.0001)) {
                setMaxVector(vertex, mtxQ2, bArray2);
 			} else {
-				System.out.println("Ê§°Ü");
+				setCancelled(true);
+				
 			}
 		} else {
-			System.out.println("Ê§°Ü");
+			setCancelled(true);
+			
 		}
 		return vertex;
 	} 

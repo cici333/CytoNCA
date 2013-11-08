@@ -14,7 +14,7 @@ public class ParameterSet
   private int defaultRowHeight;
   private ArrayList<Protein> eprotein;
   
-  public static String BC = "Betweeness";
+  public static String BC = "Betweenness";
   public static String CC = "Closeness";
   public static String DC = "Degree";
   public static String EC = "Eigenvector";
@@ -23,7 +23,7 @@ public class ParameterSet
   public static String SC = "Subgragh";
   public static String IC = "Information";
   
-  public static String BCW = "Betweeness(Weight)";
+  public static String BCW = "Betweenness(Weight)";
   public static String CCW = "Closeness(Weight)";
   public static String DCW = "Degree(Weight)";
   public static String ECW = "Eigenvector(Weight)";

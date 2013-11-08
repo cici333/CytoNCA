@@ -403,6 +403,8 @@ public class AnalyzeAction extends AbstractPAction
         				boolean resultFound = false;
         				AnalyzeAction.this.setDirty(network, false);
         				
+        				
+        				
         				if (e.isSuccessful()) {
         					
         						
@@ -455,7 +457,8 @@ public class AnalyzeAction extends AbstractPAction
         								resultId, discardResultAction);
         						AnalyzeAction.this.registrar.registerService(resultsPanel, CytoPanelComponent.class, new Properties());
         						
-        					
+        						JOptionPane.showMessageDialog(null,
+        	    	            		"<html>" + e.getResults() + "</html>", "Interrupted", JOptionPane.WARNING_MESSAGE);
         						
         						
         						
@@ -508,7 +511,7 @@ public class AnalyzeAction extends AbstractPAction
         	Collection<Boolean> which=curParams.getAlgorithmSet().values(); 
         	if(!which.contains(true)){	//if no algorithm is selected
         		analyze=INTERRUPTED;
-        		interruptedMessage="An algorithm need to be selected for clustering";
+        		interruptedMessage="An algorithm need to be selected for analyzing";
         	}else{
         		
     			if(newNet ){

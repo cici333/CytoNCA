@@ -56,6 +56,9 @@ public abstract class Algorithm {
         this.cancelled = cancelled;
     }    
 
+    public boolean isCancelled() {
+        return this.cancelled;
+    }
     abstract ArrayList<Protein> run(CyNetwork network, ArrayList<Protein> resultAll, boolean isweigght);
  
 	
