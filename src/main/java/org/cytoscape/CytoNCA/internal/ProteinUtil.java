@@ -4,7 +4,6 @@ package org.cytoscape.CytoNCA.internal;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -39,6 +38,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.model.SavePolicy;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
@@ -184,7 +184,7 @@ public class ProteinUtil {
             return false;
         }
     }
-   public boolean exportResults(ArrayList<String > allalg, String curalg, List<Protein> eproteins, CyNetwork network) {
+   public boolean exportResults(ArrayList<String > allalg, String curalg, List<Protein> eproteins, CyNetwork network) throws IllegalArgumentException {
         if (curalg == null || eproteins == null || network == null ) {
             return false;
         }
@@ -193,8 +193,16 @@ public class ProteinUtil {
         String fileName = null;
         FileWriter fout = null;
         
+        CyTable c = network.getTable(CyNode.class, CyNetwork.DEFAULT_ATTRS);
+        
         for(String alg : allalg){
-        	network.getTable(CyNode.class, CyNetwork.DEFAULT_ATTRS).createColumn(alg, Double.class, false);
+        	//if(!c.getColumns().contains(alg))
+        	try{
+        		c.createColumn(alg, Double.class, false);
+        	}catch(IllegalArgumentException e){
+        		
+        	}
+        		
         }
         
         

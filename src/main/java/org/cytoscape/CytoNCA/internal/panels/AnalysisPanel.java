@@ -88,6 +88,7 @@ public class AnalysisPanel extends JPanel implements CytoPanelComponent{
 	private ArrayList<String> eplist;
 	private String curalg;
 	private String curSetName;
+	private static int Ylocation;
 	
 	
 	public AnalysisPanel(int resultid, CyNetwork network, CyNetworkView networkView, HashMap<String, List<Protein>> sortResults, ProteinUtil pUtil, ArrayList<String> eplist, String curalg, List<Protein> sproteins, String curSetName){
@@ -392,12 +393,18 @@ public class AnalysisPanel extends JPanel implements CytoPanelComponent{
 			upPanel.setLayout(new BoxLayout(upPanel, BoxLayout.X_AXIS));
 			
 			labelPanel = new JPanel();
-			labelPanel.setLayout(new BoxLayout(labelPanel, BoxLayout.Y_AXIS));
+			labelPanel.setLayout(null);
+			//labelPanel.setLayout(new BoxLayout(labelPanel, BoxLayout.Y_AXIS));
 			//labelPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+			JPanel p1 = new JPanel();
+			p1.add(labelPanel);
+			p1.setLayout(new FlowLayout());
 			
-			labelSPanel = new JScrollPane(labelPanel);
+			//labelSPanel = new JScrollPane(labelPanel);
+			labelSPanel = new JScrollPane(p1);
 			
 			paintB = new JButton("Paint");
+			Ylocation = 10;
 			paintB.addActionListener(new PaintAction());
 			clearB = new JButton("Clear");
 			clearB.addActionListener(new clearViewColorsAction());
@@ -493,6 +500,8 @@ public class AnalysisPanel extends JPanel implements CytoPanelComponent{
 					
 					jp.add(temp);
 					jp.setBorder(BorderFactory.createTitledBorder(""));
+					jp.setBounds(10, Ylocation,300,25);
+					Ylocation += 30;
 					labelPanel.add(jp);
 					
 					JPanel jj = new JPanel();
@@ -502,6 +511,8 @@ public class AnalysisPanel extends JPanel implements CytoPanelComponent{
 						for(Entry<String, Color>  mix : mixColors.entrySet()){
 							
 							jj.add(new JLabel(mix.getKey(), createColorIcon(mix.getValue()), SwingConstants.LEFT));
+							jj.setBounds(10, Ylocation,300,25);
+							Ylocation += 30;
 							labelPanel.add(jj);
 						}
 						

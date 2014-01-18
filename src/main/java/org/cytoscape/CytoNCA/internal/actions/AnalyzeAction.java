@@ -201,6 +201,20 @@ public class AnalyzeAction extends AbstractPAction
 					
 				 
 			 }
+     
+        	//********************************//
+        	/*
+        	 double num = network.getEdgeList().size();
+        	 
+        	int l = (int)(num * 0.200);
+        	ArrayList<CyEdge> edges = new ArrayList<CyEdge>(); 
+        	for(int i = 0; i < l; i++){        		
+        		int t = (int)(Math.random()*num);
+        		edges.add(network.getEdgeList().get(t));       		
+        	}
+        	network.removeEdges(edges);
+        	*/
+        	//********************************//
         	
         	final int resultId = this.pUtil.getCurrentResultId();
         	
@@ -457,8 +471,9 @@ public class AnalyzeAction extends AbstractPAction
         								resultId, discardResultAction);
         						AnalyzeAction.this.registrar.registerService(resultsPanel, CytoPanelComponent.class, new Properties());
         						
-        						JOptionPane.showMessageDialog(null,
-        	    	            		"<html>" + e.getResults() + "</html>", "Interrupted", JOptionPane.WARNING_MESSAGE);
+        						if(e.getResults() != null && e.getResults() != "")
+        							JOptionPane.showMessageDialog(null,
+        									"<html>" + e.getResults() + "</html>", "Interrupted", JOptionPane.WARNING_MESSAGE);
         						
         						
         						
