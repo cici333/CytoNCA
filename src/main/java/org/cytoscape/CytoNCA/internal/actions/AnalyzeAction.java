@@ -185,9 +185,10 @@ public class AnalyzeAction extends AbstractPAction
         	JOptionPane.showMessageDialog(AnalyzeAction.this.swingApplication.getJFrame(),
             		interruptedMessage, "Interrupted", JOptionPane.WARNING_MESSAGE);
         else{  
-        	
+        
+        	/*
         	ArrayList de = this.pUtil.detectparalleledges(network);
-        	System.out.println(de.size()+"^^^");
+        	
         	if(de.size()!=0){
 				if(JOptionPane.showConfirmDialog(this.swingApplication.getJFrame(),
 	            		"There are parallel edges or loops in the network! \n Do you remove these edge and contine?", "WARNING", JOptionPane.YES_NO_OPTION) == 1)
@@ -201,6 +202,7 @@ public class AnalyzeAction extends AbstractPAction
 					
 				 
 			 }
+			 */
         	
         	final int resultId = this.pUtil.getCurrentResultId();
         	

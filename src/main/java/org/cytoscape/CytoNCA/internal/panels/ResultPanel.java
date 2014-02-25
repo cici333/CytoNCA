@@ -1109,7 +1109,7 @@ public class ResultPanel extends JPanel implements CytoPanelComponent{
 			
 			for(int j=0; j<20; j++){
 					
-
+				/*
 					if(chartdata[j] < avg && j !=0 && a.get(a.size()-1) < 2*avg){
 						tempin += interval;
 						tempsum += chartdata[j];
@@ -1143,6 +1143,7 @@ public class ResultPanel extends JPanel implements CytoPanelComponent{
 					}
 					
 					else{
+					*/
 						tempin += interval;
 						tempsum += chartdata[j];
 						
@@ -1150,7 +1151,7 @@ public class ResultPanel extends JPanel implements CytoPanelComponent{
 					//	System.out.println(tempin - interval+"    $$     "+tempin);
 						a.add(chartdata[j]);
 						b.add(interval);
-					}
+				//	}
 		
 					
 		
