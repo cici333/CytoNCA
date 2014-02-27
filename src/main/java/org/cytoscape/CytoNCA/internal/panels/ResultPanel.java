@@ -1093,7 +1093,8 @@ public class ResultPanel extends JPanel implements CytoPanelComponent{
 			ArrayList<Float> b = new ArrayList<Float>();
 			
 			DecimalFormat df;
-			List<Protein> temp = sortResults.get(curalg);
+		//	List<Protein> temp = sortResults.get(curalg);
+			List<Protein> temp = sproteins;
 			float max = (float) temp.get(0).getPara(curalg);
 			float min = (float) temp.get(temp.size()-1).getPara(curalg);
 			int avg = temp.size()/20;

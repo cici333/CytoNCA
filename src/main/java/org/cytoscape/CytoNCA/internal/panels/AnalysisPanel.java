@@ -393,9 +393,10 @@ public class AnalysisPanel extends JPanel implements CytoPanelComponent{
 			upPanel.setLayout(new BoxLayout(upPanel, BoxLayout.X_AXIS));
 			
 			labelPanel = new JPanel();
-			labelPanel.setLayout(null);
-			//labelPanel.setLayout(new BoxLayout(labelPanel, BoxLayout.Y_AXIS));
+			//labelPanel.setLayout(null);
+			labelPanel.setLayout(new BoxLayout(labelPanel, BoxLayout.Y_AXIS));
 			//labelPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+			labelPanel.setLayout(new GridLayout(0, 1));
 			JPanel p1 = new JPanel();
 			p1.add(labelPanel);
 			p1.setLayout(new FlowLayout());
@@ -508,8 +509,9 @@ public class AnalysisPanel extends JPanel implements CytoPanelComponent{
 					jj.setLayout(new BoxLayout(jj, BoxLayout.Y_AXIS));
 					jj.setAlignmentX(Component.LEFT_ALIGNMENT);
 					if(!mixColors.isEmpty()){
+						
 						for(Entry<String, Color>  mix : mixColors.entrySet()){
-							
+							System.out.println(mix.getKey());
 							jj.add(new JLabel(mix.getKey(), createColorIcon(mix.getValue()), SwingConstants.LEFT));
 							jj.setBounds(10, Ylocation,300,25);
 							Ylocation += 30;
@@ -517,6 +519,8 @@ public class AnalysisPanel extends JPanel implements CytoPanelComponent{
 						}
 						
 					}
+					
+					labelPanel.repaint();
 				
 			
 					

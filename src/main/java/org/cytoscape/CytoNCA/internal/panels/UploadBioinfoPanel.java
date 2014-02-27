@@ -13,7 +13,10 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.ObjectOutputStream.PutField;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Vector;
 
+import javax.print.attribute.standard.MediaSize.Other;
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -76,6 +79,9 @@ public class UploadBioinfoPanel extends JFrame{
 	class NodesAttributesPanel extends JPanel{
 		CyColumn bioinfoC;
 		String NodeattributeName = null;
+		JRadioButton domainB, slengthB, NweightB, othersB, originalB; 
+		JTextField aname;
+		JComboBox<String> selectattris;
 		
 		NodesAttributesPanel(){
 			
@@ -121,30 +127,34 @@ public class UploadBioinfoPanel extends JFrame{
 		
 		
 		class SelectNodeAttributePanel extends JPanel{
-			JComboBox<String> selectattris;
+			
 			ArrayList<String> attributes;
 			
 			SelectNodeAttributePanel(){
 				selectattris = new JComboBox<String>();
 				getAttributes();
 				selectattris.addActionListener(new SelectAttributeAction());
+				selectattris.setSelectedIndex(1);
+				
 				//this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 				JLabel l1 = new JLabel("<html>  Upload from <br>existing attributes</html>",JLabel.CENTER);
 				this.add(l1);
 				this.add(selectattris);
-			//	l1.setAlignmentY(CENTER_ALIGNMENT);
-			//	selectattris.setAlignmentY(CENTER_ALIGNMENT);
-				
 			
 				this.setBorder(BorderFactory.createTitledBorder(""));
 				this.setPreferredSize(new Dimension(140,105));
 			}
 			
 			void getAttributes(){
+				Vector<String> tempc = new Vector<String>(); 
 				for(CyColumn cm : network.getDefaultNodeTable().getColumns()){			
 			//		if(!cm.equals("name") && !cm.equals("SUID") && !cm.equals("shared name") && !cm.equals("selected"))
-						selectattris.addItem(cm.getName());
+						tempc.add(cm.getName());	
+					//selectattris.addItem(cm.getName());
 				}
+				Collections.sort(tempc);
+				for(String s : tempc)
+					selectattris.addItem(s);
 			}
 			
 			void updateItems(String newname){
@@ -160,7 +170,8 @@ public class UploadBioinfoPanel extends JFrame{
 				public void actionPerformed(ActionEvent e) {
 					// TODO Auto-generated method stub
 					JComboBox<String> jcb = (JComboBox<String>) e.getSource();
-					bioinfoC = network.getDefaultNodeTable().getColumn((String) jcb.getSelectedItem());			
+					bioinfoC = network.getDefaultNodeTable().getColumn((String) jcb.getSelectedItem());	
+					NodeattributeName = (String)jcb.getSelectedItem();
 				}
 				
 			}
@@ -245,13 +256,14 @@ public class UploadBioinfoPanel extends JFrame{
 		}
 
 		class ChoosePanel extends JPanel{
-			JRadioButton domainB, slengthB, NweightB, othersB;  
-			JTextField aname;
+			 
+			
 			ChoosePanel(){
 				domainB = new JRadioButton(ParameterSet.domainNum);
 				slengthB = new JRadioButton(ParameterSet.sequencelength);
 				NweightB = new JRadioButton(ParameterSet.weight);
 				othersB = new JRadioButton("Others");
+				originalB = new JRadioButton("Keep original name");
 				aname = new JTextField("attribute name...");
 				aname.setEditable(false);
 				aname.setPreferredSize(new Dimension(90,30));
@@ -261,18 +273,21 @@ public class UploadBioinfoPanel extends JFrame{
 				bg.add(slengthB);
 				bg.add(NweightB);
 				bg.add(othersB);
+				bg.add(originalB);
 				
 				domainB.addItemListener(new ChoiseAction());
 				slengthB.addItemListener(new ChoiseAction());
 				NweightB.addItemListener(new ChoiseAction());
 				othersB.addItemListener(new ChoiseAction());
+				originalB.addItemListener(new ChoiseAction());
 				
 				this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 				
 				this.add(domainB);
 				this.add(slengthB);
 				this.add(NweightB);
-				this.add(othersB);
+				this.add(originalB);
+				this.add(othersB);				
 				this.add(aname);
 				
 				
@@ -288,6 +303,9 @@ public class UploadBioinfoPanel extends JFrame{
 						if(jr.getText().equals("Others")){
 							aname.setEditable(true);
 							aname.setText("");
+						}else if(jr.getText().equals("Keep original name")){
+						//	NodeattributeName = (String)selectattris.getSelectedItem();
+							aname.setEditable(false);
 						}
 						else{
 							NodeattributeName = jr.getText();
@@ -297,8 +315,11 @@ public class UploadBioinfoPanel extends JFrame{
 				}
 				
 			}
-		}
+			
 
+		}
+		
+		
 		class OkAction extends AbstractAction{
 
 			@Override
@@ -316,6 +337,9 @@ public class UploadBioinfoPanel extends JFrame{
 				}					
 				else{
 					try{
+						if(othersB.isSelected())							
+							NodeattributeName = aname.getText();
+						
 						bioinfoC.setName(NodeattributeName);
 					}
 					catch(IllegalArgumentException ie){
@@ -337,8 +361,9 @@ public class UploadBioinfoPanel extends JFrame{
 			}
 			
 		}
+		}
 
-	}
+		
 	
 	class EdgesAttributesPanel extends JPanel{
 		CyColumn EdgeWeight;
