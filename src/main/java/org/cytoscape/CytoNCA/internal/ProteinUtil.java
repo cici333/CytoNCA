@@ -194,17 +194,18 @@ public class ProteinUtil {
         FileWriter fout = null;
         
         CyTable c = network.getTable(CyNode.class, CyNetwork.DEFAULT_ATTRS);
-        
+       
+        /*
         for(String alg : allalg){
         	//if(!c.getColumns().contains(alg))
         	try{
         		c.createColumn(alg, Double.class, false);
         	}catch(IllegalArgumentException e){
-        		
+        		e.printStackTrace();
         	}
         		
         }
-        
+        */
         
         
         try
@@ -224,10 +225,11 @@ public class ProteinUtil {
             fout.write("Date: " + DateFormat.getDateTimeInstance().format(new Date()) + lineSep + lineSep);
             for (int i = 0; i < eproteins.size(); i++) {         	
             	Protein p = (Protein)eproteins.get(i);
+            	/*
             	for(String alg : allalg){
             		network.getRow(p.getN()).set(alg, p.getPara(alg));
                 }
-            	
+            	*/
             	
                 fout.write((i + 1) + "\t"); //rank
           //      NumberFormat nf = NumberFormat.getInstance();
@@ -254,6 +256,39 @@ public class ProteinUtil {
         }
         return false;
     }
+   
+   /**
+    * Save results to node table
+    *
+    * @param allalg     The list of all algorithms.
+    * @param eproteins  The list of proteins to be output.
+    * @param network    The network source of the nodes
+    * 
+    *   */
+   public void SaveInTable(ArrayList<String > allalg, List<Protein> eproteins, CyNetwork network) throws IllegalArgumentException {
+	   
+	   CyTable c = network.getTable(CyNode.class, CyNetwork.DEFAULT_ATTRS);
+       
+       for(String alg : allalg){       
+       		try{
+       			c.createColumn(alg, Double.class, false);
+       		}catch(IllegalArgumentException e){
+       			
+       			} 
+ 
+       }
+       
+       for (int i = 0; i < eproteins.size(); i++) {         	
+       	Protein p = (Protein)eproteins.get(i);
+       	for(String alg : allalg){
+       		network.getRow(p.getN()).set(alg, p.getPara(alg));
+           }
+       	}
+	   
+	 
+	   
+   }
+   
     /**
      * Save results to a file
      *
