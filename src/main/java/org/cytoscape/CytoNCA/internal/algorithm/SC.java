@@ -17,7 +17,7 @@ import org.cytoscape.model.CyEdge.Type;
 
 public class SC extends Algorithm {
 	
-	double x = 0;
+	float x = 0;
 	int len;
 	
 	public SC(Long networkID,ProteinUtil pUtil){
@@ -33,7 +33,7 @@ public class SC extends Algorithm {
 		this.vertex = vertex;
 		
 		len = vertex.size();
-		double[] tempData = new double[len * len];
+		float[] tempData = new float[len * len];
 		if (!isweight) {
 			for (i = 0; i < vertex.size(); i++) {
 				for (j = 0; j < vertex.size(); j++) {
@@ -42,7 +42,7 @@ public class SC extends Algorithm {
 							Type.ANY).size() > 0) {
 						tempData[len * i + j] = 1;
 					} else {
-						tempData[len * i + j] = 0.0;
+						tempData[len * i + j] = 0.0f;
 					}
 				}
 				
@@ -63,9 +63,9 @@ public class SC extends Algorithm {
 					if (edge.size() > 0) {
 						tempData[len * i + j] = inputNetwork
 								.getRow(edge.get(0))
-								.get("weight", Double.class);
+								.get("weight", float.class);
 					} else {
-						tempData[len * i + j] = 0.0;
+						tempData[len * i + j] = 0.0f;
 					}
 				}
 				
@@ -79,12 +79,12 @@ public class SC extends Algorithm {
 		Matrix matx = new Matrix(len, tempData);
 		Matrix mtxQ2 = new Matrix();
 		Matrix mtxT2 = new Matrix();
-		double[] bArray2 = new double[matx.getNumColumns()];
-		double[] cArray2 = new double[matx.getNumColumns()];
+		float[] bArray2 = new float[matx.getNumColumns()];
+		float[] cArray2 = new float[matx.getNumColumns()];
 		System.err.println("run");
 		if (matx.makeSymTri(mtxQ2, mtxT2, bArray2, cArray2)) {
 			// 2: compute eigenvalues and eigenvectors
-			if (matx.computeEvSymTri(bArray2, cArray2, mtxQ2, 60, 0.0001)) {
+			if (matx.computeEvSymTri(bArray2, cArray2, mtxQ2, 60, 0.01f)) {
 				setResult(vertex, mtxQ2, bArray2);
 			} else {
 				setCancelled(true);
@@ -97,11 +97,11 @@ public class SC extends Algorithm {
 		return vertex;
 	}
 	private void setResult(ArrayList<Protein> vertex, Matrix matrix,
-			double[] value) {
+			float[] value) {
 		boolean[] flag = new boolean[value.length];
 		int i = 0, j = 0;
-		double result = 0;
-		double temp = 0;
+		float result = 0;
+		float temp = 0;
 		
 		for (i = 0; i < value.length; i++) {
 			System.out.println(value[i]+"*******");

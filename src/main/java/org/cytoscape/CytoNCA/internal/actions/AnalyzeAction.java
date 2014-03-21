@@ -418,6 +418,7 @@ public class AnalyzeAction extends AbstractPAction
         				AnalyzeAction.this.setDirty(network, false);
         				
         				
+        					
         				
         				if (e.isSuccessful()) {
         					
@@ -484,6 +485,11 @@ public class AnalyzeAction extends AbstractPAction
         								"No Results", 
         								2);
         					}
+        				}else{
+        					if(e.isOutofmemory()){
+            					JOptionPane.showMessageDialog(null,
+    									"Memory is not enough! Please enlarge JAVA_MAX_MEM~", "Interrupted", JOptionPane.WARNING_MESSAGE);
+            				}
         				}
 
         				CytoPanel cytoPanel = AnalyzeAction.this.swingApplication.getCytoPanel(CytoPanelName.EAST);

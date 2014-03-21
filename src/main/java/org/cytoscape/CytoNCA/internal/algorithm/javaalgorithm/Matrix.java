@@ -11,14 +11,14 @@ import org.cytoscape.work.TaskMonitor;
  * 操作矩阵的类 Matrix
 
  * @author 周长发
- * @version 1.0
+ * @version 1.0f
  */
 public class Matrix 
 {
 	private int	numColumns = 0;			    // 矩阵列数
 	private int	numRows = 0;				// 矩阵行数
-	private double eps = 0.0;               // 缺省精度
-	private double[] elements = null;		// 矩阵数据缓冲区
+	private float eps = 0.0f;               // 缺省精度
+	private float[] elements = null;		// 矩阵数据缓冲区
 
 	/**
 	 * 基本构造函数
@@ -50,7 +50,7 @@ public class Matrix
 	 * @param nCols - 指定的矩阵列数
 	 * @param value - 一维数组，长度为nRows*nCols，存储矩阵各元素的值
 	 */
-	public Matrix(int nRows, int nCols, double[] value)
+	public Matrix(int nRows, int nCols, float[] value)
 	{
 		numRows = nRows;
 		numColumns = nCols;
@@ -76,7 +76,7 @@ public class Matrix
 	 * @param nSize - 方阵行列数
 	 * @param value - 一维数组，长度为nRows*nRows，存储方阵各元素的值
 	 */
-	public Matrix(int nSize, double[] value)
+	public Matrix(int nSize, float[] value)
 	{
 		numRows = nSize;
 		numColumns = nSize;
@@ -113,7 +113,7 @@ public class Matrix
 			return false;
 
 		// 分配内存
-		elements = new double[nSize];
+		elements = new float[nSize];
 		
 		return true;
 	}
@@ -123,7 +123,7 @@ public class Matrix
 	 * 
 	 * @param newEps - 新的精度值
 	 */
-	public void setEps(double newEps)
+	public void setEps(float newEps)
 	{
 		eps = newEps;
 	}
@@ -131,9 +131,9 @@ public class Matrix
 	/**
 	 * 取矩阵的精度值
 	 * 
-	 * @return double型，矩阵的精度值
+	 * @return float型，矩阵的精度值
 	 */
-	public double getEps()
+	public float getEps()
 	{
 		return eps;
 	}
@@ -259,9 +259,9 @@ public class Matrix
 	 * @param value - 一维数组，长度为numColumns*numRows，存储
      *	              矩阵各元素的值
 	 */
-	public void setData(double[] value)
+	public void setData(float[] value)
 	{
-		elements = (double[])value.clone();
+		elements = (float[])value.clone();
 	}
 
 	/**
@@ -272,7 +272,7 @@ public class Matrix
 	 * @param value - 指定元素的值
 	 * @return boolean 型，说明设置是否成功
 	 */
-	public boolean setElement(int nRow, int nCol, double value)
+	public boolean setElement(int nRow, int nCol, float value)
 	{
 		if (nCol < 0 || nCol >= numColumns || nRow < 0 || nRow >= numRows)
 			return false;						// array bounds error
@@ -287,9 +287,9 @@ public class Matrix
 	 * 
 	 * @param nRow - 元素的行
 	 * @param nCol - 元素的列
-	 * @return double 型，指定元素的值
+	 * @return float 型，指定元素的值
 	 */
-	public double getElement(int nRow, int nCol) 
+	public float getElement(int nRow, int nCol) 
 	{
 		return elements[nCol + nRow * numColumns] ;
 	}
@@ -316,9 +316,9 @@ public class Matrix
 	/**
 	 * 获取矩阵的数据
 	 * 
-	 * @return double型数组，指向矩阵各元素的数据缓冲区
+	 * @return float型数组，指向矩阵各元素的数据缓冲区
 	 */
-	public double[] getData() 
+	public float[] getData() 
 	{
 		return elements;
 	}
@@ -330,7 +330,7 @@ public class Matrix
 	 * @param pVector - 指向向量中各元素的缓冲区
 	 * @return int 型，向量中元素的个数，即矩阵的列数
 	 */
-	public int getRowVector(int nRow, double[] pVector) 
+	public int getRowVector(int nRow, float[] pVector) 
 	{
 		for (int j=0; j<numColumns; ++j)
 			pVector[j] = getElement(nRow, j);
@@ -345,7 +345,7 @@ public class Matrix
 	 * @param pVector - 指向向量中各元素的缓冲区
 	 * @return int 型，向量中元素的个数，即矩阵的行数
 	 */
-	public int getColVector(int nCol, double[] pVector) 
+	public int getColVector(int nCol, float[] pVector) 
 	{
 		for (int i=0; i<numRows; ++i)
 			pVector[i] = getElement(i, nCol);
@@ -452,7 +452,7 @@ public class Matrix
 	 * @param value - 与指定矩阵相乘的实数
 	 * @return Matrix型，指定矩阵与value相乘之积
 	 */
-	public Matrix	multiply(double value) 
+	public Matrix	multiply(float value) 
 	{
 		// 构造目标矩阵
 		Matrix	result = new Matrix(this) ;		// copy ourselves
@@ -488,12 +488,12 @@ public class Matrix
 		// [D][E][F] * [I][J] =   [D*G + E*I + F*K][D*H + E*J + F*L]
 		//             [K][L]
 		//
-		double	value ;
+		float	value ;
 		for (int i = 0 ; i < result.getNumRows() ; ++i)
 		{
 			for (int j = 0 ; j < other.getNumColumns() ; ++j)
 			{
-				value = 0.0 ;
+				value = 0.0f ;
 				for (int k = 0 ; k < numColumns ; ++k)
 				{
 					value += getElement(i, k) * other.getElement(k, j) ;
@@ -535,13 +535,13 @@ public class Matrix
 		{
 		    for (int j=0; j<BR.getNumColumns(); ++j)
 			{
-				double vr = 0;
-				double vi = 0;
+				float vr = 0;
+				float vi = 0;
 	            for (int k =0; k<AR.getNumColumns(); ++k)
 				{
-	                double p = AR.getElement(i, k) * BR.getElement(k, j);
-	                double q = AI.getElement(i, k) * BI.getElement(k, j);
-	                double s = (AR.getElement(i, k) + AI.getElement(i, k)) * (BR.getElement(k, j) + BI.getElement(k, j));
+	                float p = AR.getElement(i, k) * BR.getElement(k, j);
+	                float q = AI.getElement(i, k) * BI.getElement(k, j);
+	                float s = (AR.getElement(i, k) + AI.getElement(i, k)) * (BR.getElement(k, j) + BI.getElement(k, j));
 	                vr += p - q;
 	                vi += s - p - q;
 				}
@@ -581,10 +581,10 @@ public class Matrix
 	 * 
 	 * @return boolean型，求逆是否成功
 	 */
-	public double invertGaussJordan(TaskMonitor taskMonitor, double x, double ap)
+	public float invertGaussJordan(TaskMonitor taskMonitor, float x, float ap)
 	{
 		int i,j,k,l,u,v;
-	    double d = 0, p = 0;
+	    float d = 0, p = 0;
 
 		// 分配内存
 	    int[] pnRow = new int[numColumns];
@@ -593,7 +593,7 @@ public class Matrix
 		// 消元
 	    for (k=0; k<=numColumns-1; k++)
 	    { 
-			d=0.0;
+			d=0.0f;
 	        for (i=k; i<=numColumns-1; i++)
 			{
 				for (j=k; j<=numColumns-1; j++)
@@ -609,7 +609,7 @@ public class Matrix
 			}
 	        
 			// 失败
-			if (d == 0.0)
+			if (d == 0.0f)
 			{
 				return -1;
 			}
@@ -639,7 +639,7 @@ public class Matrix
 			}
 
 	        l=k*numColumns+k;
-	        elements[l]=1.0/elements[l];
+	        elements[l]=1.0f/elements[l];
 	        for (j=0; j<=numColumns-1; j++)
 			{
 				if (j != k)
@@ -729,7 +729,7 @@ public class Matrix
 	public boolean invertGaussJordan(Matrix mtxImag)
 	{
 		int i,j,k,l,u,v,w;
-	    double p,q,s,t,d,b;
+	    float p,q,s,t,d,b;
 
 		// 分配内存
 	    int[] pnRow = new int[numColumns];
@@ -738,7 +738,7 @@ public class Matrix
 		// 消元
 	    for (k=0; k<=numColumns-1; k++)
 	    { 
-			d=0.0;
+			d=0.0f;
 	        for (i=k; i<=numColumns-1; i++)
 			{
 				for (j=k; j<=numColumns-1; j++)
@@ -755,7 +755,7 @@ public class Matrix
 			}
 
 			// 失败
-	        if (d == 0.0)
+	        if (d == 0.0f)
 	        { 
 	            return false;
 	        }
@@ -888,16 +888,16 @@ public class Matrix
 	public boolean invertSsgj()
 	{ 
 		int i, j ,k, m;
-	    double w, g;
+	    float w, g;
 
 		// 临时内存
-	    double[] pTmp = new double[numColumns];
+	    float[] pTmp = new float[numColumns];
 
 		// 逐列处理
 	    for (k=0; k<=numColumns-1; k++)
 	    { 
 			w=elements[0];
-	        if (w == 0.0)
+	        if (w == 0.0f)
 	        { 
 				return false;
 			}
@@ -913,7 +913,7 @@ public class Matrix
 	              elements[(i-1)*numColumns+j-1]=elements[i*numColumns+j]+g*pTmp[j];
 	        }
 
-	        elements[numColumns*numColumns-1]=1.0/w;
+	        elements[numColumns*numColumns-1]=1.0f/w;
 	        for (i=1; i<=numColumns-1; i++)
 				elements[(numColumns-1)*numColumns+i-1]=pTmp[i];
 	    }
@@ -934,12 +934,12 @@ public class Matrix
 	public boolean invertTrench()
 	{ 
 		int i,j,k;
-	    double a,s;
+	    float a,s;
 
 		// 上三角元素
-		double[] t = new double[numColumns];
+		float[] t = new float[numColumns];
 		// 下三角元素
-		double[] tt = new double[numColumns];
+		float[] tt = new float[numColumns];
 
 		// 上、下三角元素赋值
 		for (i=0; i<numColumns; ++i)
@@ -949,12 +949,12 @@ public class Matrix
 		}
 
 		// 临时缓冲区
-		double[] c = new double[numColumns];
-		double[] r = new double[numColumns];
-		double[] p = new double[numColumns];
+		float[] c = new float[numColumns];
+		float[] r = new float[numColumns];
+		float[] p = new float[numColumns];
 
 		// 非Toeplitz矩阵，返回
-	    if (t[0] == 0.0)
+	    if (t[0] == 0.0f)
 	    { 
 			return false;
 	    }
@@ -965,7 +965,7 @@ public class Matrix
 
 	    for (k=0; k<=numColumns-3; k++)
 	    { 
-			s=0.0;
+			s=0.0f;
 	        for (j=1; j<=k+1; j++)
 				s=s+c[k+1-j]*tt[j];
 
@@ -974,7 +974,7 @@ public class Matrix
 				p[i]=c[i]+s*r[k-i];
 
 	        c[k+1]=-s;
-	        s=0.0;
+	        s=0.0f;
 	        for (j=1; j<=k+1; j++)
 	          s=s+r[k+1-j]*t[j];
 	        
@@ -986,20 +986,20 @@ public class Matrix
 	        }
 
 	        r[k+1]=-s;
-			a=0.0;
+			a=0.0f;
 	        for (j=1; j<=k+2; j++)
 	          a=a+t[j]*c[j-1];
 
 	        a=t[0]-a;
 
 			// 求解失败
-	        if (a == 0.0)
+	        if (a == 0.0f)
 			{ 
 				return false;
 			}
 	    }
 
-	    elements[0]=1.0/a;
+	    elements[0]=1.0f/a;
 	    for (i=0; i<=numColumns-2; i++)
 	    { 
 			k=i+1; 
@@ -1024,21 +1024,21 @@ public class Matrix
 	/**
 	 * 求行列式值的全选主元高斯消去法
 	 * 
-	 * @return double型，行列式的值
+	 * @return float型，行列式的值
 	 */
-	public double computeDetGauss()
+	public float computeDetGauss()
 	{ 
 		int i,j,k,is = 0,js = 0,l,u,v;
-	    double f,det,q,d;
+	    float f,det,q,d;
 	    
 		// 初值
-		f=1.0; 
-		det=1.0;
+		f=1.0f; 
+		det=1.0f;
 	    
 		// 消元
 		for (k=0; k<=numColumns-2; k++)
 	    { 
-			q=0.0;
+			q=0.0f;
 	        for (i=k; i<=numColumns-1; i++)
 			{
 				for (j=k; j<=numColumns-1; j++)
@@ -1054,9 +1054,9 @@ public class Matrix
 				}
 			}
 
-	        if (q == 0.0)
+	        if (q == 0.0f)
 	        { 
-				det=0.0; 
+				det=0.0f; 
 				return(det);
 			}
 	        
@@ -1113,7 +1113,7 @@ public class Matrix
 	public int computeRankGauss()
 	{ 
 		int i,j,k,nn,is = 0,js = 0,l,ll,u,v;
-	    double q,d;
+	    float q,d;
 	    
 		// 秩小于等于行列数
 		nn = numRows;
@@ -1125,7 +1125,7 @@ public class Matrix
 		// 消元求解
 	    for (l=0; l<=nn-1; l++)
 	    { 
-			q=0.0;
+			q=0.0f;
 	        for (i=l; i<=numRows-1; i++)
 			{
 				for (j=l; j<=numColumns-1; j++)
@@ -1141,7 +1141,7 @@ public class Matrix
 				}
 			}
 
-	        if (q == 0.0) 
+	        if (q == 0.0f) 
 				return(k);
 
 	        k=k+1;
@@ -1192,15 +1192,15 @@ public class Matrix
 	public boolean computeDetCholesky(Real realDetValue)
 	{ 
 		int i,j,k,u,l;
-	    double d, dblDet;
+	    float d, dblDet;
 	    
 		// 不满足求解要求
-		if (elements[0] <= 0.0)
+		if (elements[0] <= 0.0f)
 			return false;
 
 		// 乔里斯基分解
 
-	    elements[0]=Math.sqrt(elements[0]);
+	    elements[0]=(float)Math.sqrt(elements[0]);
 	    d=elements[0];
 
 	    for (i=1; i<=numColumns-1; i++)
@@ -1218,10 +1218,10 @@ public class Matrix
 				elements[l]=elements[l]-elements[u]*elements[u];
 			}
 	        
-			if (elements[l] <= 0.0)
+			if (elements[l] <= 0.0f)
 				return false;
 
-	        elements[l]=Math.sqrt(elements[l]);
+	        elements[l]=(float)(float)Math.sqrt(elements[l]);
 	        d=d*elements[l];
 	        
 			for (i=j+1; i<=numColumns-1; i++)
@@ -1241,7 +1241,7 @@ public class Matrix
 		// 下三角矩阵
 	    for (i=0; i<=numColumns-2; i++)
 			for (j=i+1; j<=numColumns-1; j++)
-				elements[i*numColumns+j]=0.0;
+				elements[i*numColumns+j]=0.0f;
 
 		return true;
 	}
@@ -1265,7 +1265,7 @@ public class Matrix
 		for (k=0; k<=numColumns-2; k++)
 	    { 
 			ll=k*numColumns+k;
-			if (elements[ll] == 0.0)
+			if (elements[ll] == 0.0f)
 				return false;
 
 	        for (i=k+1; i<=numColumns-1; i++)
@@ -1291,17 +1291,17 @@ public class Matrix
 	        { 
 				w=i*numColumns+j; 
 				mtxL.elements[w]=elements[w]; 
-				mtxU.elements[w]=0.0;
+				mtxU.elements[w]=0.0f;
 			}
 
 	        w=i*numColumns+i;
-	        mtxL.elements[w]=1.0; 
+	        mtxL.elements[w]=1.0f; 
 			mtxU.elements[w]=elements[w];
 	        
 			for (j=i+1; j<=numColumns-1; j++)
 	        { 
 				w=i*numColumns+j; 
-				mtxL.elements[w]=0.0; 
+				mtxL.elements[w]=0.0f; 
 				mtxU.elements[w]=elements[w];
 			}
 	    }
@@ -1318,7 +1318,7 @@ public class Matrix
 	public boolean splitQR(Matrix mtxQ)
 	{ 
 		int i,j,k,l,nn,p,jj;
-	    double u,alpha,w,t;
+	    float u,alpha,w,t;
 	    
 		if (numRows < numColumns)
 			return false;
@@ -1333,9 +1333,9 @@ public class Matrix
 			for (j=0; j<=numRows-1; j++)
 			{ 
 				l=i*numRows+j; 
-				mtxQ.elements[l]=0.0;
+				mtxQ.elements[l]=0.0f;
 				if (i==j) 
-					mtxQ.elements[l]=1.0;
+					mtxQ.elements[l]=1.0f;
 			}
 		}
 
@@ -1347,7 +1347,7 @@ public class Matrix
 
 	    for (k=0; k<=nn-1; k++)
 	    { 
-			u=0.0; 
+			u=0.0f; 
 			l=k*numColumns+k;
 	        for (i=k; i<=numRows-1; i++)
 	        { 
@@ -1356,22 +1356,22 @@ public class Matrix
 					u=w;
 	        }
 	        
-			alpha=0.0;
+			alpha=0.0f;
 	        for (i=k; i<=numRows-1; i++)
 	        { 
 				t=elements[i*numColumns+k]/u; 
 				alpha=alpha+t*t;
 			}
 
-	        if (elements[l]>0.0) 
+	        if (elements[l]>0.0f) 
 				u=-u;
 
-	        alpha=u*Math.sqrt(alpha);
-	        if (alpha == 0.0)
+	        alpha=u*(float)Math.sqrt(alpha);
+	        if (alpha == 0.0f)
 				return false;
 
-	        u=Math.sqrt(2.0*alpha*(alpha-elements[l]));
-	        if ((u+1.0)!=1.0)
+	        u=(float)Math.sqrt(2.0f*alpha*(alpha-elements[l]));
+	        if ((u+1.0f)!=1.0f)
 	        { 
 				elements[l]=(elements[l]-alpha)/u;
 	            for (i=k+1; i<=numRows-1; i++)
@@ -1382,20 +1382,20 @@ public class Matrix
 	            
 				for (j=0; j<=numRows-1; j++)
 	            { 
-					t=0.0;
+					t=0.0f;
 	                for (jj=k; jj<=numRows-1; jj++)
 						t=t+elements[jj*numColumns+k]*mtxQ.elements[jj*numRows+j];
 
 	                for (i=k; i<=numRows-1; i++)
 	                { 
 						p=i*numRows+j; 
-						mtxQ.elements[p]=mtxQ.elements[p]-2.0*t*elements[i*numColumns+k];
+						mtxQ.elements[p]=mtxQ.elements[p]-2.0f*t*elements[i*numColumns+k];
 					}
 	            }
 	            
 				for (j=k+1; j<=numColumns-1; j++)
 	            { 
-					t=0.0;
+					t=0.0f;
 	                
 					for (jj=k; jj<=numRows-1; jj++)
 						t=t+elements[jj*numColumns+k]*elements[jj*numColumns+j];
@@ -1403,13 +1403,13 @@ public class Matrix
 					for (i=k; i<=numRows-1; i++)
 	                { 
 						p=i*numColumns+j; 
-						elements[p]=elements[p]-2.0*t*elements[i*numColumns+k];
+						elements[p]=elements[p]-2.0f*t*elements[i*numColumns+k];
 					}
 	            }
 	            
 				elements[l]=alpha;
 	            for (i=k+1; i<=numRows-1; i++)
-					elements[i*numColumns+k]=0.0;
+					elements[i*numColumns+k]=0.0f;
 	        }
 	    }
 	    
@@ -1437,12 +1437,12 @@ public class Matrix
 	 * @param eps - 计算精度
 	 * @return boolean型，求解是否成功
 	 */
-	public boolean splitUV(Matrix mtxU, Matrix mtxV, double eps)
+	public boolean splitUV(Matrix mtxU, Matrix mtxV, float eps)
 	{ 
 		int i,j,k,l,it,ll,kk,ix,iy,mm,nn,iz,m1,ks;
-	    double d,dd,t,sm,sm1,em1,sk,ek,b,c,shh;
-	    double[] fg = new double[2];
-	    double[] cs = new double[2];
+	    float d,dd,t,sm,sm1,em1,sk,ek,b,c,shh;
+	    float[] fg = new float[2];
+	    float[] cs = new float[2];
 
 		int m = numRows;
 		int n = numColumns;
@@ -1453,9 +1453,9 @@ public class Matrix
 
 		// 临时缓冲区
 		int ka = Math.max(m, n) + 1;
-		double[] s = new double[ka];
-		double[] e = new double[ka];
-		double[] w = new double[ka];
+		float[] s = new float[ka];
+		float[] e = new float[ka];
+		float[] w = new float[ka];
 
 		// 指定迭代次数为60
 	    it=60; 
@@ -1480,21 +1480,21 @@ public class Matrix
 	        { 
 				if (kk<=k)
 	            { 
-					d=0.0;
+					d=0.0f;
 	                for (i=kk; i<=m; i++)
 	                { 
 						ix=(i-1)*n+kk-1; 
 						d=d+elements[ix]*elements[ix];
 					}
 
-	                s[kk-1]=Math.sqrt(d);
-	                if (s[kk-1]!=0.0)
+	                s[kk-1]=(float)Math.sqrt(d);
+	                if (s[kk-1]!=0.0f)
 	                { 
 						ix=(kk-1)*n+kk-1;
-	                    if (elements[ix]!=0.0)
+	                    if (elements[ix]!=0.0f)
 	                    { 
 							s[kk-1]=Math.abs(s[kk-1]);
-	                        if (elements[ix]<0.0) 
+	                        if (elements[ix]<0.0f) 
 								s[kk-1]=-s[kk-1];
 	                    }
 	                    
@@ -1504,7 +1504,7 @@ public class Matrix
 	                        elements[iy]=elements[iy]/s[kk-1];
 	                    }
 	                    
-						elements[ix]=1.0+elements[ix];
+						elements[ix]=1.0f+elements[ix];
 	                }
 	                
 					s[kk-1]=-s[kk-1];
@@ -1514,9 +1514,9 @@ public class Matrix
 	            { 
 					for (j=kk+1; j<=n; j++)
 	                { 
-						if ((kk<=k)&&(s[kk-1]!=0.0))
+						if ((kk<=k)&&(s[kk-1]!=0.0f))
 	                    { 
-							d=0.0;
+							d=0.0f;
 	                        for (i=kk; i<=m; i++)
 	                        { 
 								ix=(i-1)*n+kk-1;
@@ -1549,31 +1549,31 @@ public class Matrix
 	            
 				if (kk<=l)
 	            { 
-					d=0.0;
+					d=0.0f;
 	                for (i=kk+1; i<=n; i++)
 						d=d+e[i-1]*e[i-1];
 	                
-					e[kk-1]=Math.sqrt(d);
-	                if (e[kk-1]!=0.0)
+					e[kk-1]=(float)Math.sqrt(d);
+	                if (e[kk-1]!=0.0f)
 	                { 
-						if (e[kk]!=0.0)
+						if (e[kk]!=0.0f)
 	                    { 
 							e[kk-1]=Math.abs(e[kk-1]);
-	                        if (e[kk]<0.0) 
+	                        if (e[kk]<0.0f) 
 								e[kk-1]=-e[kk-1];
 	                    }
 
 	                    for (i=kk+1; i<=n; i++)
 	                      e[i-1]=e[i-1]/e[kk-1];
 	                    
-						e[kk]=1.0+e[kk];
+						e[kk]=1.0f+e[kk];
 	                }
 	                
 					e[kk-1]=-e[kk-1];
-	                if ((kk+1<=m)&& (e[kk-1]!=0.0))
+	                if ((kk+1<=m)&& (e[kk-1]!=0.0f))
 	                { 
 						for (i=kk+1; i<=m; i++) 
-							w[i-1]=0.0;
+							w[i-1]=0.0f;
 	                    
 						for (j=kk+1; j<=n; j++)
 							for (i=kk+1; i<=m; i++)
@@ -1601,11 +1601,11 @@ public class Matrix
 	    if (k<n) 
 			s[k]=elements[k*n+k];
 	    if (m<mm) 
-			s[mm-1]=0.0;
+			s[mm-1]=0.0f;
 	    if (l+1<mm) 
 			e[l]=elements[l*n+mm-1];
 
-	    e[mm-1]=0.0;
+	    e[mm-1]=0.0f;
 	    nn=m;
 	    if (m>n) 
 			nn=n;
@@ -1614,8 +1614,8 @@ public class Matrix
 			for (j=k+1; j<=nn; j++)
 	        { 
 				for (i=1; i<=m; i++)
-					mtxU.elements[(i-1)*m+j-1]=0.0;
-	            mtxU.elements[(j-1)*m+j-1]=1.0;
+					mtxU.elements[(i-1)*m+j-1]=0.0f;
+	            mtxU.elements[(j-1)*m+j-1]=1.0f;
 	        }
 	    }
 	    
@@ -1625,13 +1625,13 @@ public class Matrix
 	        { 
 				kk=k-ll+1; 
 				iz=(kk-1)*m+kk-1;
-	            if (s[kk-1]!=0.0)
+	            if (s[kk-1]!=0.0f)
 	            { 
 					if (nn>=kk+1)
 					{
 						for (j=kk+1; j<=nn; j++)
 						{ 
-							d=0.0;
+							d=0.0f;
 							for (i=kk; i<=m; i++)
 							{ 
 								ix=(i-1)*m+kk-1;
@@ -1655,18 +1655,18 @@ public class Matrix
 						mtxU.elements[ix]=-mtxU.elements[ix];
 					}
 
-					mtxU.elements[iz]=1.0+mtxU.elements[iz];
+					mtxU.elements[iz]=1.0f+mtxU.elements[iz];
 					if (kk-1>=1)
 					{
 						for (i=1; i<=kk-1; i++)
-							mtxU.elements[(i-1)*m+kk-1]=0.0;
+							mtxU.elements[(i-1)*m+kk-1]=0.0f;
 					}
 				}
 	            else
 	            { 
 					for (i=1; i<=m; i++)
-						mtxU.elements[(i-1)*m+kk-1]=0.0;
-	                mtxU.elements[(kk-1)*m+kk-1]=1.0;
+						mtxU.elements[(i-1)*m+kk-1]=0.0f;
+	                mtxU.elements[(kk-1)*m+kk-1]=1.0f;
 	            }
 			}
 	    }
@@ -1676,11 +1676,11 @@ public class Matrix
 			kk=n-ll+1; 
 			iz=kk*n+kk-1;
 	        
-			if ((kk<=l) && (e[kk-1]!=0.0))
+			if ((kk<=l) && (e[kk-1]!=0.0f))
 	        { 
 				for (j=kk+1; j<=n; j++)
 	            { 
-					d=0.0;
+					d=0.0f;
 	                for (i=kk+1; i<=n; i++)
 	                { 
 						ix=(i-1)*n+kk-1; 
@@ -1699,14 +1699,14 @@ public class Matrix
 	        }
 	        
 			for (i=1; i<=n; i++)
-				mtxV.elements[(i-1)*n+kk-1]=0.0;
+				mtxV.elements[(i-1)*n+kk-1]=0.0f;
 	        
-			mtxV.elements[iz-n]=1.0;
+			mtxV.elements[iz-n]=1.0f;
 	    }
 	    
 		for (i=1; i<=m; i++)
 			for (j=1; j<=n; j++)
-				elements[(i-1)*n+j-1]=0.0;
+				elements[(i-1)*n+j-1]=0.0f;
 	    
 		m1=mm; 
 		it=60;
@@ -1724,20 +1724,20 @@ public class Matrix
 	        }
 	        
 			kk=mm-1;
-			while ((kk!=0) && (Math.abs(e[kk-1])!=0.0))
+			while ((kk!=0) && (Math.abs(e[kk-1])!=0.0f))
 	        { 
 				d=Math.abs(s[kk-1])+Math.abs(s[kk]);
 	            dd=Math.abs(e[kk-1]);
 	            if (dd>eps*d) 
 					kk=kk-1;
 	            else 
-					e[kk-1]=0.0;
+					e[kk-1]=0.0f;
 	        }
 	        
 			if (kk==mm-1)
 	        { 
 				kk=kk+1;
-	            if (s[kk-1]<0.0)
+	            if (s[kk-1]<0.0f)
 	            { 
 					s[kk-1]=-s[kk-1];
 	                for (i=1; i<=n; i++)
@@ -1784,9 +1784,9 @@ public class Matrix
 	        else
 	        { 
 				ks=mm;
-	            while ((ks>kk) && (Math.abs(s[ks-1])!=0.0))
+	            while ((ks>kk) && (Math.abs(s[ks-1])!=0.0f))
 	            { 
-					d=0.0;
+					d=0.0f;
 	                if (ks!=mm) 
 						d=d+Math.abs(e[ks-1]);
 	                if (ks!=kk+1) 
@@ -1796,7 +1796,7 @@ public class Matrix
 	                if (dd>eps*d) 
 						ks=ks-1;
 	                else 
-						s[ks-1]=0.0;
+						s[ks-1]=0.0f;
 	            }
 	            
 				if (ks==kk)
@@ -1824,15 +1824,15 @@ public class Matrix
 	                em1=e[mm-2]/d;
 	                sk=s[kk-1]/d; 
 					ek=e[kk-1]/d;
-	                b=((sm1+sm)*(sm1-sm)+em1*em1)/2.0;
+	                b=((sm1+sm)*(sm1-sm)+em1*em1)/2.0f;
 	                c=sm*em1; 
 					c=c*c; 
-					shh=0.0;
+					shh=0.0f;
 
-	                if ((b!=0.0)||(c!=0.0))
+	                if ((b!=0.0f)||(c!=0.0f))
 	                { 
-						shh=Math.sqrt(b*b+c);
-	                    if (b<0.0) 
+						shh=(float)Math.sqrt(b*b+c);
+	                    if (b<0.0f) 
 							shh=-shh;
 
 	                    shh=c/(b+shh);
@@ -1851,7 +1851,7 @@ public class Matrix
 	                    fg[1]=cs[1]*s[i];
 	                    s[i]=cs[0]*s[i];
 
-	                    if ((cs[0]!=1.0)||(cs[1]!=0.0))
+	                    if ((cs[0]!=1.0f)||(cs[1]!=0.0f))
 						{
 							for (j=1; j<=n; j++)
 	                        { 
@@ -1872,7 +1872,7 @@ public class Matrix
 
 	                    if (i<m)
 						{
-							if ((cs[0]!=1.0)||(cs[1]!=0.0))
+							if ((cs[0]!=1.0f)||(cs[1]!=0.0f))
 							{
 								for (j=1; j<=m; j++)
 								{ 
@@ -1895,7 +1895,7 @@ public class Matrix
 	                { 
 						kk=kk+1;
 	                    fg[1]=e[mm-2]; 
-						e[mm-2]=0.0;
+						e[mm-2]=0.0f;
 	                    for (ll=kk; ll<=mm-1; ll++)
 	                    { 
 							i=mm+kk-ll-1;
@@ -1908,7 +1908,7 @@ public class Matrix
 	                            e[i-2]=cs[0]*e[i-2];
 	                        }
 	                        
-							if ((cs[0]!=1.0)||(cs[1]!=0.0))
+							if ((cs[0]!=1.0f)||(cs[1]!=0.0f))
 							{
 								for (j=1; j<=n; j++)
 	                            { 
@@ -1925,7 +1925,7 @@ public class Matrix
 	                { 
 						kk=ks+1;
 	                    fg[1]=e[kk-2];
-	                    e[kk-2]=0.0;
+	                    e[kk-2]=0.0f;
 	                    for (i=kk; i<=mm; i++)
 	                    { 
 							fg[0]=s[i-1];
@@ -1933,7 +1933,7 @@ public class Matrix
 	                        s[i-1]=fg[0];
 	                        fg[1]=-cs[1]*e[i-1];
 	                        e[i-1]=cs[0]*e[i-1];
-	                        if ((cs[0]!=1.0)||(cs[1]!=0.0))
+	                        if ((cs[0]!=1.0f)||(cs[1]!=0.0f))
 							{
 								for (j=1; j<=m; j++)
 	                            { 
@@ -1954,10 +1954,10 @@ public class Matrix
 	/**
 	 * 内部函数，由SplitUV函数调用
 	 */
-	private void ppp(double[] a, double[] e, double[] s, double[] v, int m, int n)
+	private void ppp(float[] a, float[] e, float[] s, float[] v, int m, int n)
 	{ 
 		int i,j,p,q;
-	    double d;
+	    float d;
 
 	    if (m>=n) 
 			i=n;
@@ -1990,29 +1990,29 @@ public class Matrix
 	/**
 	 * 内部函数，由SplitUV函数调用
 	 */
-	private void sss(double[] fg, double[] cs)
+	private void sss(float[] fg, float[] cs)
 	{ 
-		double r,d;
+		float r,d;
 	    
-		if ((Math.abs(fg[0])+Math.abs(fg[1]))==0.0)
+		if ((Math.abs(fg[0])+Math.abs(fg[1]))==0.0f)
 	    { 
-			cs[0]=1.0; 
-			cs[1]=0.0; 
-			d=0.0;
+			cs[0]=1.0f; 
+			cs[1]=0.0f; 
+			d=0.0f;
 		}
 	    else 
 	    { 
-			d=Math.sqrt(fg[0]*fg[0]+fg[1]*fg[1]);
+			d=(float)Math.sqrt(fg[0]*fg[0]+fg[1]*fg[1]);
 	        if (Math.abs(fg[0])>Math.abs(fg[1]))
 	        { 
 				d=Math.abs(d);
-	            if (fg[0]<0.0) 
+	            if (fg[0]<0.0f) 
 					d=-d;
 	        }
 	        if (Math.abs(fg[1])>=Math.abs(fg[0]))
 	        { 
 				d=Math.abs(d);
-	            if (fg[1]<0.0) 
+	            if (fg[1]<0.0f) 
 					d=-d;
 	        }
 	        
@@ -2020,11 +2020,11 @@ public class Matrix
 			cs[1]=fg[1]/d;
 	    }
 	    
-		r=1.0;
+		r=1.0f;
 	    if (Math.abs(fg[0])>Math.abs(fg[1])) 
 			r=cs[1];
-	    else if (cs[0]!=0.0) 
-			r=1.0/cs[0];
+	    else if (cs[0]!=0.0f) 
+			r=1.0f/cs[0];
 
 	    fg[0]=d; 
 		fg[1]=r;
@@ -2039,7 +2039,7 @@ public class Matrix
 	 * @param eps - 计算精度
 	 * @return boolean型，求解是否成功
 	 */
-	public boolean invertUV(Matrix mtxAP, Matrix mtxU, Matrix mtxV, double eps)
+	public boolean invertUV(Matrix mtxAP, Matrix mtxU, Matrix mtxV, float eps)
 	{ 
 		int i,j,k,l,t,p,q,f;
 
@@ -2061,7 +2061,7 @@ public class Matrix
 			j=m;
 	    j=j-1;
 	    k=0;
-	    while ((k<=j) && (elements[k*n+k]!=0.0)) 
+	    while ((k<=j) && (elements[k*n+k]!=0.0f)) 
 			k=k+1;
 
 	    k=k-1;
@@ -2070,7 +2070,7 @@ public class Matrix
 			for (j=0; j<=m-1; j++)
 			{ 
 				t=i*m+j;	
-				mtxAP.elements[t]=0.0;
+				mtxAP.elements[t]=0.0f;
 				for (l=0; l<=k; l++)
 				{ 
 					f=l*n+i; 
@@ -2094,10 +2094,10 @@ public class Matrix
 	 *               次对角线元素
 	 * @return boolean型，求解是否成功
 	 */
-	public boolean makeSymTri(Matrix mtxQ, Matrix mtxT, double[] dblB, double[] dblC)
+	public boolean makeSymTri(Matrix mtxQ, Matrix mtxT, float[] dblB, float[] dblC)
 	{ 
 		int i,j,k,u;
-	    double h,f,g,h2;
+	    float h,f,g,h2;
 	    
 		// 初始化矩阵Q和T
 		if (! mtxQ.init(numColumns, numColumns) ||
@@ -2118,7 +2118,7 @@ public class Matrix
 
 	    for (i=numColumns-1; i>=1; i--)
 	    { 
-			h=0.0;
+			h=0.0f;
 	        if (i>1)
 			{
 				for (k=0; k<=i-1; k++)
@@ -2128,27 +2128,27 @@ public class Matrix
 				}
 			}
 
-	        if (h == 0.0)
+	        if (h == 0.0f)
 	        { 
-				dblC[i]=0.0;
+				dblC[i]=0.0f;
 	            if (i==1) 
 					dblC[i]=mtxQ.elements[i*numColumns+i-1];
-	            dblB[i]=0.0;
+	            dblB[i]=0.0f;
 	        }
 	        else
 	        { 
-				dblC[i]=Math.sqrt(h);
+				dblC[i]=(float)Math.sqrt(h);
 	            u=i*numColumns+i-1;
-	            if (mtxQ.elements[u]>0.0) 
+	            if (mtxQ.elements[u]>0.0f) 
 					dblC[i]=-dblC[i];
 
 	            h=h-mtxQ.elements[u]*dblC[i];
 	            mtxQ.elements[u]=mtxQ.elements[u]-dblC[i];
-	            f=0.0;
+	            f=0.0f;
 	            for (j=0; j<=i-1; j++)
 	            { 
 					mtxQ.elements[j*numColumns+i]=mtxQ.elements[i*numColumns+j]/h;
-	                g=0.0;
+	                g=0.0f;
 	                for (k=0; k<=j; k++)
 						g=g+mtxQ.elements[j*numColumns+k]*mtxQ.elements[i*numColumns+k];
 
@@ -2180,15 +2180,15 @@ public class Matrix
 		for (i=0; i<=numColumns-2; i++) 
 			dblC[i]=dblC[i+1];
 	    
-		dblC[numColumns-1]=0.0;
-	    dblB[0]=0.0;
+		dblC[numColumns-1]=0.0f;
+	    dblB[0]=0.0f;
 	    for (i=0; i<=numColumns-1; i++)
 	    { 
-			if ((dblB[i]!=(double)0.0) && (i-1>=0))
+			if ((dblB[i]!=(float)0.0f) && (i-1>=0))
 			{
 				for (j=0; j<=i-1; j++)
 	            { 
-					g=0.0;
+					g=0.0f;
 					for (k=0; k<=i-1; k++)
 						g=g+mtxQ.elements[i*numColumns+k]*mtxQ.elements[k*numColumns+j];
 
@@ -2201,13 +2201,13 @@ public class Matrix
 			}
 
 	        u=i*numColumns+i;
-	        dblB[i]=mtxQ.elements[u]; mtxQ.elements[u]=1.0;
+	        dblB[i]=mtxQ.elements[u]; mtxQ.elements[u]=1.0f;
 	        if (i-1>=0)
 			{
 				for (j=0; j<=i-1; j++)
 	            { 
-					mtxQ.elements[i*numColumns+j]=0.0; 
-					mtxQ.elements[j*numColumns+i]=0.0;
+					mtxQ.elements[i*numColumns+j]=0.0f; 
+					mtxQ.elements[j*numColumns+i]=0.0f;
 				}
 			}
 	    }
@@ -2246,16 +2246,16 @@ public class Matrix
 	 * @param eps - 计算精度
 	 * @return boolean型，求解是否成功
 	 */
-	public boolean computeEvSymTri(double[] dblB, double[] dblC, Matrix mtxQ, int nMaxIt, double eps)
+	public boolean computeEvSymTri(float[] dblB, float[] dblC, Matrix mtxQ, int nMaxIt, float eps)
 	{
 		int i,j,k,m,it,u,v;
-	    double d,f,h,g,p,r,e,s;
+	    float d,f,h,g,p,r,e,s;
 	    
 		// 初值
 		int n = mtxQ.getNumColumns();
-		dblC[n-1]=0.0; 
-		d=0.0; 
-		f=0.0;
+		dblC[n-1]=0.0f; 
+		d=0.0f; 
+		f=0.0f;
 	    
 		// 迭代计算
 
@@ -2279,9 +2279,9 @@ public class Matrix
 
 	                it=it+1;
 	                g=dblB[j];
-	                p=(dblB[j+1]-g)/(2.0*dblC[j]);
-	                r=Math.sqrt(p*p+1.0);
-	                if (p>=0.0) 
+	                p=(dblB[j+1]-g)/(2.0f*dblC[j]);
+	                r=(float)Math.sqrt(p*p+1.0f);
+	                if (p>=0.0f) 
 						dblB[j]=dblC[j]/(p+r);
 	                else 
 						dblB[j]=dblC[j]/(p-r);
@@ -2292,8 +2292,8 @@ public class Matrix
 	                
 					f=f+h; 
 					p=dblB[m]; 
-					e=1.0; 
-					s=0.0;
+					e=1.0f; 
+					s=0.0f;
 	                for (i=m-1; i>=j; i--)
 	                { 
 						g=e*dblC[i]; 
@@ -2301,17 +2301,17 @@ public class Matrix
 	                    if (Math.abs(p)>=Math.abs(dblC[i]))
 	                    { 
 							e=dblC[i]/p; 
-							r=Math.sqrt(e*e+1.0);
+							r=(float)Math.sqrt(e*e+1.0f);
 	                        dblC[i+1]=s*p*r; 
 							s=e/r; 
-							e=1.0/r;
+							e=1.0f/r;
 	                    }
 	                    else
 						{ 
 							e=p/dblC[i]; 
-							r=Math.sqrt(e*e+1.0);
+							r=(float)Math.sqrt(e*e+1.0f);
 	                        dblC[i+1]=s*dblC[i]*r;
-	                        s=1.0/r; 
+	                        s=1.0f/r; 
 							e=e/r;
 	                    }
 	                    
@@ -2375,11 +2375,11 @@ public class Matrix
 	public void makeHberg()
 	{ 
 		int i = 0,j,k,u,v;
-	    double d,t;
+	    float d,t;
 
 	    for (k=1; k<=numColumns-2; k++)
 	    { 
-			d=0.0;
+			d=0.0f;
 	        for (j=k; j<=numColumns-1; j++)
 	        { 
 				u=j*numColumns+k-1; 
@@ -2391,7 +2391,7 @@ public class Matrix
 				}
 	        }
 	        
-			if (d != 0.0)
+			if (d != 0.0f)
 	        { 
 				if (i!=k)
 	            { 
@@ -2418,7 +2418,7 @@ public class Matrix
 	            { 
 					u=i*numColumns+k-1; 
 					t=elements[u]/d; 
-					elements[u]=0.0;
+					elements[u]=0.0f;
 	                for (j=k; j<=numColumns-1; j++)
 	                { 
 						v=i*numColumns+j;
@@ -2444,10 +2444,10 @@ public class Matrix
 	 * @param eps - 计算精度
 	 * @return boolean型，求解是否成功
 	 */
-	public boolean computeEvHBerg(double[] dblU, double[] dblV, int nMaxIt, double eps)
+	public boolean computeEvHBerg(float[] dblU, float[] dblV, int nMaxIt, float eps)
 	{ 
 		int m,it,i,j,k,l,ii,jj,kk,ll;
-	    double b,c,w,g,xy,p,q,r,x,s,e,f,z,y;
+	    float b,c,w,g,xy,p,q,r,x,s,e,f,z,y;
 	    
 		int n = numColumns;
 
@@ -2467,7 +2467,7 @@ public class Matrix
 	        if (l==m-1)
 	        { 
 				dblU[m-1]=elements[(m-1)*n+m-1]; 
-				dblV[m-1]=0.0;
+				dblV[m-1]=0.0f;
 	            m=m-1; 
 				it=0;
 	        }
@@ -2475,22 +2475,22 @@ public class Matrix
 	        { 
 				b=-(elements[ii]+elements[ll]);
 	            c=elements[ii]*elements[ll]-elements[jj]*elements[kk];
-	            w=b*b-4.0*c;
-	            y=Math.sqrt(Math.abs(w));
-	            if (w>0.0)
+	            w=b*b-4.0f*c;
+	            y=(float)Math.sqrt(Math.abs(w));
+	            if (w>0.0f)
 	            { 
-					xy=1.0;
-	                if (b<0.0) 
-						xy=-1.0;
-	                dblU[m-1]=(-b-xy*y)/2.0;
+					xy=1.0f;
+	                if (b<0.0f) 
+						xy=-1.0f;
+	                dblU[m-1]=(-b-xy*y)/2.0f;
 	                dblU[m-2]=c/dblU[m-1];
-	                dblV[m-1]=0.0; dblV[m-2]=0.0;
+	                dblV[m-1]=0.0f; dblV[m-2]=0.0f;
 	            }
 	            else
 	            { 
-					dblU[m-1]=-b/2.0; 
+					dblU[m-1]=-b/2.0f; 
 					dblU[m-2]=dblU[m-1];
-	                dblV[m-1]=y/2.0; 
+	                dblV[m-1]=y/2.0f; 
 					dblV[m-2]=-dblV[m-1];
 	            }
 	            
@@ -2504,16 +2504,16 @@ public class Matrix
 
 	            it=it+1;
 	            for (j=l+2; j<=m-1; j++)
-					elements[j*n+j-2]=0.0;
+					elements[j*n+j-2]=0.0f;
 	            for (j=l+3; j<=m-1; j++)
-					elements[j*n+j-3]=0.0;
+					elements[j*n+j-3]=0.0f;
 	            for (k=l; k<=m-2; k++)
 	            { 
 					if (k!=l)
 	                { 
 						p=elements[k*n+k-1]; 
 						q=elements[(k+1)*n+k-1];
-	                    r=0.0;
+	                    r=0.0f;
 	                    if (k!=m-2) 
 							r=elements[(k+2)*n+k-1];
 	                }
@@ -2530,12 +2530,12 @@ public class Matrix
 	                    r=elements[kk]*elements[(l+2)*n+l+1];
 	                }
 	                
-					if ((Math.abs(p)+Math.abs(q)+Math.abs(r))!=0.0)
+					if ((Math.abs(p)+Math.abs(q)+Math.abs(r))!=0.0f)
 	                { 
-						xy=1.0;
-	                    if (p<0.0) 
-							xy=-1.0;
-	                    s=xy*Math.sqrt(p*p+q*q+r*r);
+						xy=1.0f;
+	                    if (p<0.0f) 
+							xy=-1.0f;
+	                    s=xy*(float)Math.sqrt(p*p+q*q+r*r);
 	                    if (k!=l) 
 							elements[k*n+k-1]=-s;
 	                    e=-q/s; 
@@ -2604,10 +2604,10 @@ public class Matrix
 	 * @param eps - 计算精度
 	 * @return boolean型，求解是否成功
 	 */
-	public boolean computeEvJacobi(double[] dblEigenValue, Matrix mtxEigenVector, int nMaxIt, double eps)
+	public boolean computeEvJacobi(float[] dblEigenValue, Matrix mtxEigenVector, int nMaxIt, float eps)
 	{ 
 		int i,j,p = 0,q = 0,u,w,t,s,l;
-	    double fm,cn,sn,omega,x,y,d;
+	    float fm,cn,sn,omega,x,y,d;
 	    
 		if (! mtxEigenVector.init(numColumns, numColumns))
 			return false;
@@ -2615,15 +2615,15 @@ public class Matrix
 		l=1;
 	    for (i=0; i<=numColumns-1; i++)
 	    { 
-			mtxEigenVector.elements[i*numColumns+i]=1.0;
+			mtxEigenVector.elements[i*numColumns+i]=1.0f;
 	        for (j=0; j<=numColumns-1; j++)
 				if (i!=j) 
-					mtxEigenVector.elements[i*numColumns+j]=0.0;
+					mtxEigenVector.elements[i*numColumns+j]=0.0f;
 	    }
 	    
 		while (true)
 	    { 
-			fm=0.0;
+			fm=0.0f;
 	        for (i=1; i<=numColumns-1; i++)
 			{
 				for (j=0; j<=i-1; j++)
@@ -2654,20 +2654,20 @@ public class Matrix
 			t=q*numColumns+p; 
 			s=q*numColumns+q;
 	        x=-elements[u]; 
-			y=(elements[s]-elements[w])/2.0;
-	        omega=x/Math.sqrt(x*x+y*y);
+			y=(elements[s]-elements[w])/2.0f;
+	        omega=x/(float)Math.sqrt(x*x+y*y);
 
-	        if (y<0.0) 
+	        if (y<0.0f) 
 				omega=-omega;
 
-	        sn=1.0+Math.sqrt(1.0-omega*omega);
-	        sn=omega/Math.sqrt(2.0*sn);
-	        cn=Math.sqrt(1.0-sn*sn);
+	        sn=1.0f+(float)Math.sqrt(1.0f-omega*omega);
+	        sn=omega/(float)Math.sqrt(2.0f*sn);
+	        cn=(float)Math.sqrt(1.0f-sn*sn);
 	        fm=elements[w];
 	        elements[w]=fm*cn*cn+elements[s]*sn*sn+elements[u]*omega;
 	        elements[s]=fm*sn*sn+elements[s]*cn*cn-elements[u]*omega;
-	        elements[u]=0.0; 
-			elements[t]=0.0;
+	        elements[u]=0.0f; 
+			elements[t]=0.0f;
 	        for (j=0; j<=numColumns-1; j++)
 			{
 				if ((j!=p) && (j!=q))
@@ -2711,23 +2711,23 @@ public class Matrix
 	 * @param eps - 计算精度
 	 * @return boolean型，求解是否成功
 	 */
-	public boolean computeEvJacobi(double[] dblEigenValue, Matrix mtxEigenVector, double eps)
+	public boolean computeEvJacobi(float[] dblEigenValue, Matrix mtxEigenVector, float eps)
 	{ 
 		int i,j,p,q,u,w,t,s;
-	    double ff,fm,cn,sn,omega,x,y,d;
+	    float ff,fm,cn,sn,omega,x,y,d;
 	    
 		if (! mtxEigenVector.init(numColumns, numColumns))
 			return false;
 
 		for (i=0; i<=numColumns-1; i++)
 	    { 
-			mtxEigenVector.elements[i*numColumns+i]=1.0;
+			mtxEigenVector.elements[i*numColumns+i]=1.0f;
 	        for (j=0; j<=numColumns-1; j++)
 				if (i!=j) 
-					mtxEigenVector.elements[i*numColumns+j]=0.0;
+					mtxEigenVector.elements[i*numColumns+j]=0.0f;
 	    }
 	    
-		ff=0.0;
+		ff=0.0f;
 	    for (i=1; i<=numColumns-1; i++)
 		{
 			for (j=0; j<=i-1; j++)
@@ -2737,8 +2737,8 @@ public class Matrix
 			}
 		}
 
-	    ff=Math.sqrt(2.0*ff);
-		ff=ff/(1.0*numColumns);
+	    ff=(float)Math.sqrt(2.0f*ff);
+		ff=ff/(1.0f*numColumns);
 
 		boolean nextLoop = false;
 		while (true)
@@ -2758,18 +2758,18 @@ public class Matrix
 						t=q*numColumns+p; 
 						s=q*numColumns+q;
 						x=-elements[u]; 
-						y=(elements[s]-elements[w])/2.0;
-						omega=x/Math.sqrt(x*x+y*y);
-						if (y<0.0) 
+						y=(elements[s]-elements[w])/2.0f;
+						omega=x/(float)Math.sqrt(x*x+y*y);
+						if (y<0.0f) 
 							omega=-omega;
 					    
-						sn=1.0+Math.sqrt(1.0-omega*omega);
-						sn=omega/Math.sqrt(2.0*sn);
-						cn=Math.sqrt(1.0-sn*sn);
+						sn=1.0f+(float)Math.sqrt(1.0f-omega*omega);
+						sn=omega/(float)Math.sqrt(2.0f*sn);
+						cn=(float)Math.sqrt(1.0f-sn*sn);
 						fm=elements[w];
 						elements[w]=fm*cn*cn+elements[s]*sn*sn+elements[u]*omega;
 						elements[s]=fm*sn*sn+elements[s]*cn*cn-elements[u]*omega;
-						elements[u]=0.0; elements[t]=0.0;
+						elements[u]=0.0f; elements[t]=0.0f;
 					    
 						for (j=0; j<=numColumns-1; j++)
 						{
@@ -2829,7 +2829,7 @@ public class Matrix
 				return true;
 			}
 		    
-			ff=ff/(1.0*numColumns);
+			ff=ff/(1.0f*numColumns);
 		}
 	}
 }

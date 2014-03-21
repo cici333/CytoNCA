@@ -26,10 +26,10 @@ public class IC extends Algorithm {
 		List<CyEdge> alledges = currentNetwork.getEdgeList();
 		int nlength = allNodes.size();
 		int elength = alledges.size();
-		double x = 0;
-		double allprocess =  elength + 10*nlength;
+		float x = 0;
+		float allprocess =  elength + 10*nlength;
 		
-		double[] initial = new double[nlength * nlength];
+		float[] initial = new float[nlength * nlength];
 		
 		
 		for(int i=0; i <nlength*nlength; i++){
@@ -39,7 +39,7 @@ public class IC extends Algorithm {
 		
 
 		for(int i = 0; i < nlength; i++){
-			double degree = currentNetwork.getNeighborList(allNodes.get(i), Type.ANY).size();
+			float degree = currentNetwork.getNeighborList(allNodes.get(i), Type.ANY).size();
 			CMatrix.setElement(i, i, degree+1);
 		}
 		
@@ -67,7 +67,7 @@ public class IC extends Algorithm {
 				CyEdge e = it.next();
 				int a = allNodes.indexOf(e.getSource());
 				int b = allNodes.indexOf(e.getTarget());
-				double dis = currentNetwork.getRow(e).get("weight", Double.class);
+				float dis = currentNetwork.getRow(e).get("weight", float.class);
 				
 				CMatrix.setElement(a, b, dis-1);
 				CMatrix.setElement(b, a, dis-1);
@@ -97,7 +97,7 @@ public class IC extends Algorithm {
 			for(int i = 0; i < nlength; i++){
 				for(int j = 0; j < nlength; j++){
 					if(i != j){
-						double v = CMatrix.getElement(i, i) + CMatrix.getElement(j, j) - 2*CMatrix.getElement(i, j);
+						float v = CMatrix.getElement(i, i) + CMatrix.getElement(j, j) - 2*CMatrix.getElement(i, j);
 						IMatrix.setElement(i, j, v);
 					}
 				}
@@ -114,7 +114,7 @@ public class IC extends Algorithm {
 			
 			if(!isweight){
 				for(int i = 0; i < nlength; i++){
-					double sum = 0;
+					float sum = 0;
 					for(int j = 0; j < nlength; j++){
 						sum += IMatrix.getElement(i, j);
 					}
@@ -136,7 +136,7 @@ public class IC extends Algorithm {
 				}
 			}else{
 				for(int i = 0; i < nlength; i++){
-					double sum = 0;
+					float sum = 0;
 					for(int j = 0; j < nlength; j++){
 						sum += IMatrix.getElement(i, j);
 					}

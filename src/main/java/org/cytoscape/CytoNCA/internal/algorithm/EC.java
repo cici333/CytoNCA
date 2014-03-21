@@ -18,7 +18,7 @@ import org.cytoscape.model.CyNode;
 
 public class EC extends Algorithm {
 /*************************************************/
-	double x = 0;
+	float x = 0;
 	int len;
 	public EC(Long networkID,ProteinUtil pUtil){
 		super(networkID, pUtil);
@@ -32,7 +32,7 @@ public class EC extends Algorithm {
 		this.vertex = vertex;
 		
 		len=vertex.size();
-		double[] tempData = new double[len * len];
+		float[] tempData = new float[len * len];
 	
 		if(!isweight){
 			for(i=0;i<vertex.size();i++){
@@ -41,7 +41,7 @@ public class EC extends Algorithm {
 						tempData[len*i+j]=1;
 					}
 					else{
-					  tempData[len*i+j]=0.0;	
+					  tempData[len*i+j]=0.0f;	
 					}
 				}
 			}
@@ -55,10 +55,10 @@ public class EC extends Algorithm {
 				for(j=0;j<vertex.size();j++){
 					List<CyEdge> edge=inputNetwork.getConnectingEdgeList(vertex.get(i).getN(), vertex.get(j).getN(), Type.ANY);
 					if(!edge.isEmpty()){
-						tempData[len*i+j]=inputNetwork.getRow(edge.get(0)).get("weight", Double.class);
+						tempData[len*i+j]=inputNetwork.getRow(edge.get(0)).get("weight", float.class);
 					}
 					else{
-					  tempData[len*i+j]=0.0;	
+					  tempData[len*i+j]=0.0f;	
 					}
 				}
 				
@@ -71,11 +71,12 @@ public class EC extends Algorithm {
 		Matrix matx = new Matrix(len,tempData);
 		Matrix mtxQ2 = new Matrix();
 		Matrix mtxT2 = new Matrix();
-		double[] bArray2 = new double[matx.getNumColumns()];
-		double[] cArray2 = new double[matx.getNumColumns()];
+		float[] bArray2 = new float[matx.getNumColumns()];
+		float[] cArray2 = new float[matx.getNumColumns()];
 		if (matx.makeSymTri(mtxQ2, mtxT2, bArray2, cArray2)) {
 			// 2: compute eigenvalues and eigenvectors
-			if (matx.computeEvSymTri(bArray2, cArray2, mtxQ2, 60, 0.0001)) {
+			System.out.println("hahahahah");
+			if (matx.computeEvSymTri(bArray2, cArray2, mtxQ2, 60, 0.01f)) {
                setMaxVector(vertex, mtxQ2, bArray2);
 			} else {
 				setCancelled(true);
@@ -89,8 +90,8 @@ public class EC extends Algorithm {
 	} 
 	
 	private void setMaxVector(ArrayList<Protein> vertex, Matrix matrix,
-			double[] value) {
-		double max = Double.MIN_VALUE;
+			float[] value) {
+		float max = Float.MIN_VALUE;
 		int i = 0, j = 0;
 		
 		

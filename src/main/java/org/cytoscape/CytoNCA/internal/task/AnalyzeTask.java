@@ -73,7 +73,7 @@ public class AnalyzeTask implements Task {
 			throw new IllegalStateException("Task Monitor is not set.");
 		}
 
-		boolean success = true;
+		boolean success = true, outofmemory = false;
 	//	ArrayList<Protein> resultL;
 		ArrayList<Protein> resultAll = new ArrayList<Protein>();
 		pUtil.getPlist(network, resultAll);
@@ -437,11 +437,15 @@ public class AnalyzeTask implements Task {
 
 		} catch (Exception e) {
 			throw new Exception("Error while executing the analysis", e);
-		} finally {
+		} catch(OutOfMemoryError oe){
+			success = false;
+			outofmemory = true;
+			System.out.println("out of mem...");
+		}finally {
 
 			if (this.listener != null)
-				this.listener.handleEvent(new AnalysisCompletedEvent(success,
-						resultAll, results));
+				this.listener.handleEvent(new AnalysisCompletedEvent(success, 
+						resultAll, results, outofmemory));
 		}
 	}
 	
