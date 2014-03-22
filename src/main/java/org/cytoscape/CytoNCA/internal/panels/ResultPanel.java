@@ -176,6 +176,7 @@ public class ResultPanel extends JPanel implements CytoPanelComponent{
 		selectNum = this.sproteins.size();
 		this.curSetName = this.curalg +"(Top"+ sproteins.size() +")";
 		System.out.println(curSetName);
+		pUtil.SaveInTable(alg, proteins, network);
 		
 		chartfs = new ArrayList<ChartFrame>();
 		
