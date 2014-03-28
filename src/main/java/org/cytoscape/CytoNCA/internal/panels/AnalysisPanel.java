@@ -89,6 +89,7 @@ public class AnalysisPanel extends JPanel implements CytoPanelComponent{
 	private String curalg;
 	private String curSetName;
 	private static int Ylocation;
+	private static boolean ismixcolor;
 	
 	
 	public AnalysisPanel(int resultid, CyNetwork network, CyNetworkView networkView, HashMap<String, List<Protein>> sortResults, ProteinUtil pUtil, ArrayList<String> eplist, String curalg, List<Protein> sproteins, String curSetName){
@@ -106,6 +107,7 @@ public class AnalysisPanel extends JPanel implements CytoPanelComponent{
 		this.sproteins = sproteins;
 		this.eplist = eplist;
 		this.curSetName = curSetName;
+		this.ismixcolor = true;
 		
 		this.add(selectPanel);
 		this.add(paintPanel);
@@ -381,6 +383,7 @@ public class AnalysisPanel extends JPanel implements CytoPanelComponent{
 	
 	public class PaintPanel extends JPanel{
 		JButton paintB, clearB, selectOverlapB;
+		JCheckBox ismixcolorC;
 		JPanel upPanel, labelPanel;
 		JScrollPane labelSPanel;
 		HashMap<String, Color> SetColorMap = new HashMap<String, Color>(); 
@@ -411,11 +414,15 @@ public class AnalysisPanel extends JPanel implements CytoPanelComponent{
 			clearB.addActionListener(new clearViewColorsAction());
 			selectOverlapB = new JButton("Select Overlap");
 			selectOverlapB.addActionListener(new SelectOverlapAction());
+			ismixcolorC = new JCheckBox("Paint overlaps", true);
+			ismixcolorC.setAction(new IsmixcolorAction());
+			ismixcolorC.setText("Paint overlaps with mixed colors");
 			
 
 			upPanel.add(paintB);
 			upPanel.add(clearB);
 			upPanel.add(selectOverlapB);
+			upPanel.add(ismixcolorC);
 			this.add(upPanel);
 			//this.add(selectOverlapB);
 			this.add(labelSPanel);
@@ -460,30 +467,43 @@ public class AnalysisPanel extends JPanel implements CytoPanelComponent{
 							networkView.getNodeView(n).setVisualProperty(BasicVisualLexicon.NODE_TOOLTIP, curSetName);
 							
 						}else{
-							p.getSelectGroups().add(curSetName);
-							String mixname = "";
-							double blue = 0, red = 0, green = 0, s = p.getSelectGroups().size();
-							int r,g,b;
-							int i = 0;
-							for(String set : p.getSelectGroups()){
-								blue += SetColorMap.get(set).getBlue();
-								red += SetColorMap.get(set).getRed();
-								green += SetColorMap.get(set).getGreen();
-								if(i==0)
-									mixname += set;
-								else
-									mixname += " + "+set;
-								i++;
-							}
-							r = (int) Math.round(red/s);
-							g = (int) Math.round(green/s);
-							b = (int) Math.round(blue/s);
-
-							mixc = new Color(r, g, b);
 							
-							networkView.getNodeView(n).setVisualProperty(BasicVisualLexicon.NODE_FILL_COLOR, mixc);
-							networkView.getNodeView(n).setVisualProperty(BasicVisualLexicon.NODE_TOOLTIP , mixname);
-							mixColors.put(mixname, mixc);
+							if(ismixcolor){
+								p.getSelectGroups().add(curSetName);
+								String mixname = "";
+								double blue = 0, red = 0, green = 0, s = p.getSelectGroups().size();
+								int r,g,b;
+								int i = 0;
+								for(String set : p.getSelectGroups()){
+									blue += SetColorMap.get(set).getBlue();
+									red += SetColorMap.get(set).getRed();
+									green += SetColorMap.get(set).getGreen();
+									if(i==0)
+										mixname += set;
+									else
+										mixname += " + "+set;
+									i++;
+								}
+								r = (int) Math.round(red/s);
+								g = (int) Math.round(green/s);
+								b = (int) Math.round(blue/s);
+
+								mixc = new Color(r, g, b);
+								
+								networkView.getNodeView(n).setVisualProperty(BasicVisualLexicon.NODE_FILL_COLOR, mixc);
+								networkView.getNodeView(n).setVisualProperty(BasicVisualLexicon.NODE_TOOLTIP , mixname);
+								mixColors.put(mixname, mixc);
+							}else{
+								
+							//	p.setOriginColor(networkView.getNodeView(n).getVisualProperty(BasicVisualLexicon.NODE_FILL_COLOR));
+								
+								
+								p.getSelectGroups().add(curSetName);
+								networkView.getNodeView(n).setVisualProperty(BasicVisualLexicon.NODE_FILL_COLOR, currentc);
+								networkView.getNodeView(n).setVisualProperty(BasicVisualLexicon.NODE_TOOLTIP, curSetName);
+							}
+							
+							
 						}
 						
 												
@@ -646,6 +666,22 @@ public class AnalysisPanel extends JPanel implements CytoPanelComponent{
 					
 				}
 				
+				
+			}
+			
+		}
+		
+		private class IsmixcolorAction extends AbstractAction{
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// TODO Auto-generated method stub
+				JCheckBox set = (JCheckBox) e.getSource();
+				if(set.isSelected()){
+					ismixcolor = true;
+				}else
+					ismixcolor = false;
+	
 				
 			}
 			

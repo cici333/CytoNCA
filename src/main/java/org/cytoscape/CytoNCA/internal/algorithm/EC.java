@@ -93,7 +93,7 @@ public class EC extends Algorithm {
 			float[] value) {
 		float max = Float.MIN_VALUE;
 		int i = 0, j = 0;
-		
+
 		
 		for (i = 0; i < value.length; i++) {
 			System.out.println(value[i]+"%%%%%");
