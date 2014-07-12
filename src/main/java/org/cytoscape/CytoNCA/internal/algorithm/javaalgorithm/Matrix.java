@@ -1,18 +1,7 @@
-/*
- * 操作矩阵的类 Matrix
- * 
- * 周长发编制
- */
 package org.cytoscape.CytoNCA.internal.algorithm.javaalgorithm;
 
 import org.cytoscape.work.TaskMonitor;
 
-/**
- * 操作矩阵的类 Matrix
-
- * @author 周长发
- * @version 1.0f
- */
 public class Matrix 
 {
 	private int	numColumns = 0;			    // 矩阵列数
@@ -96,7 +85,11 @@ public class Matrix
 		init(numRows, numColumns);
 		setData(other.elements);
 	}
-
+	
+	public Matrix(int width, int height){
+		
+	}
+	
 	/**
 	 * 初始化函数
 	 * 
@@ -261,7 +254,7 @@ public class Matrix
 	 */
 	public void setData(float[] value)
 	{
-		elements = (float[])value.clone();
+		elements = (float[])value;
 	}
 
 	/**

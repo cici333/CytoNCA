@@ -1,8 +1,3 @@
-/*
- * 用于传递值的实数类Real
- *
- * 周长发编制
- */
 package org.cytoscape.CytoNCA.internal.algorithm.javaalgorithm;
 
 /**
