@@ -43,6 +43,7 @@ public class CC extends Algorithm {
 		List<CyNode> allNodes = currentNetwork.getNodeList();
 		int nlength = allNodes.size();
 		int x = 1; 
+		double sum;
 		
 		double[][] shortestpath = new double[nlength][nlength];
 		Map<CyNode, Integer> QM = new HashMap<CyNode, Integer>();
@@ -50,6 +51,7 @@ public class CC extends Algorithm {
 		
 		for(int i = 0; i < nlength; i++){
 			CyNode n = allNodes.get(i);
+			
 			
 			/*Initial Data*/
 			for(CyNode nn : allNodes){				
@@ -79,21 +81,32 @@ public class CC extends Algorithm {
 				}
 			}
 			
+			sum = 0;
 			for(int y = 0; y < nlength; y++){
-				if(y != i){
+				
+				CyNode yn = allNodes.get(y);			
+				if(y != i){	
+					
+					if (D.get(yn) == Double.MAX_VALUE)
+						sum += nlength;
+					else
+						sum += D.get(yn);								
+					/*
 					CyNode yn = allNodes.get(y);
 					shortestpath[i][y] = D.get(yn);
 					shortestpath[y][i] = D.get(yn);
-					
+	
 					//System.out.println(D.get(yn));
-				}
-				
+					 */					 
+				}			
 			}
+			
+			vertex.get(i).setCC((nlength-1)/sum);
+			
 			
 			if (taskMonitor != null) {
                 taskMonitor.setProgress(x / nlength);
                 x++;
-                System.out.println(x);
             }
 			
 			if (cancelled) {
@@ -101,9 +114,10 @@ public class CC extends Algorithm {
             }
 		}
 
+		/*
 		for(int i = 0; i < nlength; i++){
 			Protein p = vertex.get(i);
-			double sum = 0;
+			sum = 0;
 			for(int y = 0; y < nlength; y++){
 				if(y != i){
 					if (shortestpath[i][y] == Double.MAX_VALUE)
@@ -116,7 +130,7 @@ public class CC extends Algorithm {
 		//	System.out.println("$$           "+sum);
 			p.setCC((nlength-1)/sum);
 		}
-		
+		*/
 	}
 
 	

@@ -63,7 +63,7 @@ public class SC extends Algorithm {
 					if (edge.size() > 0) {
 						tempData[len * i + j] = inputNetwork
 								.getRow(edge.get(0))
-								.get("weight", float.class);
+								.get("weight", Double.class).floatValue();
 					} else {
 						tempData[len * i + j] = 0.0f;
 					}

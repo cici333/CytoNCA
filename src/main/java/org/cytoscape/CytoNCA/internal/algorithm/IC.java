@@ -67,7 +67,7 @@ public class IC extends Algorithm {
 				CyEdge e = it.next();
 				int a = allNodes.indexOf(e.getSource());
 				int b = allNodes.indexOf(e.getTarget());
-				float dis = currentNetwork.getRow(e).get("weight", float.class);
+				float dis = currentNetwork.getRow(e).get("weight", Double.class).floatValue();
 				
 				CMatrix.setElement(a, b, dis-1);
 				CMatrix.setElement(b, a, dis-1);

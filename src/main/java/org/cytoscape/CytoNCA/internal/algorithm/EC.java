@@ -55,7 +55,7 @@ public class EC extends Algorithm {
 				for(j=0;j<vertex.size();j++){
 					List<CyEdge> edge=inputNetwork.getConnectingEdgeList(vertex.get(i).getN(), vertex.get(j).getN(), Type.ANY);
 					if(!edge.isEmpty()){
-						tempData[len*i+j]=inputNetwork.getRow(edge.get(0)).get("weight", float.class);
+						tempData[len*i+j]= (inputNetwork.getRow(edge.get(0)).get("weight", Double.class)).floatValue();
 					}
 					else{
 					  tempData[len*i+j]=0.0f;	
