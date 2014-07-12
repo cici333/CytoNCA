@@ -42,10 +42,10 @@ public class CC extends Algorithm {
 	public void CalAllShortestPath(){
 		List<CyNode> allNodes = currentNetwork.getNodeList();
 		int nlength = allNodes.size();
-		int x = 1; 
+		double x = 1.0; 
 		double sum;
 		
-		double[][] shortestpath = new double[nlength][nlength];
+		//double[][] shortestpath = new double[nlength][nlength];
 		Map<CyNode, Integer> QM = new HashMap<CyNode, Integer>();
 		Map<CyNode, Double> D = new HashMap<CyNode, Double>(); 
 		
