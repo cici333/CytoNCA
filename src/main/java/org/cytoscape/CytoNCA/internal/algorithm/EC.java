@@ -1,5 +1,6 @@
 
 package org.cytoscape.CytoNCA.internal.algorithm;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -7,9 +8,14 @@ import java.util.List;
 
 
 
+
+
+
 import org.cytoscape.CytoNCA.internal.Protein;
 import org.cytoscape.CytoNCA.internal.ProteinUtil;
+import org.cytoscape.CytoNCA.internal.algorithm.javaalgorithm.LargeMatrix;
 import org.cytoscape.CytoNCA.internal.algorithm.javaalgorithm.Matrix;
+import org.cytoscape.CytoNCA.internal.algorithm.javaalgorithm.SmallMatrix;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyEdge.Type;
 import org.cytoscape.model.CyNetwork;
@@ -32,16 +38,40 @@ public class EC extends Algorithm {
 		this.vertex = vertex;
 		
 		len=vertex.size();
-		float[] tempData = new float[len * len];
+		
+		Matrix matx = null, mtxQ = null, mtxT = null;
+	
+		
+		
+		try{
+			matx = new SmallMatrix(len);
+			mtxQ = new SmallMatrix(len);
+		    mtxT = new SmallMatrix(len);
+	
+		}catch(OutOfMemoryError e){
+		
+			try {
+				matx = new LargeMatrix(len, len);
+				mtxQ = new LargeMatrix(len, len);
+			    mtxT = new LargeMatrix(len, len);
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			
+			//throw e;
+		
+		}
+		
 	
 		if(!isweight){
 			for(i=0;i<vertex.size();i++){
 				for(j=0;j<vertex.size();j++){
 					if(!inputNetwork.getConnectingEdgeList(vertex.get(i).getN(), vertex.get(j).getN(), Type.ANY).isEmpty()){
-						tempData[len*i+j]=1;
+						matx.setElement(i, j, 1);
 					}
 					else{
-					  tempData[len*i+j]=0.0f;	
+						matx.setElement(i, j, 0.0f);
 					}
 				}
 			}
@@ -55,10 +85,10 @@ public class EC extends Algorithm {
 				for(j=0;j<vertex.size();j++){
 					List<CyEdge> edge=inputNetwork.getConnectingEdgeList(vertex.get(i).getN(), vertex.get(j).getN(), Type.ANY);
 					if(!edge.isEmpty()){
-						tempData[len*i+j]= (inputNetwork.getRow(edge.get(0)).get("weight", Double.class)).floatValue();
+						matx.setElement(i, j, (inputNetwork.getRow(edge.get(0)).get("weight", Double.class)).floatValue());
 					}
 					else{
-					  tempData[len*i+j]=0.0f;	
+						matx.setElement(i, j, 0.0f);	
 					}
 				}
 				
@@ -68,16 +98,14 @@ public class EC extends Algorithm {
 	            }
 			}
 		}
-		Matrix matx = new Matrix(len,tempData);
-		Matrix mtxQ2 = new Matrix();
-		Matrix mtxT2 = new Matrix();
-		float[] bArray2 = new float[matx.getNumColumns()];
-		float[] cArray2 = new float[matx.getNumColumns()];
-		if (matx.makeSymTri(mtxQ2, mtxT2, bArray2, cArray2)) {
+	
+		float[] bArray2 = new float[matx.getWidth()];
+		float[] cArray2 = new float[matx.getWidth()];
+		if (matx.makeSymTri(mtxQ, mtxT, bArray2, cArray2)) {
 			// 2: compute eigenvalues and eigenvectors
 			System.out.println("hahahahah");
-			if (matx.computeEvSymTri(bArray2, cArray2, mtxQ2, 60, 0.01f)) {
-               setMaxVector(vertex, mtxQ2, bArray2);
+			if (matx.computeEvSymTri(bArray2, cArray2, mtxQ, 60, 0.01f)) {
+               setMaxVector(vertex, mtxQ, bArray2);
 			} else {
 				setCancelled(true);
 				
@@ -87,6 +115,7 @@ public class EC extends Algorithm {
 			
 		}
 		return vertex;
+
 	} 
 	
 	private void setMaxVector(ArrayList<Protein> vertex, Matrix matrix,
@@ -107,7 +136,7 @@ public class EC extends Algorithm {
             }
 		}
 		
-		int l = matrix.getNumRows();
+		int l = matrix.getHeight();
 		double temp;
 		if(!isweight){
 			for (i = 0; i < l; i++) {

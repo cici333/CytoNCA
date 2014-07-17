@@ -7,7 +7,7 @@ import java.util.List;
 
 import org.cytoscape.CytoNCA.internal.Protein;
 import org.cytoscape.CytoNCA.internal.ProteinUtil;
-import org.cytoscape.CytoNCA.internal.algorithm.javaalgorithm.Matrix;
+import org.cytoscape.CytoNCA.internal.algorithm.javaalgorithm.SmallMatrix;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
@@ -35,7 +35,7 @@ public class IC extends Algorithm {
 		for(int i=0; i <nlength*nlength; i++){
 			initial[i] = 1;
 		}	
-		Matrix CMatrix = new Matrix(nlength, initial);
+		SmallMatrix CMatrix = new SmallMatrix(nlength, initial);
 		
 
 		for(int i = 0; i < nlength; i++){
@@ -93,7 +93,7 @@ public class IC extends Algorithm {
 	//	System.out.println(CMatrix.toString());
 		
 		if(x != -1){
-			Matrix IMatrix = new Matrix(nlength);
+			SmallMatrix IMatrix = new SmallMatrix(nlength);
 			for(int i = 0; i < nlength; i++){
 				for(int j = 0; j < nlength; j++){
 					if(i != j){

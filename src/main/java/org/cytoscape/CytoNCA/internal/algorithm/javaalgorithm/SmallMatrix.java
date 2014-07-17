@@ -2,28 +2,384 @@ package org.cytoscape.CytoNCA.internal.algorithm.javaalgorithm;
 
 import org.cytoscape.work.TaskMonitor;
 
-public class MatrixOperations {
-
-	private int	numColumns = 0;			    // 矩阵列数
-	private int	numRows = 0;				// 矩阵行数
+public class SmallMatrix extends Matrix
+{
+//	private int	width = 0;			    // 矩阵列数
+//	private int	height = 0;				// 矩阵行数
 	private float eps = 0.0f;               // 缺省精度
+	private float[] elements = null;		// 矩阵数据缓冲区
+
+	/**
+	 * 基本构造函数
+	 */
+	public SmallMatrix()
+	{
+		width = 1;
+		height = 1;
+		init(height, width);
+	}
+
+	/**
+	 * 指定行列构造函数
+	 * 
+	 * @param nRows - 指定的矩阵行数
+	 * @param nCols - 指定的矩阵列数
+	 */
+	public SmallMatrix(int nRows, int nCols)
+	{
+		height = nRows;
+		width = nCols;
+		init(height, width);
+	}
+
+	/**
+	 * 指定值构造函数
+	 * 
+	 * @param nRows - 指定的矩阵行数
+	 * @param nCols - 指定的矩阵列数
+	 * @param value - 一维数组，长度为nRows*nCols，存储矩阵各元素的值
+	 */
+	public SmallMatrix(int nRows, int nCols, float[] value)
+	{
+		height = nRows;
+		width = nCols;
+	//	init(numRows, numColumns);
+		setData(value);
+	}
+
+	/**
+	 * 方阵构造函数
+	 * 
+	 * @param nSize - 方阵行列数
+	 */
+	public SmallMatrix(int nSize)
+	{
+
+		init(nSize, nSize);
+	}
+
+	/**
+	 * 方阵构造函数
+	 * 
+	 * @param nSize - 方阵行列数
+	 * @param value - 一维数组，长度为nRows*nRows，存储方阵各元素的值
+	 */
+	public SmallMatrix(int nSize, float[] value)
+	{
+		height = nSize;
+		width = nSize;
+	//	init(nSize, nSize);
+		setData(value);
+	}
+
+	/**
+	 * 拷贝构造函数
+	 * 
+	 * @param other - 源矩阵
+	 */
+	public SmallMatrix( SmallMatrix other)
+	{
+		width = other.getWidth();
+		height = other.getHeight();
+	//	init(numRows, numColumns);
+		setData(other.elements);
+	}
 	
+
 	
+	/**
+	 * 初始化函数
+	 * 
+	 * @param nRows - 指定的矩阵行数
+	 * @param nCols - 指定的矩阵列数
+	 * @return boolean, 成功返回true, 否则返回false
+	 */
+	public boolean init(int nRows, int nCols)
+	{
+		height = nRows;
+		width = nCols;
+		int nSize = nCols*nRows;
+		if (nSize < 0)
+			return false;
+
+		// 分配内存
+		elements = new float[nSize];
+		
+		return true;
+	}
+
+	/**
+	 * 设置矩阵运算的精度
+	 * 
+	 * @param newEps - 新的精度值
+	 */
+	public void setEps(float newEps)
+	{
+		eps = newEps;
+	}
+	
+	/**
+	 * 取矩阵的精度值
+	 * 
+	 * @return float型，矩阵的精度值
+	 */
+	public float getEps()
+	{
+		return eps;
+	}
+
+	/**
+	 * 将方阵初始化为单位矩阵
+	 * 
+	 * @param nSize - 方阵行列数
+	 * @return boolean 型，初始化是否成功
+	 */
+	public boolean makeUnitMatrix(int nSize)
+	{
+		if (! init(nSize, nSize))
+			return false;
+
+		for (int i=0; i<nSize; ++i)
+			for (int j=0; j<nSize; ++j)
+				if (i == j)
+					setElement(i, j, 1);
+
+		return true;
+	}
+
+	/**
+	 * 将矩阵各元素的值转化为字符串, 元素之间的分隔符为",", 行与行之间有回车换行符
+	 * @return String 型，转换得到的字符串
+	 */
+	public String toString() 
+	{
+		return toString(",", true);
+	}
+	
+	/**
+	 * 将矩阵各元素的值转化为字符串
+	 * 
+	 * @param sDelim - 元素之间的分隔符
+	 * @param bLineBreak - 行与行之间是否有回车换行符
+	 * @return String 型，转换得到的字符串
+	 */
+	public String toString(String sDelim, boolean bLineBreak) 
+	{
+		String s="";
+
+		for (int i=0; i<height; ++i)
+		{
+			for (int j=0; j<width; ++j)
+			{
+				String ss = new Float(getElement(i, j)).toString();
+				s += ss;
+
+				if (bLineBreak)
+				{
+					if (j != width-1)
+						s += sDelim;
+				}
+				else
+				{
+					if (i != height-1 || j != width-1)
+						s += sDelim;
+				}
+			}
+			if (bLineBreak)
+				if (i != height-1)
+					s += "\r\n";
+		}
+
+		return s;
+	}
+
+	/**
+	 * 将矩阵指定行中各元素的值转化为字符串
+	 * 
+	 * @param nRow - 指定的矩阵行，nRow = 0表示第一行
+	 * @param sDelim - 元素之间的分隔符
+	 * @return String 型，转换得到的字符串
+	 */
+	public String toStringRow(int nRow,  String sDelim) 
+	{
+		String s = "";
+
+		if (nRow >= height)
+			return s;
+
+		for (int j=0; j<width; ++j)
+		{
+			String ss = new Float(getElement(nRow, j)).toString();
+			s += ss;
+			if (j != width-1)
+				s += sDelim;
+		}
+
+		return s;
+	}
+
+	/**
+	 * 将矩阵指定列中各元素的值转化为字符串
+	 * 
+	 * @param nCol - 指定的矩阵行，nCol = 0表示第一列
+	 * @param sDelim - 元素之间的分隔符
+	 * @return String 型，转换得到的字符串
+	 */
+	public String toStringCol(int nCol,  String sDelim /*= " "*/) 
+	{
+		String s = "";
+
+		if (nCol >= width)
+			return s;
+
+		for (int i=0; i<height; ++i)
+		{
+			String ss = new Float(getElement(i, nCol)).toString();
+			s += ss;
+			if (i != height-1)
+				s += sDelim;
+		}
+
+		return s;
+	}
+
+	/**
+	 * 设置矩阵各元素的值
+	 * 
+	 * @param value - 一维数组，长度为numColumns*numRows，存储
+     *	              矩阵各元素的值
+	 */
+	public void setData(float[] value)
+	{
+		elements = (float[])value.clone();
+	}
+
+	/**
+	 * 设置指定元素的值
+	 * 
+	 * @param nRow - 元素的行
+	 * @param nCol - 元素的列
+	 * @param value - 指定元素的值
+	 * @return boolean 型，说明设置是否成功
+	 */
+	public boolean setElement(int nRow, int nCol, float value)
+	{
+		if (nCol < 0 || nCol >= width || nRow < 0 || nRow >= height)
+			return false;						// array bounds error
+		
+		elements[nCol + nRow * width] = value;
+
+		return true;
+	}
+
+	/**
+	 * 获取指定元素的值
+	 * 
+	 * @param nRow - 元素的行
+	 * @param nCol - 元素的列
+	 * @return float 型，指定元素的值
+	 */
+	public float getElement(int nRow, int nCol) 
+	{
+		return elements[nCol + nRow * width] ;
+	}
+
+	/**
+	 * 获取矩阵的列数
+	 * 
+	 * @return int 型，矩阵的列数
+	 */
+	/*
+	public int	getWidth() 
+	{
+		return width;
+	}
+*/
+	/**
+	 * 获取矩阵的行数
+	 * @return int 型，矩阵的行数
+	 */
+	/*
+	public int	getHeight() 
+	{
+		return height;
+	}
+*/
+	/**
+	 * 获取矩阵的数据
+	 * 
+	 * @return float型数组，指向矩阵各元素的数据缓冲区
+	 */
+	public float[] getData() 
+	{
+		return elements;
+	}
+
+	/**
+	 * 获取指定行的向量
+	 * 
+	 * @param nRow - 向量所在的行
+	 * @param pVector - 指向向量中各元素的缓冲区
+	 * @return int 型，向量中元素的个数，即矩阵的列数
+	 */
+	public int getRowVector(int nRow, float[] pVector) 
+	{
+		for (int j=0; j<width; ++j)
+			pVector[j] = getElement(nRow, j);
+
+		return width;
+	}
+
+	/**
+	 * 获取指定列的向量
+	 * 
+	 * @param nCol - 向量所在的列
+	 * @param pVector - 指向向量中各元素的缓冲区
+	 * @return int 型，向量中元素的个数，即矩阵的行数
+	 */
+	public int getColVector(int nCol, float[] pVector) 
+	{
+		for (int i=0; i<height; ++i)
+			pVector[i] = getElement(i, nCol);
+
+		return height;
+	}
+
+	/**
+	 * 给矩阵赋值
+	 * 
+	 * @param other - 用于给矩阵赋值的源矩阵
+	 * @return Matrix型，阵与other相等
+	 */
+	public SmallMatrix setValue(SmallMatrix other)
+	{
+		if (other != this)
+		{
+			init(other.getHeight(), other.getWidth());
+			height = other.getHeight();
+			width = other.getWidth();
+			setData(other.elements);
+		}
+
+		// finally return a reference to ourselves
+		return this ;
+	}
+
 	/**
 	 * 判断矩阵否相等
 	 * 
 	 * @param other - 用于比较的矩阵
 	 * @return boolean 型，两个矩阵相等则为true，否则为false
 	 */
-	public boolean equal(Matrix other) 
+	public boolean equal(SmallMatrix other) 
 	{
 		// 首先检查行列数是否相等
-		if (numColumns != other.getNumColumns() || numRows != other.getNumRows())
+		if (width != other.getWidth() || height != other.getHeight())
 			return false;
 
-		for (int i=0; i<numRows; ++i)
+		for (int i=0; i<height; ++i)
 		{
-			for (int j=0; j<numColumns; ++j)
+			for (int j=0; j<width; ++j)
 			{
 				if (Math.abs(getElement(i, j) - other.getElement(i, j)) > eps)
 					return false;
@@ -39,20 +395,20 @@ public class MatrixOperations {
 	 * @param other - 与指定矩阵相加的矩阵
 	 * @return Matrix型，指定矩阵与other相加之和
 	 */
-	public Matrix add(Matrix other) 
+	public SmallMatrix add(SmallMatrix other) 
 	{
 		// 首先检查行列数是否相等
-		if (numColumns != other.getNumColumns() ||
-			numRows != other.getNumRows())
+		if (width != other.getWidth() ||
+			height != other.getHeight())
 			return null;
 
 		// 构造结果矩阵
-		Matrix	result = new Matrix(this) ;		// 拷贝构造
+		SmallMatrix	result = new SmallMatrix(this) ;		// 拷贝构造
 		
 		// 矩阵加法
-		for (int i = 0 ; i < numRows ; ++i)
+		for (int i = 0 ; i < height ; ++i)
 		{
-			for (int j = 0 ; j <  numColumns; ++j)
+			for (int j = 0 ; j <  width; ++j)
 				result.setElement(i, j, result.getElement(i, j) + other.getElement(i, j)) ;
 		}
 
@@ -65,19 +421,19 @@ public class MatrixOperations {
 	 * @param other - 与指定矩阵相减的矩阵
 	 * @return Matrix型，指定矩阵与other相减之差
 	 */
-	public Matrix	subtract(Matrix other) 
+	public SmallMatrix	subtract(SmallMatrix other) 
 	{
-		if (numColumns != other.getNumColumns() ||
-				numRows != other.getNumRows())
+		if (width != other.getWidth() ||
+				height != other.getHeight())
 				return null;
 
 		// 构造结果矩阵
-		Matrix	result = new Matrix(this) ;		// 拷贝构造
+		SmallMatrix	result = new SmallMatrix(this) ;		// 拷贝构造
 
 		// 进行减法操作
-		for (int i = 0 ; i < numRows ; ++i)
+		for (int i = 0 ; i < height ; ++i)
 		{
-			for (int j = 0 ; j <  numColumns; ++j)
+			for (int j = 0 ; j <  width; ++j)
 				result.setElement(i, j, result.getElement(i, j) - other.getElement(i, j)) ;
 		}
 
@@ -90,15 +446,15 @@ public class MatrixOperations {
 	 * @param value - 与指定矩阵相乘的实数
 	 * @return Matrix型，指定矩阵与value相乘之积
 	 */
-	public Matrix	multiply(float value) 
+	public SmallMatrix	multiply(float value) 
 	{
 		// 构造目标矩阵
-		Matrix	result = new Matrix(this) ;		// copy ourselves
+		SmallMatrix	result = new SmallMatrix(this) ;		// copy ourselves
 		
 		// 进行数乘
-		for (int i = 0 ; i < numRows ; ++i)
+		for (int i = 0 ; i < height ; ++i)
 		{
-			for (int j = 0 ; j <  numColumns; ++j)
+			for (int j = 0 ; j <  width; ++j)
 				result.setElement(i, j, result.getElement(i, j) * value) ;
 		}
 
@@ -111,14 +467,14 @@ public class MatrixOperations {
 	 * @param other - 与指定矩阵相乘的矩阵
 	 * @return Matrix型，指定矩阵与other相乘之积
 	 */
-	public Matrix multiply(Matrix other) 
+	public SmallMatrix multiply(SmallMatrix other) 
 	{
 		// 首先检查行列数是否符合要求
-		if (numColumns != other.getNumRows())
+		if (width != other.getHeight())
 			return null;
 
 		// ruct the object we are going to return
-		Matrix	result = new Matrix(numRows, other.getNumColumns());
+		SmallMatrix	result = new SmallMatrix(height, other.getWidth());
 
 		// 矩阵乘法，即
 		//
@@ -127,12 +483,12 @@ public class MatrixOperations {
 		//             [K][L]
 		//
 		float	value ;
-		for (int i = 0 ; i < result.getNumRows() ; ++i)
+		for (int i = 0 ; i < result.getHeight() ; ++i)
 		{
-			for (int j = 0 ; j < other.getNumColumns() ; ++j)
+			for (int j = 0 ; j < other.getWidth() ; ++j)
 			{
 				value = 0.0f ;
-				for (int k = 0 ; k < numColumns ; ++k)
+				for (int k = 0 ; k < width ; ++k)
 				{
 					value += getElement(i, k) * other.getElement(k, j) ;
 				}
@@ -155,27 +511,27 @@ public class MatrixOperations {
 	 * @param CI - 乘积复矩阵的虚部矩阵
 	 * @return boolean型，复矩阵乘法是否成功
 	 */
-	public boolean multiply(Matrix AR,  Matrix AI,  Matrix BR,  Matrix BI, Matrix CR, Matrix CI) 
+	public boolean multiply(SmallMatrix AR,  SmallMatrix AI,  SmallMatrix BR,  SmallMatrix BI, SmallMatrix CR, SmallMatrix CI) 
 	{
 		// 首先检查行列数是否符合要求
-		if (AR.getNumColumns() != AI.getNumColumns() ||
-			AR.getNumRows() != AI.getNumRows() ||
-			BR.getNumColumns() != BI.getNumColumns() ||
-			BR.getNumRows() != BI.getNumRows() ||
-			AR.getNumColumns() != BR.getNumRows())
+		if (AR.getWidth() != AI.getWidth() ||
+			AR.getHeight() != AI.getHeight() ||
+			BR.getWidth() != BI.getWidth() ||
+			BR.getHeight() != BI.getHeight() ||
+			AR.getWidth() != BR.getHeight())
 			return false;
 
 		// 构造乘积矩阵实部矩阵和虚部矩阵
-		Matrix mtxCR = new Matrix(AR.getNumRows(), BR.getNumColumns());
-		Matrix mtxCI = new Matrix(AR.getNumRows(), BR.getNumColumns());
+		SmallMatrix mtxCR = new SmallMatrix(AR.getHeight(), BR.getWidth());
+		SmallMatrix mtxCI = new SmallMatrix(AR.getHeight(), BR.getWidth());
 		// 复矩阵相乘
-	    for (int i=0; i<AR.getNumRows(); ++i)
+	    for (int i=0; i<AR.getHeight(); ++i)
 		{
-		    for (int j=0; j<BR.getNumColumns(); ++j)
+		    for (int j=0; j<BR.getWidth(); ++j)
 			{
 				float vr = 0;
 				float vi = 0;
-	            for (int k =0; k<AR.getNumColumns(); ++k)
+	            for (int k =0; k<AR.getWidth(); ++k)
 				{
 	                float p = AR.getElement(i, k) * BR.getElement(k, j);
 	                float q = AI.getElement(i, k) * BI.getElement(k, j);
@@ -199,15 +555,15 @@ public class MatrixOperations {
 	 * 
 	 * @return Matrix型，指定矩阵转置矩阵
 	 */
-	public Matrix transpose() 
+	public SmallMatrix transpose() 
 	{
 		// 构造目标矩阵
-		Matrix	Trans = new Matrix(numColumns, numRows);
+		SmallMatrix	Trans = new SmallMatrix(width, height);
 
 		// 转置各元素
-		for (int i = 0 ; i < numRows ; ++i)
+		for (int i = 0 ; i < height ; ++i)
 		{
-			for (int j = 0 ; j < numColumns ; ++j)
+			for (int j = 0 ; j < width ; ++j)
 				Trans.setElement(j, i, getElement(i, j)) ;
 		}
 
@@ -225,18 +581,18 @@ public class MatrixOperations {
 	    float d = 0, p = 0;
 
 		// 分配内存
-	    int[] pnRow = new int[numColumns];
-	    int[] pnCol = new int[numColumns];
+	    int[] pnRow = new int[width];
+	    int[] pnCol = new int[width];
 
 		// 消元
-	    for (k=0; k<=numColumns-1; k++)
+	    for (k=0; k<=width-1; k++)
 	    { 
 			d=0.0f;
-	        for (i=k; i<=numColumns-1; i++)
+	        for (i=k; i<=width-1; i++)
 			{
-				for (j=k; j<=numColumns-1; j++)
+				for (j=k; j<=width-1; j++)
 				{ 
-					l=i*numColumns+j; p=Math.abs(elements[l]);
+					l=i*width+j; p=Math.abs(elements[l]);
 					if (p>d) 
 					{ 
 						d=p; 
@@ -254,10 +610,10 @@ public class MatrixOperations {
 
 	        if (pnRow[k] != k)
 			{
-				for (j=0; j<=numColumns-1; j++)
+				for (j=0; j<=width-1; j++)
 				{ 
-					u=k*numColumns+j; 
-					v=pnRow[k]*numColumns+j;
+					u=k*width+j; 
+					v=pnRow[k]*width+j;
 					p=elements[u]; 
 					elements[u]=elements[v]; 
 					elements[v]=p;
@@ -266,47 +622,47 @@ public class MatrixOperations {
 	        
 			if (pnCol[k] != k)
 			{
-				for (i=0; i<=numColumns-1; i++)
+				for (i=0; i<=width-1; i++)
 	            { 
-					u=i*numColumns+k; 
-					v=i*numColumns+pnCol[k];
+					u=i*width+k; 
+					v=i*width+pnCol[k];
 					p=elements[u]; 
 					elements[u]=elements[v]; 
 					elements[v]=p;
 	            }
 			}
 
-	        l=k*numColumns+k;
+	        l=k*width+k;
 	        elements[l]=1.0f/elements[l];
-	        for (j=0; j<=numColumns-1; j++)
+	        for (j=0; j<=width-1; j++)
 			{
 				if (j != k)
 	            { 
-					u=k*numColumns+j; 
+					u=k*width+j; 
 					elements[u]=elements[u]*elements[l];
 				}
 			}
 
-	        for (i=0; i<=numColumns-1; i++)
+	        for (i=0; i<=width-1; i++)
 			{
 				if (i!=k)
 				{
-					for (j=0; j<=numColumns-1; j++)
+					for (j=0; j<=width-1; j++)
 					{
 						if (j!=k)
 						{ 
-							u=i*numColumns+j;
-							elements[u]=elements[u]-elements[i*numColumns+k]*elements[k*numColumns+j];
+							u=i*width+j;
+							elements[u]=elements[u]-elements[i*width+k]*elements[k*width+j];
 						}
 	                }
 				}
 			}
 
-	        for (i=0; i<=numColumns-1; i++)
+	        for (i=0; i<=width-1; i++)
 			{
 				if (i!=k)
 	            { 
-					u=i*numColumns+k; 
+					u=i*width+k; 
 					elements[u]=-elements[u]*elements[l];
 				}
 			}
@@ -321,14 +677,14 @@ public class MatrixOperations {
 	    }
 
 	    // 调整恢复行列次序
-	    for (k=numColumns-1; k>=0; k--)
+	    for (k=width-1; k>=0; k--)
 	    { 
 			if (pnCol[k]!=k)
 			{
-				for (j=0; j<=numColumns-1; j++)
+				for (j=0; j<=width-1; j++)
 	            { 
-					u=k*numColumns+j; 
-					v=pnCol[k]*numColumns+j;
+					u=k*width+j; 
+					v=pnCol[k]*width+j;
 					p=elements[u]; 
 					elements[u]=elements[v]; 
 					elements[v]=p;
@@ -337,10 +693,10 @@ public class MatrixOperations {
 
 	        if (pnRow[k]!=k)
 			{
-				for (i=0; i<=numColumns-1; i++)
+				for (i=0; i<=width-1; i++)
 	            { 
-					u=i*numColumns+k; 
-					v=i*numColumns+pnRow[k];
+					u=i*width+k; 
+					v=i*width+pnRow[k];
 					p=elements[u]; 
 					elements[u]=elements[v]; 
 					elements[v]=p;
@@ -364,24 +720,24 @@ public class MatrixOperations {
 	 * @param mtxImag - 复矩阵的虚部矩阵，当前矩阵为复矩阵的实部
 	 * @return boolean型，求逆是否成功
 	 */
-	public boolean invertGaussJordan(Matrix mtxImag)
+	public boolean invertGaussJordan(SmallMatrix mtxImag)
 	{
 		int i,j,k,l,u,v,w;
 	    float p,q,s,t,d,b;
 
 		// 分配内存
-	    int[] pnRow = new int[numColumns];
-	    int[] pnCol = new int[numColumns];
+	    int[] pnRow = new int[width];
+	    int[] pnCol = new int[width];
 
 		// 消元
-	    for (k=0; k<=numColumns-1; k++)
+	    for (k=0; k<=width-1; k++)
 	    { 
 			d=0.0f;
-	        for (i=k; i<=numColumns-1; i++)
+	        for (i=k; i<=width-1; i++)
 			{
-				for (j=k; j<=numColumns-1; j++)
+				for (j=k; j<=width-1; j++)
 				{ 
-					u=i*numColumns+j;
+					u=i*width+j;
 					p=elements[u]*elements[u]+mtxImag.elements[u]*mtxImag.elements[u];
 					if (p>d) 
 					{ 
@@ -400,10 +756,10 @@ public class MatrixOperations {
 
 	        if (pnRow[k]!=k)
 			{
-				for (j=0; j<=numColumns-1; j++)
+				for (j=0; j<=width-1; j++)
 	            { 
-					u=k*numColumns+j; 
-					v=pnRow[k]*numColumns+j;
+					u=k*width+j; 
+					v=pnRow[k]*width+j;
 					t=elements[u]; 
 					elements[u]=elements[v]; 
 					elements[v]=t;
@@ -415,10 +771,10 @@ public class MatrixOperations {
 
 	        if (pnCol[k]!=k)
 			{
-				for (i=0; i<=numColumns-1; i++)
+				for (i=0; i<=width-1; i++)
 	            { 
-					u=i*numColumns+k; 
-					v=i*numColumns+pnCol[k];
+					u=i*width+k; 
+					v=i*width+pnCol[k];
 					t=elements[u]; 
 					elements[u]=elements[v]; 
 					elements[v]=t;
@@ -428,13 +784,13 @@ public class MatrixOperations {
 	            }
 			}
 
-	        l=k*numColumns+k;
+	        l=k*width+k;
 	        elements[l]=elements[l]/d; mtxImag.elements[l]=-mtxImag.elements[l]/d;
-	        for (j=0; j<=numColumns-1; j++)
+	        for (j=0; j<=width-1; j++)
 			{
 				if (j!=k)
 	            { 
-					u=k*numColumns+j;
+					u=k*width+j;
 					p=elements[u]*elements[l]; 
 					q=mtxImag.elements[u]*mtxImag.elements[l];
 					s=(elements[u]+mtxImag.elements[u])*(elements[l]+mtxImag.elements[l]);
@@ -443,17 +799,17 @@ public class MatrixOperations {
 	            }
 			}
 
-	        for (i=0; i<=numColumns-1; i++)
+	        for (i=0; i<=width-1; i++)
 			{
 				if (i!=k)
 	            { 
-					v=i*numColumns+k;
-					for (j=0; j<=numColumns-1; j++)
+					v=i*width+k;
+					for (j=0; j<=width-1; j++)
 					{
 						if (j!=k)
 						{ 
-							u=k*numColumns+j;  
-							w=i*numColumns+j;
+							u=k*width+j;  
+							w=i*width+j;
 							p=elements[u]*elements[v]; 
 							q=mtxImag.elements[u]*mtxImag.elements[v];
 							s=(elements[u]+mtxImag.elements[u])*(elements[v]+mtxImag.elements[v]);
@@ -466,11 +822,11 @@ public class MatrixOperations {
 	            }
 			}
 
-	        for (i=0; i<=numColumns-1; i++)
+	        for (i=0; i<=width-1; i++)
 			{
 				if (i!=k)
 	            { 
-					u=i*numColumns+k;
+					u=i*width+k;
 					p=elements[u]*elements[l]; 
 					q=mtxImag.elements[u]*mtxImag.elements[l];
 					s=(elements[u]+mtxImag.elements[u])*(elements[l]+mtxImag.elements[l]);
@@ -481,14 +837,14 @@ public class MatrixOperations {
 	    }
 
 	    // 调整恢复行列次序
-	    for (k=numColumns-1; k>=0; k--)
+	    for (k=width-1; k>=0; k--)
 	    { 
 			if (pnCol[k]!=k)
 			{
-				for (j=0; j<=numColumns-1; j++)
+				for (j=0; j<=width-1; j++)
 	            { 
-					u=k*numColumns+j; 
-					v=pnCol[k]*numColumns+j;
+					u=k*width+j; 
+					v=pnCol[k]*width+j;
 					t=elements[u]; 
 					elements[u]=elements[v]; 
 					elements[v]=t;
@@ -500,10 +856,10 @@ public class MatrixOperations {
 
 	        if (pnRow[k]!=k)
 			{
-				for (i=0; i<=numColumns-1; i++)
+				for (i=0; i<=width-1; i++)
 	            { 
-					u=i*numColumns+k; 
-					v=i*numColumns+pnRow[k];
+					u=i*width+k; 
+					v=i*width+pnRow[k];
 					t=elements[u]; 
 					elements[u]=elements[v]; 
 					elements[v]=t;
@@ -529,10 +885,10 @@ public class MatrixOperations {
 	    float w, g;
 
 		// 临时内存
-	    float[] pTmp = new float[numColumns];
+	    float[] pTmp = new float[width];
 
 		// 逐列处理
-	    for (k=0; k<=numColumns-1; k++)
+	    for (k=0; k<=width-1; k++)
 	    { 
 			w=elements[0];
 	        if (w == 0.0f)
@@ -540,26 +896,26 @@ public class MatrixOperations {
 				return false;
 			}
 
-	        m=numColumns-k-1;
-	        for (i=1; i<=numColumns-1; i++)
+	        m=width-k-1;
+	        for (i=1; i<=width-1; i++)
 	        { 
-				g=elements[i*numColumns]; 
+				g=elements[i*width]; 
 				pTmp[i]=g/w;
 	            if (i<=m) 
 					pTmp[i]=-pTmp[i];
 	            for (j=1; j<=i; j++)
-	              elements[(i-1)*numColumns+j-1]=elements[i*numColumns+j]+g*pTmp[j];
+	              elements[(i-1)*width+j-1]=elements[i*width+j]+g*pTmp[j];
 	        }
 
-	        elements[numColumns*numColumns-1]=1.0f/w;
-	        for (i=1; i<=numColumns-1; i++)
-				elements[(numColumns-1)*numColumns+i-1]=pTmp[i];
+	        elements[width*width-1]=1.0f/w;
+	        for (i=1; i<=width-1; i++)
+				elements[(width-1)*width+i-1]=pTmp[i];
 	    }
 
 		// 行列调整
-	    for (i=0; i<=numColumns-2; i++)
-			for (j=i+1; j<=numColumns-1; j++)
-				elements[i*numColumns+j]=elements[j*numColumns+i];
+	    for (i=0; i<=width-2; i++)
+			for (j=i+1; j<=width-1; j++)
+				elements[i*width+j]=elements[j*width+i];
 
 		return true;
 	}
@@ -575,21 +931,21 @@ public class MatrixOperations {
 	    float a,s;
 
 		// 上三角元素
-		float[] t = new float[numColumns];
+		float[] t = new float[width];
 		// 下三角元素
-		float[] tt = new float[numColumns];
+		float[] tt = new float[width];
 
 		// 上、下三角元素赋值
-		for (i=0; i<numColumns; ++i)
+		for (i=0; i<width; ++i)
 		{
 			t[i] = getElement(0, i);
 		    tt[i] = getElement(i, 0);
 		}
 
 		// 临时缓冲区
-		float[] c = new float[numColumns];
-		float[] r = new float[numColumns];
-		float[] p = new float[numColumns];
+		float[] c = new float[width];
+		float[] r = new float[width];
+		float[] p = new float[width];
 
 		// 非Toeplitz矩阵，返回
 	    if (t[0] == 0.0f)
@@ -601,7 +957,7 @@ public class MatrixOperations {
 		c[0]=tt[1]/t[0]; 
 		r[0]=t[1]/t[0];
 
-	    for (k=0; k<=numColumns-3; k++)
+	    for (k=0; k<=width-3; k++)
 	    { 
 			s=0.0f;
 	        for (j=1; j<=k+1; j++)
@@ -638,21 +994,21 @@ public class MatrixOperations {
 	    }
 
 	    elements[0]=1.0f/a;
-	    for (i=0; i<=numColumns-2; i++)
+	    for (i=0; i<=width-2; i++)
 	    { 
 			k=i+1; 
-			j=(i+1)*numColumns;
+			j=(i+1)*width;
 	        elements[k]=-r[i]/a; 
 			elements[j]=-c[i]/a;
 	    }
 
-	   for (i=0; i<=numColumns-2; i++)
+	   for (i=0; i<=width-2; i++)
 		{
-			for (j=0; j<=numColumns-2; j++)
+			for (j=0; j<=width-2; j++)
 			{ 
-				k=(i+1)*numColumns+j+1;
-				elements[k]=elements[i*numColumns+j]-c[i]*elements[j+1];
-				elements[k]=elements[k]+c[numColumns-j-2]*elements[numColumns-i-1];
+				k=(i+1)*width+j+1;
+				elements[k]=elements[i*width+j]-c[i]*elements[j+1];
+				elements[k]=elements[k]+c[width-j-2]*elements[width-i-1];
 			}
 		}
 
@@ -674,14 +1030,14 @@ public class MatrixOperations {
 		det=1.0f;
 	    
 		// 消元
-		for (k=0; k<=numColumns-2; k++)
+		for (k=0; k<=width-2; k++)
 	    { 
 			q=0.0f;
-	        for (i=k; i<=numColumns-1; i++)
+	        for (i=k; i<=width-1; i++)
 			{
-				for (j=k; j<=numColumns-1; j++)
+				for (j=k; j<=width-1; j++)
 				{ 
-					l=i*numColumns+j; 
+					l=i*width+j; 
 					d=Math.abs(elements[l]);
 					if (d>q) 
 					{ 
@@ -701,10 +1057,10 @@ public class MatrixOperations {
 			if (is!=k)
 	        { 
 				f=-f;
-	            for (j=k; j<=numColumns-1; j++)
+	            for (j=k; j<=width-1; j++)
 	            { 
-					u=k*numColumns+j; 
-					v=is*numColumns+j;
+					u=k*width+j; 
+					v=is*width+j;
 	                d=elements[u]; 
 					elements[u]=elements[v]; 
 					elements[v]=d;
@@ -714,31 +1070,31 @@ public class MatrixOperations {
 			if (js!=k)
 	        { 
 				f=-f;
-	            for (i=k; i<=numColumns-1; i++)
+	            for (i=k; i<=width-1; i++)
 	            {
-					u=i*numColumns+js; 
-					v=i*numColumns+k;
+					u=i*width+js; 
+					v=i*width+k;
 	                d=elements[u]; 
 					elements[u]=elements[v]; 
 					elements[v]=d;
 	            }
 	        }
 
-	        l=k*numColumns+k;
+	        l=k*width+k;
 	        det=det*elements[l];
-	        for (i=k+1; i<=numColumns-1; i++)
+	        for (i=k+1; i<=width-1; i++)
 	        { 
-				d=elements[i*numColumns+k]/elements[l];
-	            for (j=k+1; j<=numColumns-1; j++)
+				d=elements[i*width+k]/elements[l];
+	            for (j=k+1; j<=width-1; j++)
 	            { 
-					u=i*numColumns+j;
-	                elements[u]=elements[u]-d*elements[k*numColumns+j];
+					u=i*width+j;
+	                elements[u]=elements[u]-d*elements[k*width+j];
 	            }
 	        }
 	    }
 	    
 		// 求值
-		det=f*det*elements[numColumns*numColumns-1];
+		det=f*det*elements[width*width-1];
 
 	    return(det);
 	}
@@ -754,9 +1110,9 @@ public class MatrixOperations {
 	    float q,d;
 	    
 		// 秩小于等于行列数
-		nn = numRows;
-	    if (numRows >= numColumns) 
-			nn = numColumns;
+		nn = height;
+	    if (height >= width) 
+			nn = width;
 
 	    k=0;
 
@@ -764,11 +1120,11 @@ public class MatrixOperations {
 	    for (l=0; l<=nn-1; l++)
 	    { 
 			q=0.0f;
-	        for (i=l; i<=numRows-1; i++)
+	        for (i=l; i<=height-1; i++)
 			{
-				for (j=l; j<=numColumns-1; j++)
+				for (j=l; j<=width-1; j++)
 				{ 
-					ll=i*numColumns+j; 
+					ll=i*width+j; 
 					d=Math.abs(elements[ll]);
 					if (d>q) 
 					{ 
@@ -785,10 +1141,10 @@ public class MatrixOperations {
 	        k=k+1;
 	        if (is!=l)
 	        { 
-				for (j=l; j<=numColumns-1; j++)
+				for (j=l; j<=width-1; j++)
 	            { 
-					u=l*numColumns+j; 
-					v=is*numColumns+j;
+					u=l*width+j; 
+					v=is*width+j;
 	                d=elements[u]; 
 					elements[u]=elements[v]; 
 					elements[v]=d;
@@ -796,24 +1152,24 @@ public class MatrixOperations {
 	        }
 	        if (js!=l)
 	        { 
-				for (i=l; i<=numRows-1; i++)
+				for (i=l; i<=height-1; i++)
 	            { 
-					u=i*numColumns+js; 
-					v=i*numColumns+l;
+					u=i*width+js; 
+					v=i*width+l;
 	                d=elements[u]; 
 					elements[u]=elements[v]; 
 					elements[v]=d;
 	            }
 	        }
 	        
-			ll=l*numColumns+l;
-	        for (i=l+1; i<=numColumns-1; i++)
+			ll=l*width+l;
+	        for (i=l+1; i<=width-1; i++)
 	        { 
-				d=elements[i*numColumns+l]/elements[ll];
-	            for (j=l+1; j<=numColumns-1; j++)
+				d=elements[i*width+l]/elements[ll];
+	            for (j=l+1; j<=width-1; j++)
 	            { 
-					u=i*numColumns+j;
-	                elements[u]=elements[u]-d*elements[l*numColumns+j];
+					u=i*width+j;
+	                elements[u]=elements[u]-d*elements[l*width+j];
 	            }
 	        }
 	    }
@@ -841,18 +1197,18 @@ public class MatrixOperations {
 	    elements[0]=(float)Math.sqrt(elements[0]);
 	    d=elements[0];
 
-	    for (i=1; i<=numColumns-1; i++)
+	    for (i=1; i<=width-1; i++)
 	    { 
-			u=i*numColumns; 
+			u=i*width; 
 			elements[u]=elements[u]/elements[0];
 		}
 	    
-		for (j=1; j<=numColumns-1; j++)
+		for (j=1; j<=width-1; j++)
 	    { 
-			l=j*numColumns+j;
+			l=j*width+j;
 	        for (k=0; k<=j-1; k++)
 	        { 
-				u=j*numColumns+k; 
+				u=j*width+k; 
 				elements[l]=elements[l]-elements[u]*elements[u];
 			}
 	        
@@ -862,11 +1218,11 @@ public class MatrixOperations {
 	        elements[l]=(float)(float)Math.sqrt(elements[l]);
 	        d=d*elements[l];
 	        
-			for (i=j+1; i<=numColumns-1; i++)
+			for (i=j+1; i<=width-1; i++)
 	        { 
-				u=i*numColumns+j;
+				u=i*width+j;
 	            for (k=0; k<=j-1; k++)
-					elements[u]=elements[u]-elements[i*numColumns+k]*elements[j*numColumns+k];
+					elements[u]=elements[u]-elements[i*width+k]*elements[j*width+k];
 	            
 				elements[u]=elements[u]/elements[l];
 	        }
@@ -877,9 +1233,9 @@ public class MatrixOperations {
 		realDetValue.setValue(dblDet);
 		
 		// 下三角矩阵
-	    for (i=0; i<=numColumns-2; i++)
-			for (j=i+1; j<=numColumns-1; j++)
-				elements[i*numColumns+j]=0.0f;
+	    for (i=0; i<=width-2; i++)
+			for (j=i+1; j<=width-1; j++)
+				elements[i*width+j]=0.0f;
 
 		return true;
 	}
@@ -891,54 +1247,54 @@ public class MatrixOperations {
 	 * @param mtxU - 返回分解后的U矩阵
 	 * @return boolean型，求解是否成功
 	 */
-	public boolean splitLU(Matrix mtxL, Matrix mtxU)
+	public boolean splitLU(SmallMatrix mtxL, SmallMatrix mtxU)
 	{ 
 		int i,j,k,w,v,ll;
 	    
 		// 初始化结果矩阵
-		if (! mtxL.init(numColumns, numColumns) ||
-			! mtxU.init(numColumns, numColumns))
+		if (! mtxL.init(width, width) ||
+			! mtxU.init(width, width))
 			return false;
 
-		for (k=0; k<=numColumns-2; k++)
+		for (k=0; k<=width-2; k++)
 	    { 
-			ll=k*numColumns+k;
+			ll=k*width+k;
 			if (elements[ll] == 0.0f)
 				return false;
 
-	        for (i=k+1; i<=numColumns-1; i++)
+	        for (i=k+1; i<=width-1; i++)
 			{ 
-				w=i*numColumns+k; 
+				w=i*width+k; 
 				elements[w]=elements[w]/elements[ll];
 			}
 
-	        for (i=k+1; i<=numColumns-1; i++)
+	        for (i=k+1; i<=width-1; i++)
 	        { 
-				w=i*numColumns+k;
-	            for (j=k+1; j<=numColumns-1; j++)
+				w=i*width+k;
+	            for (j=k+1; j<=width-1; j++)
 	            { 
-					v=i*numColumns+j;
-	                elements[v]=elements[v]-elements[w]*elements[k*numColumns+j];
+					v=i*width+j;
+	                elements[v]=elements[v]-elements[w]*elements[k*width+j];
 	            }
 	        }
 	    }
 	    
-		for (i=0; i<=numColumns-1; i++)
+		for (i=0; i<=width-1; i++)
 	    {
 			for (j=0; j<i; j++)
 	        { 
-				w=i*numColumns+j; 
+				w=i*width+j; 
 				mtxL.elements[w]=elements[w]; 
 				mtxU.elements[w]=0.0f;
 			}
 
-	        w=i*numColumns+i;
+	        w=i*width+i;
 	        mtxL.elements[w]=1.0f; 
 			mtxU.elements[w]=elements[w];
 	        
-			for (j=i+1; j<=numColumns-1; j++)
+			for (j=i+1; j<=width-1; j++)
 	        { 
-				w=i*numColumns+j; 
+				w=i*width+j; 
 				mtxL.elements[w]=0.0f; 
 				mtxU.elements[w]=elements[w];
 			}
@@ -953,24 +1309,24 @@ public class MatrixOperations {
 	 * @param mtxQ - 返回分解后的Q矩阵
 	 * @return boolean型，求解是否成功
 	 */
-	public boolean splitQR(Matrix mtxQ)
+	public boolean splitQR(SmallMatrix mtxQ)
 	{ 
 		int i,j,k,l,nn,p,jj;
 	    float u,alpha,w,t;
 	    
-		if (numRows < numColumns)
+		if (height < width)
 			return false;
 
 		// 初始化Q矩阵
-		if (! mtxQ.init(numRows, numRows))
+		if (! mtxQ.init(height, height))
 			return false;
 
 		// 对角线元素单位化
-	    for (i=0; i<=numRows-1; i++)
+	    for (i=0; i<=height-1; i++)
 		{
-			for (j=0; j<=numRows-1; j++)
+			for (j=0; j<=height-1; j++)
 			{ 
-				l=i*numRows+j; 
+				l=i*height+j; 
 				mtxQ.elements[l]=0.0f;
 				if (i==j) 
 					mtxQ.elements[l]=1.0f;
@@ -979,25 +1335,25 @@ public class MatrixOperations {
 
 		// 开始分解
 
-	    nn=numColumns;
-	    if (numRows == numColumns) 
-			nn=numRows-1;
+	    nn=width;
+	    if (height == width) 
+			nn=height-1;
 
 	    for (k=0; k<=nn-1; k++)
 	    { 
 			u=0.0f; 
-			l=k*numColumns+k;
-	        for (i=k; i<=numRows-1; i++)
+			l=k*width+k;
+	        for (i=k; i<=height-1; i++)
 	        { 
-				w=Math.abs(elements[i*numColumns+k]);
+				w=Math.abs(elements[i*width+k]);
 	            if (w>u) 
 					u=w;
 	        }
 	        
 			alpha=0.0f;
-	        for (i=k; i<=numRows-1; i++)
+	        for (i=k; i<=height-1; i++)
 	        { 
-				t=elements[i*numColumns+k]/u; 
+				t=elements[i*width+k]/u; 
 				alpha=alpha+t*t;
 			}
 
@@ -1012,52 +1368,52 @@ public class MatrixOperations {
 	        if ((u+1.0f)!=1.0f)
 	        { 
 				elements[l]=(elements[l]-alpha)/u;
-	            for (i=k+1; i<=numRows-1; i++)
+	            for (i=k+1; i<=height-1; i++)
 	            { 
-					p=i*numColumns+k; 
+					p=i*width+k; 
 					elements[p]=elements[p]/u;
 				}
 	            
-				for (j=0; j<=numRows-1; j++)
+				for (j=0; j<=height-1; j++)
 	            { 
 					t=0.0f;
-	                for (jj=k; jj<=numRows-1; jj++)
-						t=t+elements[jj*numColumns+k]*mtxQ.elements[jj*numRows+j];
+	                for (jj=k; jj<=height-1; jj++)
+						t=t+elements[jj*width+k]*mtxQ.elements[jj*height+j];
 
-	                for (i=k; i<=numRows-1; i++)
+	                for (i=k; i<=height-1; i++)
 	                { 
-						p=i*numRows+j; 
-						mtxQ.elements[p]=mtxQ.elements[p]-2.0f*t*elements[i*numColumns+k];
+						p=i*height+j; 
+						mtxQ.elements[p]=mtxQ.elements[p]-2.0f*t*elements[i*width+k];
 					}
 	            }
 	            
-				for (j=k+1; j<=numColumns-1; j++)
+				for (j=k+1; j<=width-1; j++)
 	            { 
 					t=0.0f;
 	                
-					for (jj=k; jj<=numRows-1; jj++)
-						t=t+elements[jj*numColumns+k]*elements[jj*numColumns+j];
+					for (jj=k; jj<=height-1; jj++)
+						t=t+elements[jj*width+k]*elements[jj*width+j];
 	                
-					for (i=k; i<=numRows-1; i++)
+					for (i=k; i<=height-1; i++)
 	                { 
-						p=i*numColumns+j; 
-						elements[p]=elements[p]-2.0f*t*elements[i*numColumns+k];
+						p=i*width+j; 
+						elements[p]=elements[p]-2.0f*t*elements[i*width+k];
 					}
 	            }
 	            
 				elements[l]=alpha;
-	            for (i=k+1; i<=numRows-1; i++)
-					elements[i*numColumns+k]=0.0f;
+	            for (i=k+1; i<=height-1; i++)
+					elements[i*width+k]=0.0f;
 	        }
 	    }
 	    
 		// 调整元素
-		for (i=0; i<=numRows-2; i++)
+		for (i=0; i<=height-2; i++)
 		{
-			for (j=i+1; j<=numRows-1;j++)
+			for (j=i+1; j<=height-1;j++)
 			{ 
-				p=i*numRows+j; 
-				l=j*numRows+i;
+				p=i*height+j; 
+				l=j*height+i;
 				t=mtxQ.elements[p]; 
 				mtxQ.elements[p]=mtxQ.elements[l]; 
 				mtxQ.elements[l]=t;
@@ -1075,15 +1431,15 @@ public class MatrixOperations {
 	 * @param eps - 计算精度
 	 * @return boolean型，求解是否成功
 	 */
-	public boolean splitUV(Matrix mtxU, Matrix mtxV, float eps)
+	public boolean splitUV(SmallMatrix mtxU, SmallMatrix mtxV, float eps)
 	{ 
 		int i,j,k,l,it,ll,kk,ix,iy,mm,nn,iz,m1,ks;
 	    float d,dd,t,sm,sm1,em1,sk,ek,b,c,shh;
 	    float[] fg = new float[2];
 	    float[] cs = new float[2];
 
-		int m = numRows;
-		int n = numColumns;
+		int m = height;
+		int n = width;
 
 		// 初始化U, V矩阵
 		if (! mtxU.init(m, m) || ! mtxV.init(n, n))
@@ -1677,7 +2033,7 @@ public class MatrixOperations {
 	 * @param eps - 计算精度
 	 * @return boolean型，求解是否成功
 	 */
-	public boolean invertUV(Matrix mtxAP, Matrix mtxU, Matrix mtxV, float eps)
+	public boolean invertUV(SmallMatrix mtxAP, SmallMatrix mtxU, SmallMatrix mtxV, float eps)
 	{ 
 		int i,j,k,l,t,p,q,f;
 
@@ -1685,8 +2041,8 @@ public class MatrixOperations {
 	    if (! splitUV(mtxU, mtxV, eps))
 			return false;
 
-		int m = numRows;
-		int n = numColumns;
+		int m = height;
+		int n = width;
 
 		// 初始化广义逆矩阵
 		if (! mtxAP.init(n, m))
@@ -1732,36 +2088,37 @@ public class MatrixOperations {
 	 *               次对角线元素
 	 * @return boolean型，求解是否成功
 	 */
-	public boolean makeSymTri(Matrix mtxQ, Matrix mtxT, float[] dblB, float[] dblC)
+/*
+	public boolean makeSymTri(SmallMatrix mtxQ, SmallMatrix mtxT, float[] dblB, float[] dblC)
 	{ 
 		int i,j,k,u;
 	    float h,f,g,h2;
 	    
 		// 初始化矩阵Q和T
-		if (! mtxQ.init(numColumns, numColumns) ||
-			! mtxT.init(numColumns, numColumns))
+		if (! mtxQ.init(width, width) ||
+			! mtxT.init(width, width))
 			return false;
 
 		if (dblB == null || dblC == null)
 			return false;
 
-		for (i=0; i<=numColumns-1; i++)
+		for (i=0; i<=width-1; i++)
 		{
-			for (j=0; j<=numColumns-1; j++)
+			for (j=0; j<=width-1; j++)
 			{ 
-				u=i*numColumns+j; 
+				u=i*width+j; 
 				mtxQ.elements[u]=elements[u];
 			}
 		}
 
-	    for (i=numColumns-1; i>=1; i--)
+	    for (i=width-1; i>=1; i--)
 	    { 
 			h=0.0f;
 	        if (i>1)
 			{
 				for (k=0; k<=i-1; k++)
 	            { 
-					u=i*numColumns+k; 
+					u=i*width+k; 
 					h=h+mtxQ.elements[u]*mtxQ.elements[u];
 				}
 			}
@@ -1770,13 +2127,13 @@ public class MatrixOperations {
 	        { 
 				dblC[i]=0.0f;
 	            if (i==1) 
-					dblC[i]=mtxQ.elements[i*numColumns+i-1];
+					dblC[i]=mtxQ.elements[i*width+i-1];
 	            dblB[i]=0.0f;
 	        }
 	        else
 	        { 
 				dblC[i]=(float)Math.sqrt(h);
-	            u=i*numColumns+i-1;
+	            u=i*width+i-1;
 	            if (mtxQ.elements[u]>0.0f) 
 					dblC[i]=-dblC[i];
 
@@ -1785,29 +2142,29 @@ public class MatrixOperations {
 	            f=0.0f;
 	            for (j=0; j<=i-1; j++)
 	            { 
-					mtxQ.elements[j*numColumns+i]=mtxQ.elements[i*numColumns+j]/h;
+					mtxQ.elements[j*width+i]=mtxQ.elements[i*width+j]/h;
 	                g=0.0f;
 	                for (k=0; k<=j; k++)
-						g=g+mtxQ.elements[j*numColumns+k]*mtxQ.elements[i*numColumns+k];
+						g=g+mtxQ.elements[j*width+k]*mtxQ.elements[i*width+k];
 
 					if (j+1<=i-1)
 						for (k=j+1; k<=i-1; k++)
-							g=g+mtxQ.elements[k*numColumns+j]*mtxQ.elements[i*numColumns+k];
+							g=g+mtxQ.elements[k*width+j]*mtxQ.elements[i*width+k];
 
 	                dblC[j]=g/h;
-	                f=f+g*mtxQ.elements[j*numColumns+i];
+	                f=f+g*mtxQ.elements[j*width+i];
 	            }
 	            
 				h2=f/(h+h);
 	            for (j=0; j<=i-1; j++)
 	            { 
-					f=mtxQ.elements[i*numColumns+j];
+					f=mtxQ.elements[i*width+j];
 	                g=dblC[j]-h2*f;
 	                dblC[j]=g;
 	                for (k=0; k<=j; k++)
 	                { 
-						u=j*numColumns+k;
-	                    mtxQ.elements[u]=mtxQ.elements[u]-f*dblC[k]-g*mtxQ.elements[i*numColumns+k];
+						u=j*width+k;
+	                    mtxQ.elements[u]=mtxQ.elements[u]-f*dblC[k]-g*mtxQ.elements[i*width+k];
 	                }
 	            }
 	            
@@ -1815,12 +2172,12 @@ public class MatrixOperations {
 	        }
 	    }
 	    
-		for (i=0; i<=numColumns-2; i++) 
+		for (i=0; i<=width-2; i++) 
 			dblC[i]=dblC[i+1];
 	    
-		dblC[numColumns-1]=0.0f;
+		dblC[width-1]=0.0f;
 	    dblB[0]=0.0f;
-	    for (i=0; i<=numColumns-1; i++)
+	    for (i=0; i<=width-1; i++)
 	    { 
 			if ((dblB[i]!=(float)0.0f) && (i-1>=0))
 			{
@@ -1828,32 +2185,32 @@ public class MatrixOperations {
 	            { 
 					g=0.0f;
 					for (k=0; k<=i-1; k++)
-						g=g+mtxQ.elements[i*numColumns+k]*mtxQ.elements[k*numColumns+j];
+						g=g+mtxQ.elements[i*width+k]*mtxQ.elements[k*width+j];
 
 					for (k=0; k<=i-1; k++)
 	                { 
-						u=k*numColumns+j;
-						mtxQ.elements[u]=mtxQ.elements[u]-g*mtxQ.elements[k*numColumns+i];
+						u=k*width+j;
+						mtxQ.elements[u]=mtxQ.elements[u]-g*mtxQ.elements[k*width+i];
 	                }
 	            }
 			}
 
-	        u=i*numColumns+i;
+	        u=i*width+i;
 	        dblB[i]=mtxQ.elements[u]; mtxQ.elements[u]=1.0f;
 	        if (i-1>=0)
 			{
 				for (j=0; j<=i-1; j++)
 	            { 
-					mtxQ.elements[i*numColumns+j]=0.0f; 
-					mtxQ.elements[j*numColumns+i]=0.0f;
+					mtxQ.elements[i*width+j]=0.0f; 
+					mtxQ.elements[j*width+i]=0.0f;
 				}
 			}
 	    }
 
 	    // 构造对称三对角矩阵
-	    for (i=0; i<numColumns; ++i)
+	    for (i=0; i<width; ++i)
 		{
-		    for (j=0; j<numColumns; ++j)
+		    for (j=0; j<width; ++j)
 			{
 	            mtxT.setElement(i, j, 0);
 	            k = i - j;
@@ -1868,7 +2225,7 @@ public class MatrixOperations {
 
 		return true;
 	}
-
+*/
 	/**
 	 * 实对称三对角阵的全部特征值与特征向量的计算
 	 * 
@@ -1884,13 +2241,14 @@ public class MatrixOperations {
 	 * @param eps - 计算精度
 	 * @return boolean型，求解是否成功
 	 */
-	public boolean computeEvSymTri(float[] dblB, float[] dblC, Matrix mtxQ, int nMaxIt, float eps)
+/*	
+	public boolean computeEvSymTri(float[] dblB, float[] dblC, SmallMatrix mtxQ, int nMaxIt, float eps)
 	{
 		int i,j,k,m,it,u,v;
 	    float d,f,h,g,p,r,e,s;
 	    
 		// 初值
-		int n = mtxQ.getNumColumns();
+		int n = mtxQ.getWidth();
 		dblC[n-1]=0.0f; 
 		d=0.0f; 
 		f=0.0f;
@@ -2006,7 +2364,7 @@ public class MatrixOperations {
 	    
 		return true;
 	}
-
+*/
 	/**
 	 * 约化一般实矩阵为赫申伯格矩阵的初等相似变换法
 	 */
@@ -2015,12 +2373,12 @@ public class MatrixOperations {
 		int i = 0,j,k,u,v;
 	    float d,t;
 
-	    for (k=1; k<=numColumns-2; k++)
+	    for (k=1; k<=width-2; k++)
 	    { 
 			d=0.0f;
-	        for (j=k; j<=numColumns-1; j++)
+	        for (j=k; j<=width-1; j++)
 	        { 
-				u=j*numColumns+k-1; 
+				u=j*width+k-1; 
 				t=elements[u];
 	            if (Math.abs(t)>Math.abs(d))
 	            { 
@@ -2033,40 +2391,40 @@ public class MatrixOperations {
 	        { 
 				if (i!=k)
 	            { 
-					for (j=k-1; j<=numColumns-1; j++)
+					for (j=k-1; j<=width-1; j++)
 	                { 
-						u=i*numColumns+j; 
-						v=k*numColumns+j;
+						u=i*width+j; 
+						v=k*width+j;
 	                    t=elements[u]; 
 						elements[u]=elements[v]; 
 						elements[v]=t;
 	                }
 	                
-					for (j=0; j<=numColumns-1; j++)
+					for (j=0; j<=width-1; j++)
 	                { 
-						u=j*numColumns+i; 
-						v=j*numColumns+k;
+						u=j*width+i; 
+						v=j*width+k;
 	                    t=elements[u]; 
 						elements[u]=elements[v]; 
 						elements[v]=t;
 	                }
 	            }
 	            
-				for (i=k+1; i<=numColumns-1; i++)
+				for (i=k+1; i<=width-1; i++)
 	            { 
-					u=i*numColumns+k-1; 
+					u=i*width+k-1; 
 					t=elements[u]/d; 
 					elements[u]=0.0f;
-	                for (j=k; j<=numColumns-1; j++)
+	                for (j=k; j<=width-1; j++)
 	                { 
-						v=i*numColumns+j;
-	                    elements[v]=elements[v]-t*elements[k*numColumns+j];
+						v=i*width+j;
+	                    elements[v]=elements[v]-t*elements[k*width+j];
 	                }
 	                
-					for (j=0; j<=numColumns-1; j++)
+					for (j=0; j<=width-1; j++)
 	                { 
-						v=j*numColumns+k;
-	                    elements[v]=elements[v]+t*elements[j*numColumns+i];
+						v=j*width+k;
+	                    elements[v]=elements[v]+t*elements[j*width+i];
 	                }
 	            }
 	        }
@@ -2087,7 +2445,7 @@ public class MatrixOperations {
 		int m,it,i,j,k,l,ii,jj,kk,ll;
 	    float b,c,w,g,xy,p,q,r,x,s,e,f,z,y;
 	    
-		int n = numColumns;
+		int n = width;
 
 		it=0; 
 		m=n;
@@ -2242,31 +2600,31 @@ public class MatrixOperations {
 	 * @param eps - 计算精度
 	 * @return boolean型，求解是否成功
 	 */
-	public boolean computeEvJacobi(float[] dblEigenValue, Matrix mtxEigenVector, int nMaxIt, float eps)
+	public boolean computeEvJacobi(float[] dblEigenValue, SmallMatrix mtxEigenVector, int nMaxIt, float eps)
 	{ 
 		int i,j,p = 0,q = 0,u,w,t,s,l;
 	    float fm,cn,sn,omega,x,y,d;
 	    
-		if (! mtxEigenVector.init(numColumns, numColumns))
+		if (! mtxEigenVector.init(width, width))
 			return false;
 
 		l=1;
-	    for (i=0; i<=numColumns-1; i++)
+	    for (i=0; i<=width-1; i++)
 	    { 
-			mtxEigenVector.elements[i*numColumns+i]=1.0f;
-	        for (j=0; j<=numColumns-1; j++)
+			mtxEigenVector.elements[i*width+i]=1.0f;
+	        for (j=0; j<=width-1; j++)
 				if (i!=j) 
-					mtxEigenVector.elements[i*numColumns+j]=0.0f;
+					mtxEigenVector.elements[i*width+j]=0.0f;
 	    }
 	    
 		while (true)
 	    { 
 			fm=0.0f;
-	        for (i=1; i<=numColumns-1; i++)
+	        for (i=1; i<=width-1; i++)
 			{
 				for (j=0; j<=i-1; j++)
 				{ 
-					d=Math.abs(elements[i*numColumns+j]);
+					d=Math.abs(elements[i*width+j]);
 					if ((i!=j) && (d>fm))
 					{ 
 						fm=d; 
@@ -2278,7 +2636,7 @@ public class MatrixOperations {
 
 	        if (fm<eps)
 			{
-				for (i=0; i<numColumns; ++i)
+				for (i=0; i<width; ++i)
 					dblEigenValue[i] = getElement(i,i);
 				return true;
 			}
@@ -2287,10 +2645,10 @@ public class MatrixOperations {
 				return false;
 	        
 			l=l+1;
-	        u=p*numColumns+q; 
-			w=p*numColumns+p; 
-			t=q*numColumns+p; 
-			s=q*numColumns+q;
+	        u=p*width+q; 
+			w=p*width+p; 
+			t=q*width+p; 
+			s=q*width+q;
 	        x=-elements[u]; 
 			y=(elements[s]-elements[w])/2.0f;
 	        omega=x/(float)Math.sqrt(x*x+y*y);
@@ -2306,33 +2664,33 @@ public class MatrixOperations {
 	        elements[s]=fm*sn*sn+elements[s]*cn*cn-elements[u]*omega;
 	        elements[u]=0.0f; 
 			elements[t]=0.0f;
-	        for (j=0; j<=numColumns-1; j++)
+	        for (j=0; j<=width-1; j++)
 			{
 				if ((j!=p) && (j!=q))
 				{ 
-					u=p*numColumns+j; w=q*numColumns+j;
+					u=p*width+j; w=q*width+j;
 					fm=elements[u];
 					elements[u]=fm*cn+elements[w]*sn;
 					elements[w]=-fm*sn+elements[w]*cn;
 				}
 			}
 
-	        for (i=0; i<=numColumns-1; i++)
+	        for (i=0; i<=width-1; i++)
 			{
 				if ((i!=p) && (i!=q))
 	            { 
-					u=i*numColumns+p; 
-					w=i*numColumns+q;
+					u=i*width+p; 
+					w=i*width+q;
 					fm=elements[u];
 					elements[u]=fm*cn+elements[w]*sn;
 					elements[w]=-fm*sn+elements[w]*cn;
 	            }
 			}
 
-	        for (i=0; i<=numColumns-1; i++)
+	        for (i=0; i<=width-1; i++)
 	        { 
-				u=i*numColumns+p; 
-				w=i*numColumns+q;
+				u=i*width+p; 
+				w=i*width+q;
 	            fm=mtxEigenVector.elements[u];
 	            mtxEigenVector.elements[u]=fm*cn+mtxEigenVector.elements[w]*sn;
 	            mtxEigenVector.elements[w]=-fm*sn+mtxEigenVector.elements[w]*cn;
@@ -2349,52 +2707,52 @@ public class MatrixOperations {
 	 * @param eps - 计算精度
 	 * @return boolean型，求解是否成功
 	 */
-	public boolean computeEvJacobi(float[] dblEigenValue, Matrix mtxEigenVector, float eps)
+	public boolean computeEvJacobi(float[] dblEigenValue, SmallMatrix mtxEigenVector, float eps)
 	{ 
 		int i,j,p,q,u,w,t,s;
 	    float ff,fm,cn,sn,omega,x,y,d;
 	    
-		if (! mtxEigenVector.init(numColumns, numColumns))
+		if (! mtxEigenVector.init(width, width))
 			return false;
 
-		for (i=0; i<=numColumns-1; i++)
+		for (i=0; i<=width-1; i++)
 	    { 
-			mtxEigenVector.elements[i*numColumns+i]=1.0f;
-	        for (j=0; j<=numColumns-1; j++)
+			mtxEigenVector.elements[i*width+i]=1.0f;
+	        for (j=0; j<=width-1; j++)
 				if (i!=j) 
-					mtxEigenVector.elements[i*numColumns+j]=0.0f;
+					mtxEigenVector.elements[i*width+j]=0.0f;
 	    }
 	    
 		ff=0.0f;
-	    for (i=1; i<=numColumns-1; i++)
+	    for (i=1; i<=width-1; i++)
 		{
 			for (j=0; j<=i-1; j++)
 			{ 
-				d=elements[i*numColumns+j]; 
+				d=elements[i*width+j]; 
 				ff=ff+d*d; 
 			}
 		}
 
 	    ff=(float)Math.sqrt(2.0f*ff);
-		ff=ff/(1.0f*numColumns);
+		ff=ff/(1.0f*width);
 
 		boolean nextLoop = false;
 		while (true)
 		{
-			for (i=1; i<=numColumns-1; i++)
+			for (i=1; i<=width-1; i++)
 			{
 				for (j=0; j<=i-1; j++)
 				{ 
-					d=Math.abs(elements[i*numColumns+j]);
+					d=Math.abs(elements[i*width+j]);
 					if (d>ff)
 					{ 
 						p=i; 
 						q=j;
 
-						u=p*numColumns+q; 
-						w=p*numColumns+p; 
-						t=q*numColumns+p; 
-						s=q*numColumns+q;
+						u=p*width+q; 
+						w=p*width+p; 
+						t=q*width+p; 
+						s=q*width+q;
 						x=-elements[u]; 
 						y=(elements[s]-elements[w])/2.0f;
 						omega=x/(float)Math.sqrt(x*x+y*y);
@@ -2409,34 +2767,34 @@ public class MatrixOperations {
 						elements[s]=fm*sn*sn+elements[s]*cn*cn-elements[u]*omega;
 						elements[u]=0.0f; elements[t]=0.0f;
 					    
-						for (j=0; j<=numColumns-1; j++)
+						for (j=0; j<=width-1; j++)
 						{
 							if ((j!=p)&&(j!=q))
 							{ 
-								u=p*numColumns+j; 
-								w=q*numColumns+j;
+								u=p*width+j; 
+								w=q*width+j;
 								fm=elements[u];
 								elements[u]=fm*cn+elements[w]*sn;
 								elements[w]=-fm*sn+elements[w]*cn;
 							}
 						}
 
-						for (i=0; i<=numColumns-1; i++)
+						for (i=0; i<=width-1; i++)
 						{
 							if ((i!=p)&&(i!=q))
 							{ 
-								u=i*numColumns+p; 
-								w=i*numColumns+q;
+								u=i*width+p; 
+								w=i*width+q;
 								fm=elements[u];
 								elements[u]=fm*cn+elements[w]*sn;
 								elements[w]=-fm*sn+elements[w]*cn;
 							}
 						}
 					    
-						for (i=0; i<=numColumns-1; i++)
+						for (i=0; i<=width-1; i++)
 						{ 
-							u=i*numColumns+p; 
-							w=i*numColumns+q;
+							u=i*width+p; 
+							w=i*width+q;
 							fm=mtxEigenVector.elements[u];
 							mtxEigenVector.elements[u]=fm*cn+mtxEigenVector.elements[w]*sn;
 							mtxEigenVector.elements[w]=-fm*sn+mtxEigenVector.elements[w]*cn;
@@ -2462,13 +2820,12 @@ public class MatrixOperations {
 			// 如果达到精度要求，退出循环，返回结果
 			if (ff<eps) 
 			{
-				for (i=0; i<numColumns; ++i)
+				for (i=0; i<width; ++i)
 					dblEigenValue[i] = getElement(i,i);
 				return true;
 			}
 		    
-			ff=ff/(1.0f*numColumns);
+			ff=ff/(1.0f*width);
 		}
 	}
-	
 }

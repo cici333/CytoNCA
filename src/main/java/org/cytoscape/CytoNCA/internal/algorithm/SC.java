@@ -9,7 +9,7 @@ import java.util.List;
 
 import org.cytoscape.CytoNCA.internal.Protein;
 import org.cytoscape.CytoNCA.internal.ProteinUtil;
-import org.cytoscape.CytoNCA.internal.algorithm.javaalgorithm.Matrix;
+import org.cytoscape.CytoNCA.internal.algorithm.javaalgorithm.SmallMatrix;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
@@ -76,11 +76,11 @@ public class SC extends Algorithm {
 				
 			}
 		}
-		Matrix matx = new Matrix(len, tempData);
-		Matrix mtxQ2 = new Matrix();
-		Matrix mtxT2 = new Matrix();
-		float[] bArray2 = new float[matx.getNumColumns()];
-		float[] cArray2 = new float[matx.getNumColumns()];
+		SmallMatrix matx = new SmallMatrix(len, tempData);
+		SmallMatrix mtxQ2 = new SmallMatrix();
+		SmallMatrix mtxT2 = new SmallMatrix();
+		float[] bArray2 = new float[matx.getWidth()];
+		float[] cArray2 = new float[matx.getWidth()];
 		System.err.println("run");
 		if (matx.makeSymTri(mtxQ2, mtxT2, bArray2, cArray2)) {
 			// 2: compute eigenvalues and eigenvectors
@@ -96,7 +96,7 @@ public class SC extends Algorithm {
 		}
 		return vertex;
 	}
-	private void setResult(ArrayList<Protein> vertex, Matrix matrix,
+	private void setResult(ArrayList<Protein> vertex, SmallMatrix matrix,
 			float[] value) {
 		boolean[] flag = new boolean[value.length];
 		int i = 0, j = 0;
@@ -107,7 +107,7 @@ public class SC extends Algorithm {
 			System.out.println(value[i]+"*******");
 			}
 		
-		for (i = 0; i < matrix.getNumColumns(); i++) {
+		for (i = 0; i < matrix.getWidth(); i++) {
 			flag[i] = true;
 			for (j = 0; j < i - 1; j++) {
 				if (value[j] == value[i]) {
@@ -124,10 +124,10 @@ public class SC extends Algorithm {
 		}
 		
 		if(!isweight){
-			for (i = 0; i < matrix.getNumRows(); i++) {
+			for (i = 0; i < matrix.getHeight(); i++) {
 				result = 0;
 				temp = 0;
-				for (j = 0; j < matrix.getNumColumns(); j++) {
+				for (j = 0; j < matrix.getWidth(); j++) {
 					temp = matrix.getElement(i, j);
 					result += temp * Math.exp(value[j]) * temp;
 				}
@@ -135,10 +135,10 @@ public class SC extends Algorithm {
 			}
 		}
 		else{
-			for (i = 0; i < matrix.getNumRows(); i++) {
+			for (i = 0; i < matrix.getHeight(); i++) {
 				result = 0;
 				temp = 0;
-				for (j = 0; j < matrix.getNumColumns(); j++) {
+				for (j = 0; j < matrix.getWidth(); j++) {
 					temp = matrix.getElement(i, j);
 					result += temp * Math.exp(value[j]) * temp;
 				}

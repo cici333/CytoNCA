@@ -19,7 +19,6 @@ import javax.swing.JPanel;
 import javax.swing.JWindow;
 import javax.swing.SwingUtilities;
 
-import org.cytoscape.CytoNCA.internal.CyActivator;
 import org.cytoscape.CytoNCA.internal.ParameterSet;
 import org.cytoscape.CytoNCA.internal.algorithm.*;
 import org.cytoscape.CytoNCA.internal.panels.EpListPanel;
@@ -67,7 +66,7 @@ import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import org.cytoscape.CytoNCA.internal.CyActivator;
 
 
 public class ProteinUtil {
