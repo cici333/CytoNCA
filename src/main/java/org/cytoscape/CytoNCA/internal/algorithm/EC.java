@@ -96,7 +96,6 @@ public class EC extends Algorithm {
 
 		
 		for (i = 0; i < value.length; i++) {
-			System.out.println(value[i]+"%%%%%");
 			if (value[i] > max) {
 				max = value[i];
 				j = i;
@@ -108,14 +107,20 @@ public class EC extends Algorithm {
             }
 		}
 		
+		int l = matrix.getNumRows();
+		double temp;
 		if(!isweight){
-			for (i = 0; i < matrix.getNumRows(); i++) {
-				vertex.get(i).setEC(0-matrix.getElement(i, j));
+			for (i = 0; i < l; i++) {
+				//vertex.get(i).setEC(0-matrix.getElement(i, j));
+				temp = matrix.getElement(i, j);
+				vertex.get(i).setEC(temp > 0 ? temp : 0 - temp); // outputted as absolute value
 			}
 		}
 		else{
-			for (i = 0; i < matrix.getNumRows(); i++) {
-				vertex.get(i).setECW(0-matrix.getElement(j, i));
+			for (i = 0; i < l; i++) {
+				//vertex.get(i).setECW(0-matrix.getElement(j, i));
+				temp = matrix.getElement(i, j);
+				vertex.get(i).setECW(temp > 0 ? temp : 0 - temp);
 			
 			}
 		}
