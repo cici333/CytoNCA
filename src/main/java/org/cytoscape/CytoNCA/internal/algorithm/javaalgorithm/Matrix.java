@@ -111,6 +111,8 @@ public abstract class Matrix {
 	            
 				dblB[i]=h;
 	        }
+	        
+	        System.out.println(i +"  I  ");
 	    }
 	    
 		for (i=0; i<=width-2; i++) 
@@ -149,6 +151,7 @@ public abstract class Matrix {
 					mtxQ.setElement(j, i, 0.0f);
 				}
 			}
+	        System.out.println(i +"  I  ");
 	    }
 
 	    // 构造对称三对角矩阵
@@ -165,6 +168,8 @@ public abstract class Matrix {
 				else if (k == -1)
 		            mtxT.setElement(i, j, dblC[i]);
 	        }
+		    
+		    System.out.println(i +"  I  ");
 	    }
 
 		return true;
@@ -273,6 +278,8 @@ public abstract class Matrix {
 	        }
 	        
 			dblB[j]=dblB[j]+f;
+			
+			System.out.println(j +"  J  ");
 	    }
 	    
 		for (i=0; i<=n-1; i++)
@@ -301,6 +308,8 @@ public abstract class Matrix {
 					mtxQ.setElement(j, k, p);
 	            }
 	        }
+	        
+	        System.out.println(i +"  I  ");
 	    }
 	    
 		return true;

@@ -36,6 +36,7 @@ public class EC extends Algorithm {
 		currentNetwork = inputNetwork;
 		this.isweight = isweight;
 		this.vertex = vertex;
+		List<CyEdge> eList = inputNetwork.getEdgeList();
 		
 		len=vertex.size();
 		
@@ -65,6 +66,7 @@ public class EC extends Algorithm {
 		
 	
 		if(!isweight){
+			/*
 			for(i=0;i<vertex.size();i++){
 				for(j=0;j<vertex.size();j++){
 					if(!inputNetwork.getConnectingEdgeList(vertex.get(i).getN(), vertex.get(j).getN(), Type.ANY).isEmpty()){
@@ -73,8 +75,20 @@ public class EC extends Algorithm {
 					else{
 						matx.setElement(i, j, 0.0f);
 					}
-				}
+				}			
+			}*/
+			int a = 0;
+			for(CyEdge e : eList){
+				
+				CyNode sn = e.getSource();
+				CyNode tn = e.getTarget();
+				int s = eList.indexOf(sn);
+				int t = eList.indexOf(tn);
+				matx.setElement(s, t, 1);
+				matx.setElement(t, s, 1);
+				System.out.println(a++ +"  *  ");
 			}
+			
 			if (taskMonitor != null) {
                 taskMonitor.setProgress(x / (len *2));
                 x++;

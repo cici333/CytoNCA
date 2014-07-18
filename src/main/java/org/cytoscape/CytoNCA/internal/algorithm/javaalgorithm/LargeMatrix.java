@@ -69,7 +69,7 @@ public class LargeMatrix extends Matrix implements Closeable {
 		int mapN = (int)p / MAPPING_SIZE;
 		int offN = (int)p % MAPPING_SIZE;
 		
-		System.out.println(mapN +"  *  "+ offN);
+	//	System.out.println(mapN +"  *  "+ offN);
 		
 		((MappedByteBuffer) mappings.get(mapN)).putFloat(offN, value);
 		return true;
@@ -77,9 +77,20 @@ public class LargeMatrix extends Matrix implements Closeable {
 	
 	
 	public void initial(){
+		long size = width * height * 4L;
+		int mapN = (int)size / MAPPING_SIZE;
+		int offN = (int)size % MAPPING_SIZE;
 		
-		int mapN = (int)p / MAPPING_SIZE;
-		int offN = (int)p % MAPPING_SIZE;
+		for(int i = 0; i < mapN; i++){
+			for(int offset = 0; offset < MAPPING_SIZE; offset += 4){
+				((MappedByteBuffer) mappings.get(i)).putFloat(offset, 0.0f);
+			}
+		}
+		
+		for(int offset = 0; offset < offN; offset += 4){
+			((MappedByteBuffer) mappings.get(mapN)).putFloat(offset, 0.0f);
+		}
+	
 	}
 	
 	public void close() throws IOException {
