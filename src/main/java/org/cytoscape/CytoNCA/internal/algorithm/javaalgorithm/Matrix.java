@@ -16,6 +16,9 @@ public abstract class Matrix {
 		return width;
 	}
 	
+	
+	
+	
 	public abstract float getElement(int x, int y);
 	public abstract boolean setElement(int x, int y, float value);
 //	public abstract boolean makeSymTri(Matrix mtxQ, Matrix mtxT, float[] dblB, float[] dblC);
@@ -43,6 +46,7 @@ public abstract class Matrix {
 		if (dblB == null || dblC == null)
 			return false;
 
+		/*
 		for (i=0; i<=width-1; i++)
 		{
 			for (j=0; j<=width-1; j++)
@@ -50,7 +54,7 @@ public abstract class Matrix {
 				mtxQ.setElement(i, j, getElement(i, j));
 			}
 		}
-
+		 */
 	    for (i=width-1; i>=1; i--)
 	    { 
 			h=0.0f;
@@ -155,6 +159,7 @@ public abstract class Matrix {
 	    }
 
 	    // 构造对称三对角矩阵
+	   /*
 	    for (i=0; i<width; ++i)
 		{
 		    for (j=0; j<width; ++j)
@@ -171,6 +176,18 @@ public abstract class Matrix {
 		    
 		    System.out.println(i +"  I  ");
 	    }
+	    */
+	    for (i=0; i<width; ++i)
+		{
+		     mtxT.setElement(i, i, dblB[i]);
+				
+		     mtxT.setElement(i, i-1, dblC[i-1]);
+				
+		     mtxT.setElement(i, i+1, dblC[i+1]);
+	        
+		     System.out.println(i +"  I  ");
+	    }
+	    
 
 		return true;
 	}

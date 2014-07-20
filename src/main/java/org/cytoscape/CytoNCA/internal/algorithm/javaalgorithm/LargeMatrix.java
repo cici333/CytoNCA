@@ -76,6 +76,16 @@ public class LargeMatrix extends Matrix implements Closeable {
 	}
 	
 	
+	public int[] getLine(int i){
+		
+		if (i < 0)
+			return null;
+		int[] line = new int[width];
+		for()
+		
+		return 
+	}
+	
 	public void initial(){
 		long size = width * height * 4L;
 		int mapN = (int)size / MAPPING_SIZE;

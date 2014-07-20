@@ -86,6 +86,8 @@ public class EC extends Algorithm {
 				int t = eList.indexOf(tn);
 				matx.setElement(s, t, 1);
 				matx.setElement(t, s, 1);
+				mtxQ.setElement(s, t, 1);
+				mtxQ.setElement(t, s, 1);
 				System.out.println(a++ +"  *  ");
 			}
 			
@@ -100,6 +102,7 @@ public class EC extends Algorithm {
 					List<CyEdge> edge=inputNetwork.getConnectingEdgeList(vertex.get(i).getN(), vertex.get(j).getN(), Type.ANY);
 					if(!edge.isEmpty()){
 						matx.setElement(i, j, (inputNetwork.getRow(edge.get(0)).get("weight", Double.class)).floatValue());
+						
 					}
 					else{
 						matx.setElement(i, j, 0.0f);	
