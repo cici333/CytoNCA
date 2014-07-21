@@ -37,7 +37,7 @@ public class EC extends Algorithm {
 		this.isweight = isweight;
 		this.vertex = vertex;
 		List<CyEdge> eList = inputNetwork.getEdgeList();
-		
+		List<CyNode> nList = inputNetwork.getNodeList();
 		len=vertex.size();
 		
 		Matrix matx = null, mtxQ = null, mtxT = null;
@@ -47,7 +47,7 @@ public class EC extends Algorithm {
 		try{
 			matx = new SmallMatrix(len);
 			mtxQ = new SmallMatrix(len);
-		    mtxT = new SmallMatrix(len);
+			mtxT = new SmallMatrix(len);
 	
 		}catch(OutOfMemoryError e){
 		
@@ -55,6 +55,8 @@ public class EC extends Algorithm {
 				matx = new LargeMatrix(len, len);
 				mtxQ = new LargeMatrix(len, len);
 			    mtxT = new LargeMatrix(len, len);
+			    ((LargeMatrix) matx).initial();
+			    ((LargeMatrix) mtxQ).initial();
 			} catch (IOException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -75,26 +77,28 @@ public class EC extends Algorithm {
 					else{
 						matx.setElement(i, j, 0.0f);
 					}
-				}			
-			}*/
+				}
+			}
+			*/
 			int a = 0;
 			for(CyEdge e : eList){
 				
 				CyNode sn = e.getSource();
 				CyNode tn = e.getTarget();
-				int s = eList.indexOf(sn);
-				int t = eList.indexOf(tn);
+				int s = nList.indexOf(sn);
+				int t = nList.indexOf(tn);
 				matx.setElement(s, t, 1);
 				matx.setElement(t, s, 1);
 				mtxQ.setElement(s, t, 1);
 				mtxQ.setElement(t, s, 1);
-				System.out.println(a++ +"  *  ");
+			//	System.out.println(s +"  *  "+t);
 			}
-			
+			/*
 			if (taskMonitor != null) {
                 taskMonitor.setProgress(x / (len *2));
                 x++;
             }
+            */
 		}
 		else if(isweight){
 			for(i=0;i<vertex.size();i++){
@@ -102,7 +106,6 @@ public class EC extends Algorithm {
 					List<CyEdge> edge=inputNetwork.getConnectingEdgeList(vertex.get(i).getN(), vertex.get(j).getN(), Type.ANY);
 					if(!edge.isEmpty()){
 						matx.setElement(i, j, (inputNetwork.getRow(edge.get(0)).get("weight", Double.class)).floatValue());
-						
 					}
 					else{
 						matx.setElement(i, j, 0.0f);	
@@ -172,6 +175,8 @@ public class EC extends Algorithm {
 		}
 		
 	}
+	
+	
 }
 
 		

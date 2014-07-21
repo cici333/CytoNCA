@@ -16,13 +16,10 @@ public abstract class Matrix {
 		return width;
 	}
 	
-	
-	
-	
 	public abstract float getElement(int x, int y);
 	public abstract boolean setElement(int x, int y, float value);
-//	public abstract boolean makeSymTri(Matrix mtxQ, Matrix mtxT, float[] dblB, float[] dblC);
-	
+	public abstract boolean makeSymTri(Matrix mtxQ, Matrix mtxT, float[] dblB, float[] dblC);
+	public abstract boolean computeEvSymTri(float[] dblB, float[] dblC, Matrix mtxQ, int nMaxIt, float eps);
 	/**
 	 * 约化对称矩阵为对称三对角阵的豪斯荷尔德变换法
 	 * 
@@ -32,7 +29,7 @@ public abstract class Matrix {
 	 * @param dblC - 一维数组，长度为矩阵的阶数，前n-1个元素返回对称三对角阵的
 	 *               次对角线元素
 	 * @return boolean型，求解是否成功
-	 */
+	 *//*
 	public boolean makeSymTri(Matrix mtxQ, Matrix mtxT, float[] dblB, float[] dblC)
 	{ 
 		int i,j,k,u;
@@ -46,7 +43,7 @@ public abstract class Matrix {
 		if (dblB == null || dblC == null)
 			return false;
 
-		/*
+		
 		for (i=0; i<=width-1; i++)
 		{
 			for (j=0; j<=width-1; j++)
@@ -54,7 +51,7 @@ public abstract class Matrix {
 				mtxQ.setElement(i, j, getElement(i, j));
 			}
 		}
-		 */
+
 	    for (i=width-1; i>=1; i--)
 	    { 
 			h=0.0f;
@@ -115,8 +112,6 @@ public abstract class Matrix {
 	            
 				dblB[i]=h;
 	        }
-	        
-	        System.out.println(i +"  I  ");
 	    }
 	    
 		for (i=0; i<=width-2; i++) 
@@ -155,11 +150,9 @@ public abstract class Matrix {
 					mtxQ.setElement(j, i, 0.0f);
 				}
 			}
-	        System.out.println(i +"  I  ");
 	    }
 
 	    // 构造对称三对角矩阵
-	   /*
 	    for (i=0; i<width; ++i)
 		{
 		    for (j=0; j<width; ++j)
@@ -173,26 +166,12 @@ public abstract class Matrix {
 				else if (k == -1)
 		            mtxT.setElement(i, j, dblC[i]);
 	        }
-		    
-		    System.out.println(i +"  I  ");
 	    }
-	    */
-	    for (i=0; i<width; ++i)
-		{
-		     mtxT.setElement(i, i, dblB[i]);
-				
-		     mtxT.setElement(i, i-1, dblC[i-1]);
-				
-		     mtxT.setElement(i, i+1, dblC[i+1]);
-	        
-		     System.out.println(i +"  I  ");
-	    }
-	    
 
 		return true;
 	}
 	
-	/**
+	*//**
 	 * 实对称三对角阵的全部特征值与特征向量的计算
 	 * 
 	 * @param dblB - 一维数组，长度为矩阵的阶数，传入对称三对角阵的主对角线元素；
@@ -206,7 +185,7 @@ public abstract class Matrix {
 	 * @param nMaxIt - 迭代次数
 	 * @param eps - 计算精度
 	 * @return boolean型，求解是否成功
-	 */
+	 *//*
 
 	public boolean computeEvSymTri(float[] dblB, float[] dblC, Matrix mtxQ, int nMaxIt, float eps)
 	{
@@ -295,8 +274,6 @@ public abstract class Matrix {
 	        }
 	        
 			dblB[j]=dblB[j]+f;
-			
-			System.out.println(j +"  J  ");
 	    }
 	    
 		for (i=0; i<=n-1; i++)
@@ -325,11 +302,9 @@ public abstract class Matrix {
 					mtxQ.setElement(j, k, p);
 	            }
 	        }
-	        
-	        System.out.println(i +"  I  ");
 	    }
 	    
 		return true;
-	}
+	}*/
 	
 }
