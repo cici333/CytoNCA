@@ -11,6 +11,11 @@ import java.nio.file.DirectoryStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyEdge.Type;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
+
 //import sun.misc.Cleaner;
 //import sun.nio.ch.DirectBuffer;
 
@@ -507,7 +512,7 @@ public float[] getLine(int i){
 	 *               次对角线元素
 	 * @return boolean型，求解是否成功
 	 */
-	public boolean makeSymTri(float[] dblB, float[] dblC)
+	public boolean makeSymTri(float[] dblB, float[] dblC, List<CyEdge> elist, List<CyNode> nlist, CyNetwork network)
 	{ 
 		int i,j,k,u;
 	    float h,f,g,h2, temp;
@@ -531,11 +536,15 @@ public float[] getLine(int i){
 */
 	    for (i=width-1; i>=1; i--)
 	    { 
+	    	CyNode currentnode = nlist.get(i);
 	    	line = getLine(i); 
 	    	h=0.0f;
 	        if (i>1)
 			{
-				for (k=0; k<=i-1; k++)
+				for(CyNode n :network.getNeighborList(currentnode, Type.ANY))
+					if(nlist.indexOf(n) < i)
+						;
+	        	for (k=0; k<=i-1; k++)
 	            { 
 
 				//	temp = mtxQ.getElement(i, k);
