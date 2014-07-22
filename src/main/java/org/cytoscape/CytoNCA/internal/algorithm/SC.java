@@ -76,15 +76,15 @@ public class SC extends Algorithm {
 				
 			}
 		}
-		SmallMatrix matx = new SmallMatrix(len, tempData);
+	//	SmallMatrix matx = new SmallMatrix(len, tempData);
 		SmallMatrix mtxQ2 = new SmallMatrix();
-		SmallMatrix mtxT2 = new SmallMatrix();
-		float[] bArray2 = new float[matx.getWidth()];
-		float[] cArray2 = new float[matx.getWidth()];
+		
+		float[] bArray2 = new float[mtxQ2.getWidth()];
+		float[] cArray2 = new float[mtxQ2.getWidth()];
 		System.err.println("run");
-		if (matx.makeSymTri(mtxQ2, mtxT2, bArray2, cArray2)) {
+		if (mtxQ2.makeSymTri(bArray2, cArray2)) {
 			// 2: compute eigenvalues and eigenvectors
-			if (matx.computeEvSymTri(bArray2, cArray2, mtxQ2, 60, 0.01f)) {
+			if (mtxQ2.computeEvSymTri(bArray2, cArray2, 60, 0.01f)) {
 				setResult(vertex, mtxQ2, bArray2);
 			} else {
 				setCancelled(true);

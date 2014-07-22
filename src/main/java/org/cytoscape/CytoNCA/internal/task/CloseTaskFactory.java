@@ -52,7 +52,8 @@ public class CloseTaskFactory
 
   public void handleEvent(NetworkAboutToBeDestroyedEvent e)
   {
-    if (this.pUtil.isOpened()) {
+
+	  if (this.pUtil.isOpened()) {
       CyNetwork network = e.getNetwork();
       Set resultIds = this.pUtil.getNetworkResults(network.getSUID().longValue());
       Set eplistIds = this.pUtil.getNetworkEplists(network.getSUID().longValue());
@@ -68,6 +69,10 @@ public class CloseTaskFactory
       	EpListPanel panel = this.pUtil.getEpListPanel(id);
       	if (panel != null) panel.discard(false);
      }
+      
+      
     }
+    
+    
   }
 }

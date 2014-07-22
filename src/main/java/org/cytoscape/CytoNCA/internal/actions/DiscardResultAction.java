@@ -62,7 +62,7 @@ public class DiscardResultAction extends AbstractPAction
 			if (confirmed.intValue() == 0)
 			{
 				
-				
+				pUtil.deleteDiskFiles();
 				if(rpanel.chartfs !=null && !rpanel.chartfs.isEmpty())
 					for(ChartFrame cf : rpanel.chartfs)
 						if(cf != null)

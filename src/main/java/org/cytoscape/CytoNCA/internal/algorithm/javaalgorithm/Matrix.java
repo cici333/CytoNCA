@@ -18,8 +18,8 @@ public abstract class Matrix {
 	
 	public abstract float getElement(int x, int y);
 	public abstract boolean setElement(int x, int y, float value);
-	public abstract boolean makeSymTri(Matrix mtxQ, Matrix mtxT, float[] dblB, float[] dblC);
-	public abstract boolean computeEvSymTri(float[] dblB, float[] dblC, Matrix mtxQ, int nMaxIt, float eps);
+	public abstract boolean makeSymTri(float[] dblB, float[] dblC);
+	public abstract boolean computeEvSymTri(float[] dblB, float[] dblC, int nMaxIt, float eps);
 	/**
 	 * 约化对称矩阵为对称三对角阵的豪斯荷尔德变换法
 	 * 

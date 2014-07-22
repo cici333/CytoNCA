@@ -51,6 +51,8 @@ public class CloseAllResultsTask
 
       if (cytoPanel.getCytoPanelComponentCount() == 0)
         cytoPanel.setState(CytoPanelState.HIDE);
+      
+	  pUtil.deleteDiskFiles();
     }
   }
 

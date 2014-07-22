@@ -265,6 +265,7 @@ public class ResultPanel extends JPanel implements CytoPanelComponent{
 				ResultPanel.this.discardResultAction.putValue(
 						"requestUserConfirmation",
 						Boolean.valueOf(oldRequestUserConfirmation));
+			//	pUtil.deleteDiskFiles();
 			}
 		});
 	}

@@ -1,6 +1,7 @@
 package org.cytoscape.CytoNCA.internal.algorithm.javaalgorithm;
 
 import java.io.Closeable;
+import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
@@ -16,13 +17,15 @@ import java.util.List;
 
 public class LargeMatrix extends Matrix implements Closeable {
 	private static final int MAPPING_SIZE = 1 << 30;
-	private final RandomAccessFile raf;
+	private RandomAccessFile raf;
 //	private final int width, height;
 	private final List<MappedByteBuffer> mappings = new ArrayList();
-	private static int filenum  = 1;
+	public static int filenum  = 1;
+	private File f;
 	
 	public LargeMatrix(int width, int height) throws IOException{
-		this.raf = new RandomAccessFile("LargeMatrix"+filenum, "rw");
+		f = new File("LargeMatrix"+filenum);
+		this.raf = new RandomAccessFile(f, "rw");
 		filenum ++;
 		try{
 			this.width = width;
@@ -38,10 +41,32 @@ public class LargeMatrix extends Matrix implements Closeable {
 		}
 	}
 	
+	public LargeMatrix(int width, int height, boolean flag){
+		this.width = width;
+		this.height = height;
+	}
+	
 	protected long position(int i, int j){
 		return (long)i * width + j;
 	}
 	
+	public void closefile(){
+		try {
+			raf.getChannel().close();			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+	
+	public File getFile(){
+		return f;
+	}
+	
+	public void deletefile(){
+		f.delete();	
+	}
 	/*
 	public int getHeight(){
 		return height;
@@ -482,7 +507,7 @@ public float[] getLine(int i){
 	 *               次对角线元素
 	 * @return boolean型，求解是否成功
 	 */
-	public boolean makeSymTri(Matrix mtxQ, Matrix mtxT, float[] dblB, float[] dblC)
+	public boolean makeSymTri(float[] dblB, float[] dblC)
 	{ 
 		int i,j,k,u;
 	    float h,f,g,h2, temp;
@@ -506,7 +531,7 @@ public float[] getLine(int i){
 */
 	    for (i=width-1; i>=1; i--)
 	    { 
-	    	line = ((LargeMatrix) mtxQ).getLine(i); 
+	    	line = getLine(i); 
 	    	h=0.0f;
 	        if (i>1)
 			{
@@ -542,18 +567,18 @@ public float[] getLine(int i){
 	            for (j=0; j<=i-1; j++)
 	            { 
 				//	mtxQ.setElement(j, i,mtxQ.getElement(i,j)/h);
-					mtxQ.setElement(j, i, line[j]/h);
+					setElement(j, i, line[j]/h);
 	                g=0.0f;
 	                for (k=0; k<=j; k++)
 					//	g += mtxQ.getElement(j, k)*mtxQ.getElement(i, k);
-	                	g += mtxQ.getElement(j, k) * line[k];
+	                	g += getElement(j, k) * line[k];
 
 					if (j+1<=i-1)
 						for (k=j+1; k<=i-1; k++)
 					//		g += mtxQ.getElement(k, j)*mtxQ.getElement(i, k);
-							g += mtxQ.getElement(k, j) * line[k];
+							g += getElement(k, j) * line[k];
 	                dblC[j]=g/h;
-	                f += g*mtxQ.getElement(j, i);
+	                f += g*getElement(j, i);
 	            }
 	            
 				h2=f/(h+h);
@@ -566,18 +591,18 @@ public float[] getLine(int i){
 	                for (k=0; k<=j; k++)
 	                { 
 						u=j*width+k;
-						temp = mtxQ.getElement(j, k);
+						temp = getElement(j, k);
 	            //        mtxQ.setElement(j, k, mtxQ.getElement(j, k) - f*dblC[k] - g*mtxQ.getElement(i, k));
-	                    mtxQ.setElement(j, k, mtxQ.getElement(j, k) - f*dblC[k] - g*line[k]);
+	                    setElement(j, k, getElement(j, k) - f*dblC[k] - g*line[k]);
 	                }
 	            }
 	            
 				dblB[i]=h;
 	        }
 	        
-	        ((LargeMatrix) mtxQ).setLine(i, line);
+	        setLine(i, line);
 	        
-	        
+	        System.out.println(i + "  2 ");
 	    }
 	    
 		for (i=0; i<=width-2; i++) 
@@ -595,43 +620,44 @@ public float[] getLine(int i){
 	            { 
 					g=0.0f;
 					for (k=0; k<=i-1; k++)
-						g += mtxQ.getElement(i, k) * mtxQ.getElement(k, j);
+						g += getElement(i, k) * getElement(k, j);
 
 					for (k=0; k<=i-1; k++)
 	                { 
 						u=k*width+j;
-						mtxQ.setElement(k, j, mtxQ.getElement(k, j) - g*mtxQ.getElement(k, i));
+						setElement(k, j, getElement(k, j) - g*getElement(k, i));
 	                }
 	            }
 			}
 
 	    
-	        dblB[i]=mtxQ.getElement(i, i); 
-	        mtxQ.setElement(i, i, 1.0f);
+	        dblB[i]=getElement(i, i); 
+	        setElement(i, i, 1.0f);
 	        if (i-1>=0)
 			{
 				for (j=0; j<=i-1; j++)
 	            { 
-					mtxQ.setElement(i, j, 0.0f); 
-					mtxQ.setElement(j, i, 0.0f);
+					setElement(i, j, 0.0f); 
+					setElement(j, i, 0.0f);
 				}
 			}
+	        
+	        System.out.println(i + "  3 ");
 	    }
 
 	    // 构造对称三对角矩阵
+	 /*
 	    for (i=0; i<width; ++i)
-		{
-		    for (i=0; i<width; ++i)
-			{
-			     mtxT.setElement(i, i, dblB[i]);			
-			     if(i > 0)
-			    	 mtxT.setElement(i, i-1, dblC[i-1]);
-				 if(i < width-1)	
-					 mtxT.setElement(i, i+1, dblC[i+1]);
+		{   
+			mtxT.setElement(i, i, dblB[i]);			
+			   if(i > 0)
+			mtxT.setElement(i, i-1, dblC[i-1]);
+			   if(i < width-1)	
+			mtxT.setElement(i, i+1, dblC[i+1]);
 		        
-		    }
+		  
 	    }
-
+*/
 		return true;
 	}
 	
@@ -651,13 +677,13 @@ public float[] getLine(int i){
 	 * @return boolean型，求解是否成功
 	 */
 
-	public boolean computeEvSymTri(float[] dblB, float[] dblC, Matrix mtxQ, int nMaxIt, float eps)
+	public boolean computeEvSymTri(float[] dblB, float[] dblC, int nMaxIt, float eps)
 	{
 		int i,j,k,m,it,u,v;
 	    float d,f,h,g,p,r,e,s, t;
 	    
 		// 初值
-		int n = mtxQ.getWidth();
+		int n = getWidth();
 		dblC[n-1]=0.0f; 
 		d=0.0f; 
 		f=0.0f;
@@ -724,10 +750,10 @@ public float[] getLine(int i){
 	                    dblB[i+1]=h+s*(e*g+s*dblB[i]);
 	                    for (k=0; k<=n-1; k++)
 	                    { 							
-	                        h = mtxQ.getElement(k, i+1); 
-	                        t = mtxQ.getElement(k, i);
-							mtxQ.setElement(k, i+1, s*t + e*h);
-	                        mtxQ.setElement(k, i, e*t - s*h);
+	                        h = getElement(k, i+1); 
+	                        t =getElement(k, i);
+							setElement(k, i+1, s*t + e*h);
+	                        setElement(k, i, e*t - s*h);
 	                    }
 	                }
 	                
@@ -738,6 +764,8 @@ public float[] getLine(int i){
 	        }
 	        
 			dblB[j]=dblB[j]+f;
+			
+			System.out.println(j + "  4 ");
 	    }
 	    
 		for (i=0; i<=n-1; i++)
@@ -761,11 +789,13 @@ public float[] getLine(int i){
 				dblB[i]=p;
 	            for (j=0; j<=n-1; j++)
 	            { 
-	                p = mtxQ.getElement(j, i); 
-					mtxQ.setElement(j, i, mtxQ.getElement(j, k)); 
-					mtxQ.setElement(j, k, p);
+	                p = getElement(j, i); 
+					setElement(j, i, getElement(j, k)); 
+					setElement(j, k, p);
 	            }
 	        }
+	        
+	        System.out.println(i + "  5 ");
 	    }
 	    
 		return true;

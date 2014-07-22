@@ -11,6 +11,8 @@ import java.util.List;
 
 
 
+
+
 import org.cytoscape.CytoNCA.internal.Protein;
 import org.cytoscape.CytoNCA.internal.ProteinUtil;
 import org.cytoscape.CytoNCA.internal.algorithm.javaalgorithm.LargeMatrix;
@@ -29,69 +31,56 @@ public class EC extends Algorithm {
 	public EC(Long networkID,ProteinUtil pUtil){
 		super(networkID, pUtil);
 	}
-	@Override
+	
+
 	public  ArrayList<Protein> run(CyNetwork inputNetwork, ArrayList<Protein> vertex, boolean isweight) {
 		// TODO Auto-generated method stub
-		int i,j;
+
 		currentNetwork = inputNetwork;
 		this.isweight = isweight;
 		this.vertex = vertex;
 		List<CyEdge> eList = inputNetwork.getEdgeList();
 		List<CyNode> nList = inputNetwork.getNodeList();
 		len=vertex.size();
+		boolean islarge = false;
 		
-		Matrix matx = null, mtxQ = null, mtxT = null;
+		Matrix mtxQ = null;
 	
 		
 		
 		try{
-			matx = new SmallMatrix(len);
 			mtxQ = new SmallMatrix(len);
-			mtxT = new SmallMatrix(len);
+	
 	
 		}catch(OutOfMemoryError e){
 		
 			try {
-				matx = new LargeMatrix(len, len);
+				islarge = true;
 				mtxQ = new LargeMatrix(len, len);
-			    mtxT = new LargeMatrix(len, len);
-			    ((LargeMatrix) matx).initial();
-			    ((LargeMatrix) mtxQ).initial();
+				pUtil.addDiskFile(((LargeMatrix) mtxQ).getFile());
+			   
+			 
 			} catch (IOException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 			
-			//throw e;
+			
 		
 		}
 		
 	
 		if(!isweight){
-			/*
-			for(i=0;i<vertex.size();i++){
-				for(j=0;j<vertex.size();j++){
-					if(!inputNetwork.getConnectingEdgeList(vertex.get(i).getN(), vertex.get(j).getN(), Type.ANY).isEmpty()){
-						matx.setElement(i, j, 1);
-					}
-					else{
-						matx.setElement(i, j, 0.0f);
-					}
-				}
-			}
-			*/
 			int a = 0;
 			for(CyEdge e : eList){
 				
 				CyNode sn = e.getSource();
 				CyNode tn = e.getTarget();
 				int s = nList.indexOf(sn);
-				int t = nList.indexOf(tn);
-				matx.setElement(s, t, 1);
-				matx.setElement(t, s, 1);
+				int t = nList.indexOf(tn);	
 				mtxQ.setElement(s, t, 1);
 				mtxQ.setElement(t, s, 1);
-			//	System.out.println(s +"  *  "+t);
+				System.out.println(a++ + "  1 ");
 			}
 			/*
 			if (taskMonitor != null) {
@@ -101,32 +90,28 @@ public class EC extends Algorithm {
             */
 		}
 		else if(isweight){
-			for(i=0;i<vertex.size();i++){
-				for(j=0;j<vertex.size();j++){
-					List<CyEdge> edge=inputNetwork.getConnectingEdgeList(vertex.get(i).getN(), vertex.get(j).getN(), Type.ANY);
-					if(!edge.isEmpty()){
-						matx.setElement(i, j, (inputNetwork.getRow(edge.get(0)).get("weight", Double.class)).floatValue());
-					}
-					else{
-						matx.setElement(i, j, 0.0f);	
-					}
-				}
+			
+			for(CyEdge e : eList){
 				
-				if (taskMonitor != null) {
-	                taskMonitor.setProgress(x / (len *2));
-	                x++;
-	            }
+				CyNode sn = e.getSource();
+				CyNode tn = e.getTarget();
+				int s = nList.indexOf(sn);
+				int t = nList.indexOf(tn);
+
+				mtxQ.setElement(s, t, (inputNetwork.getRow(e).get("weight", Double.class)).floatValue());
+				mtxQ.setElement(t, s, (inputNetwork.getRow(e).get("weight", Double.class)).floatValue());
+
 			}
 		}
 	
-		float[] bArray2 = new float[matx.getWidth()];
-		float[] cArray2 = new float[matx.getWidth()];
-		if (matx.makeSymTri(mtxQ, mtxT, bArray2, cArray2)) {
+		float[] bArray2 = new float[len];
+		float[] cArray2 = new float[len];
+		if (mtxQ.makeSymTri(bArray2, cArray2)) {
 			// 2: compute eigenvalues and eigenvectors
-			System.out.println("hahahahah");
-			if (matx.computeEvSymTri(bArray2, cArray2, mtxQ, 60, 0.01f)) {
+			if (mtxQ.computeEvSymTri(bArray2, cArray2, 60, 0.01f)) {
                setMaxVector(vertex, mtxQ, bArray2);
-			} else {
+			} 
+			else {
 				setCancelled(true);
 				
 			}
@@ -134,6 +119,14 @@ public class EC extends Algorithm {
 			setCancelled(true);
 			
 		}
+		
+		if(islarge){
+
+			
+			((LargeMatrix) mtxQ).closefile();
+			
+		}
+
 		return vertex;
 
 	} 

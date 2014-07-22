@@ -21,6 +21,7 @@ import javax.swing.SwingUtilities;
 
 import org.cytoscape.CytoNCA.internal.ParameterSet;
 import org.cytoscape.CytoNCA.internal.algorithm.*;
+import org.cytoscape.CytoNCA.internal.algorithm.javaalgorithm.LargeMatrix;
 import org.cytoscape.CytoNCA.internal.panels.EpListPanel;
 import org.cytoscape.CytoNCA.internal.panels.EvaluationPanel;
 import org.cytoscape.CytoNCA.internal.panels.MainPanel;
@@ -108,6 +109,7 @@ public class ProteinUtil {
 	private Map createdSubNetworks;
 	private ArrayList<String> Alleprotein;
 	private ArrayList<String> bioinfoColumnNames;
+	private ArrayList<File> DiskFileList;
 	
 	private static final Logger logger = LoggerFactory.getLogger(org.cytoscape.CytoNCA.internal.ProteinUtil.class);
 
@@ -384,6 +386,7 @@ public class ProteinUtil {
 		networkAlgorithms = new ArrayList<Long>();
 		networkResults = new HashMap<Long, Set<Integer>> ();
 		createdSubNetworks = new HashMap();
+		deleteDiskFiles();
 	}
 	
 	public void resetEplists()
@@ -1227,11 +1230,36 @@ public class ProteinUtil {
 	}
 
 
-
+	public void addDiskFile(File f){
+		if(this.DiskFileList == null){
+			this.DiskFileList = new ArrayList<File>();
+		}
+		this.DiskFileList.add(f);
+	}
 	
-
-
-
+	public void deleteDiskFiles(){
+		if(this.DiskFileList != null){
+			
+			int l = DiskFileList.size();
+			
+			for(int i = 0; i < l;){
+				
+				File f = DiskFileList.get(i);			
+				if(f.delete()){
+					DiskFileList.remove(i);
+					l--;
+				}
+				else{
+					f.deleteOnExit();
+					i++;
+				}
+				if(DiskFileList.isEmpty())
+					break;
+			}
+		System.out.println(DiskFileList.size()+"      ############");	
+		}
+	}
+	
 
 
 	
