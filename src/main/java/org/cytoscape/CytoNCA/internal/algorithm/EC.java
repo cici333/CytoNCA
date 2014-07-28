@@ -80,7 +80,7 @@ public class EC extends Algorithm {
 				int t = nList.indexOf(tn);	
 				mtxQ.setElement(s, t, 1);
 				mtxQ.setElement(t, s, 1);
-				System.out.println(a++ + "  1 ");
+			//	System.out.println(a++ + "  1 ");
 			}
 			/*
 			if (taskMonitor != null) {
