@@ -3,6 +3,8 @@ package org.cytoscape.CytoNCA.internal.algorithm.javaalgorithm;
 import java.io.IOException;
 import java.io.ObjectInputStream.GetField;
 
+import org.cytoscape.work.TaskMonitor;
+
 public abstract class Matrix {
 	int width;
 	int height;
@@ -18,8 +20,9 @@ public abstract class Matrix {
 	
 	public abstract float getElement(int x, int y);
 	public abstract boolean setElement(int x, int y, float value);
-	public abstract boolean makeSymTri(float[] dblB, float[] dblC);
-	public abstract boolean computeEvSymTri(float[] dblB, float[] dblC, int nMaxIt, float eps);
+	public abstract boolean makeSymTri(float[] dblB, float[] dblC, TaskMonitor ts);
+	public abstract boolean computeEvSymTri(float[] dblB, float[] dblC, int nMaxIt, float eps, TaskMonitor ts);
+	
 	/**
 	 * 约化对称矩阵为对称三对角阵的豪斯荷尔德变换法
 	 * 

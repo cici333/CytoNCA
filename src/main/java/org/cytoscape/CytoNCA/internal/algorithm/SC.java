@@ -82,9 +82,9 @@ public class SC extends Algorithm {
 		float[] bArray2 = new float[mtxQ2.getWidth()];
 		float[] cArray2 = new float[mtxQ2.getWidth()];
 		System.err.println("run");
-		if (mtxQ2.makeSymTri(bArray2, cArray2)) {
+		if (mtxQ2.makeSymTri(bArray2, cArray2, taskMonitor)) {
 			// 2: compute eigenvalues and eigenvectors
-			if (mtxQ2.computeEvSymTri(bArray2, cArray2, 60, 0.01f)) {
+			if (mtxQ2.computeEvSymTri(bArray2, cArray2, 60, 0.01f, taskMonitor)) {
 				setResult(vertex, mtxQ2, bArray2);
 			} else {
 				setCancelled(true);

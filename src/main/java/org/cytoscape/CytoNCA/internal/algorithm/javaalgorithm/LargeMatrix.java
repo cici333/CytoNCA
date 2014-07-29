@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.work.TaskMonitor;
 
 //import sun.misc.Cleaner;
 //import sun.nio.ch.DirectBuffer;
@@ -509,7 +510,7 @@ public float[] getLine(int i){
 	 *               次对角线元素
 	 * @return boolean型，求解是否成功
 	 */
-	public boolean makeSymTri(float[] dblB, float[] dblC)
+	public boolean makeSymTri(float[] dblB, float[] dblC, TaskMonitor ts)
 	{ 
 		int i,j,k,u;
 	    float h,f,g,h2, temp;
@@ -531,6 +532,9 @@ public float[] getLine(int i){
 			}
 		}
 */
+		ts.setProgress(0);
+		ts.setStatusMessage("Step 2...");
+		
 	    for (i=width-1; i>=1; i--)
 	    { 
 	    	line = getLine(i); 
@@ -604,7 +608,7 @@ public float[] getLine(int i){
 	        
 	        setLine(i, line);
 	        
-	        System.out.println(i + "  2 ");
+	       ts.setProgress((float)(width - i)/width);
 	    }
 	    
 		for (i=0; i<=width-2; i++) 
@@ -614,6 +618,9 @@ public float[] getLine(int i){
 	//	System.out.println(width +"****************");
 		dblC[width-1]=0.0f;
 	    dblB[0]=0.0f;
+	    ts.setProgress(0);
+	    ts.setStatusMessage("Step 3...");
+	    
 	    for (i=0; i<=width-1; i++)
 	    { 
 			if ((dblB[i]!=(float)0.0f) && (i-1>=0))
@@ -644,7 +651,7 @@ public float[] getLine(int i){
 				}
 			}
 	        
-	        System.out.println(i + "  3 ");
+	        ts.setProgress((float)i/width);
 	    }
 
 	    // 构造对称三对角矩阵
@@ -679,7 +686,7 @@ public float[] getLine(int i){
 	 * @return boolean型，求解是否成功
 	 */
 
-	public boolean computeEvSymTri(float[] dblB, float[] dblC, int nMaxIt, float eps)
+	public boolean computeEvSymTri(float[] dblB, float[] dblC, int nMaxIt, float eps, TaskMonitor ts)
 	{
 		int i,j,k,m,it,u,v;
 	    float d,f,h,g,p,r,e,s, t;
@@ -690,6 +697,9 @@ public float[] getLine(int i){
 		d=0.0f; 
 		f=0.0f;
 	    
+		ts.setProgress(0);
+		ts.setStatusMessage("Step 4...");
+		
 		// 迭代计算
 
 		for (j=0; j<=n-1; j++)
@@ -767,9 +777,12 @@ public float[] getLine(int i){
 	        
 			dblB[j]=dblB[j]+f;
 			
-			System.out.println(j + "  4 ");
+			ts.setProgress((float)j/n);
 	    }
 	    
+		ts.setProgress(0);
+		ts.setStatusMessage("Step 5...");
+		
 		for (i=0; i<=n-1; i++)
 	    { 
 			k=i; 
@@ -797,7 +810,7 @@ public float[] getLine(int i){
 	            }
 	        }
 	        
-	        System.out.println(i + "  5 ");
+	        ts.setProgress((float)i/n);
 	    }
 	    
 		return true;

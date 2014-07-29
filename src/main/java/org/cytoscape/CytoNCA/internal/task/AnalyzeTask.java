@@ -174,9 +174,10 @@ public class AnalyzeTask implements Task {
 				    algoEC.setTaskMonitor(taskMonitor, network.getSUID());			
 						taskMonitor.setProgress(0);
 						taskMonitor
-								.setStatusMessage("EC Ranking...");
+								.setStatusMessage("Step 1...");
+						taskMonitor.setTitle("EC [5 Steps] ");
 						algoEC.run(network, resultAll, false);
-						
+					
 					
 						if (interrupted){
 							
@@ -197,7 +198,8 @@ public class AnalyzeTask implements Task {
 				    algoEC.setTaskMonitor(taskMonitor, network.getSUID());			
 						taskMonitor.setProgress(0);
 						taskMonitor
-								.setStatusMessage("EC(weight) Ranking...");
+								.setStatusMessage("Step 1...");
+						taskMonitor.setTitle("EC(weight) [5 Steps] ");
 						algoEC.run(network, resultAll, true);
 						
 					
@@ -246,9 +248,7 @@ public class AnalyzeTask implements Task {
 						taskMonitor
 								.setStatusMessage("LAC(weight) Ranking...");
 						algoLAC.run(network, resultAll, true);	
-					
-					
-						
+											
 						if (interrupted){
 							success = false;
 							return;	
@@ -399,8 +399,7 @@ public class AnalyzeTask implements Task {
 					taskMonitor.setStatusMessage("IC Ranking...");
 					algoIC.run(network, resultAll, false);	
 					
-					if (interrupted){
-						
+					if (interrupted){				
 						success = false;
 						return;	
 					}

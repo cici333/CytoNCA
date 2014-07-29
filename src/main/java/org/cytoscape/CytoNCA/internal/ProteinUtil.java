@@ -134,8 +134,7 @@ public class ProteinUtil {
 		this.mapNetworkAttrTFServiceRef=mapNetworkAttrTFServiceRef;
 		this.registrar = registrar;
 		bioinfoColumnNames = new ArrayList<String>();
-		reset();
-		
+		reset();		
 	}
 
   

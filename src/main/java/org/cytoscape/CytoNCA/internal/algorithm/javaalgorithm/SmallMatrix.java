@@ -2840,7 +2840,7 @@ public class SmallMatrix extends Matrix
 	 *               次对角线元素
 	 * @return boolean型，求解是否成功
 	 */
-	public boolean makeSymTri(float[] dblB, float[] dblC)
+	public boolean makeSymTri(float[] dblB, float[] dblC, TaskMonitor ts)
 	{ 
 		int i,j,k,u;
 	    float h,f,g,h2, temp;
@@ -2862,6 +2862,9 @@ public class SmallMatrix extends Matrix
 			}
 		}
 */
+		ts.setProgress(0);
+		ts.setStatusMessage("Step 2...");
+		
 	    for (i=width-1; i>=1; i--)
 	    { 
 			h=0.0f;
@@ -2922,6 +2925,9 @@ public class SmallMatrix extends Matrix
 	            
 				dblB[i]=h;
 	        }
+	        ts.setProgress((float)i/width);
+	        
+	        
 	    }
 	    
 		for (i=0; i<=width-2; i++) 
@@ -2931,6 +2937,9 @@ public class SmallMatrix extends Matrix
 	//	System.out.println(width +"****************");
 		dblC[width-1]=0.0f;
 	    dblB[0]=0.0f;
+	    ts.setProgress(0);
+	    ts.setStatusMessage("Step 3...");
+	    
 	    for (i=0; i<=width-1; i++)
 	    { 
 			if ((dblB[i]!=(float)0.0f) && (i-1>=0))
@@ -2960,6 +2969,7 @@ public class SmallMatrix extends Matrix
 					setElement(j, i, 0.0f);
 				}
 			}
+	        ts.setProgress((float)i/width);
 	    }
 
 	    // 构造对称三对角矩阵
@@ -2993,7 +3003,7 @@ public class SmallMatrix extends Matrix
 	 * @return boolean型，求解是否成功
 	 */
 
-	public boolean computeEvSymTri(float[] dblB, float[] dblC, int nMaxIt, float eps)
+	public boolean computeEvSymTri(float[] dblB, float[] dblC, int nMaxIt, float eps, TaskMonitor ts)
 	{
 		int i,j,k,m,it,u,v;
 	    float d,f,h,g,p,r,e,s, t;
@@ -3003,7 +3013,10 @@ public class SmallMatrix extends Matrix
 		dblC[n-1]=0.0f; 
 		d=0.0f; 
 		f=0.0f;
-	    
+		
+		ts.setProgress(0);
+		ts.setStatusMessage("Step 4...");
+		
 		// 迭代计算
 
 		for (j=0; j<=n-1; j++)
@@ -3080,8 +3093,12 @@ public class SmallMatrix extends Matrix
 	        }
 	        
 			dblB[j]=dblB[j]+f;
+			ts.setProgress((float)j/n);
 	    }
-	    
+		
+		ts.setProgress(0);
+		ts.setStatusMessage("Step 5...");
+		
 		for (i=0; i<=n-1; i++)
 	    { 
 			k=i; 
@@ -3108,6 +3125,8 @@ public class SmallMatrix extends Matrix
 					setElement(j, k, p);
 	            }
 	        }
+	        
+	        ts.setProgress((float)i/n);
 	    }
 	    
 		return true;
