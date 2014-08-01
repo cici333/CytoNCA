@@ -140,6 +140,8 @@ public class EC extends Algorithm {
 		float max = Float.MIN_VALUE;
 		int i = 0, j = 0;
 
+		taskMonitor.setProgress(0);
+		taskMonitor.setStatusMessage("Step 6...");
 		
 		for (i = 0; i < value.length; i++) {
 			if (value[i] > max) {
@@ -159,12 +161,20 @@ public class EC extends Algorithm {
 			for (i = 0; i < l; i++) {
 				temp = matrix.getElement(i, j);
 				vertex.get(i).setEC(temp > 0 ? temp : 0 - temp); // outputted as absolute value
+				if (taskMonitor != null) {
+	                taskMonitor.setProgress((x) / len *2);
+	                x++;
+	            }
 			}
 		}
 		else{
 			for (i = 0; i < l; i++) {
 				temp = matrix.getElement(i, j);
 				vertex.get(i).setECW(temp > 0 ? temp : 0 - temp);
+				if (taskMonitor != null) {
+	                taskMonitor.setProgress((x) / len *2);
+	                x++;
+	            }
 			
 			}
 		}

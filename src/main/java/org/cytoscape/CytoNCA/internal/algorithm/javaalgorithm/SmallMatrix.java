@@ -2925,7 +2925,7 @@ public class SmallMatrix extends Matrix
 	            
 				dblB[i]=h;
 	        }
-	        ts.setProgress((float)i/width);
+	        ts.setProgress((float)(width-i)/width);
 	        
 	        
 	    }

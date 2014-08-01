@@ -175,7 +175,7 @@ public class AnalyzeTask implements Task {
 						taskMonitor.setProgress(0);
 						taskMonitor
 								.setStatusMessage("Step 1...");
-						taskMonitor.setTitle("EC [5 Steps] ");
+						taskMonitor.setTitle("EC [6 Steps] ");
 						algoEC.run(network, resultAll, false);
 					
 					
@@ -199,7 +199,7 @@ public class AnalyzeTask implements Task {
 						taskMonitor.setProgress(0);
 						taskMonitor
 								.setStatusMessage("Step 1...");
-						taskMonitor.setTitle("EC(weight) [5 Steps] ");
+						taskMonitor.setTitle("EC(weight) [6 Steps] ");
 						algoEC.run(network, resultAll, true);
 						
 					
@@ -298,6 +298,11 @@ public class AnalyzeTask implements Task {
 				
 				
 			} 
+				/**
+				 * @author TangYu
+				 * @date: 2014年8月16日 下午5:03
+				 * 
+				 **/
 			else if (alg instanceof SC)
 			{
 				if(algnames.contains(ParameterSet.SC)){
@@ -305,7 +310,9 @@ public class AnalyzeTask implements Task {
 			    	SC algoSC = (SC)alg;
 				    algoSC.setTaskMonitor(taskMonitor, network.getSUID());			
 					taskMonitor.setProgress(0);
-					taskMonitor.setStatusMessage("SC Ranking...");
+					taskMonitor
+						.setStatusMessage("Step 1...");
+					taskMonitor.setTitle("SC [6 Steps] ");
 					algoSC.run(network, resultAll, false);	
 			
 					if (interrupted){
@@ -326,7 +333,9 @@ public class AnalyzeTask implements Task {
 			    	SC algoSC = (SC)alg;
 				    algoSC.setTaskMonitor(taskMonitor, network.getSUID());			
 					taskMonitor.setProgress(0);
-					taskMonitor.setStatusMessage("SC(weight) Ranking...");
+					taskMonitor
+						.setStatusMessage("Step 1...");
+					taskMonitor.setTitle("EC [6 Steps] ");
 					algoSC.run(network, resultAll, true);	
 			
 					if (interrupted){

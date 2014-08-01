@@ -29,79 +29,6 @@ public class SC extends Algorithm {
 	}
 	@Override
 	public ArrayList<Protein> run(CyNetwork inputNetwork, ArrayList<Protein> vertex, boolean isweight) {
-		// TODO Auto-generated method stub
-		/*
-		int i, j;
-		currentNetwork = inputNetwork;
-		this.isweight = isweight;
-		this.vertex = vertex;
-		
-		len = vertex.size();
-		float[] tempData = new float[len * len];
-		if (!isweight) {
-			for (i = 0; i < vertex.size(); i++) {
-				for (j = 0; j < vertex.size(); j++) {
-					if (inputNetwork.getConnectingEdgeList(
-							vertex.get(i).getN(), vertex.get(j).getN(),
-							Type.ANY).size() > 0) {
-						tempData[len * i + j] = 1;
-					} else {
-						tempData[len * i + j] = 0.0f;
-					}
-				}
-				
-				if (taskMonitor != null) {
-	                taskMonitor.setProgress(x / (len *2));
-	               
-	                x++;
-	            }
-				
-				
-			}
-		} else if (isweight) {
-			for (i = 0; i < vertex.size(); i++) {
-				for (j = 0; j < vertex.size(); j++) {
-					List<CyEdge> edge = inputNetwork.getConnectingEdgeList(
-							vertex.get(i).getN(), vertex.get(j).getN(),
-							Type.ANY);
-					if (edge.size() > 0) {
-						tempData[len * i + j] = inputNetwork
-								.getRow(edge.get(0))
-								.get("weight", Double.class).floatValue();
-					} else {
-						tempData[len * i + j] = 0.0f;
-					}
-				}
-				
-				if (taskMonitor != null) {
-	                taskMonitor.setProgress(x / (len *2));
-	                x++;
-	            }
-				
-			}
-		}
-	//	SmallMatrix matx = new SmallMatrix(len, tempData);
-		SmallMatrix mtxQ2 = new SmallMatrix();
-		
-		float[] bArray2 = new float[mtxQ2.getWidth()];
-		float[] cArray2 = new float[mtxQ2.getWidth()];
-		System.err.println("run");
-		if (mtxQ2.makeSymTri(bArray2, cArray2, taskMonitor)) {
-			// 2: compute eigenvalues and eigenvectors
-			if (mtxQ2.computeEvSymTri(bArray2, cArray2, 60, 0.01f, taskMonitor)) {
-				setResult(vertex, mtxQ2, bArray2);
-			} else {
-				setCancelled(true);
-				
-			}
-		} else {
-			setCancelled(true);
-			
-		}
-		return vertex;
-		*/
-		
-		
 
 		currentNetwork = inputNetwork;
 		this.isweight = isweight;
@@ -207,9 +134,9 @@ public class SC extends Algorithm {
 		float result = 0;
 		float temp = 0;
 		
-		for (i = 0; i < value.length; i++) {
-			System.out.println(value[i]+"*******");
-			}
+		
+		taskMonitor.setProgress(0);
+		taskMonitor.setStatusMessage("Step 6...");
 		
 		for (i = 0; i < matrix.getWidth(); i++) {
 			flag[i] = true;
@@ -221,8 +148,7 @@ public class SC extends Algorithm {
 			}
 			
 			if (taskMonitor != null) {
-                taskMonitor.setProgress(x / (len *2));
-             
+                taskMonitor.setProgress(x / (len *2));           
                 x++;
             }
 		}
@@ -236,7 +162,14 @@ public class SC extends Algorithm {
 					result += temp * Math.exp(value[j]) * temp;
 				}
 				vertex.get(i).setSC(result);
+			
+				if (taskMonitor != null) {
+	                taskMonitor.setProgress(x / (len *2));           
+	                x++;
+	            }
 			}
+			
+			
 		}
 		else{
 			for (i = 0; i < matrix.getHeight(); i++) {
@@ -247,9 +180,13 @@ public class SC extends Algorithm {
 					result += temp * Math.exp(value[j]) * temp;
 				}
 				vertex.get(i).setSCW(result);
-				System.out.println(result+"****");
+				if (taskMonitor != null) {
+	                taskMonitor.setProgress(x / (len *2));           
+	                x++;
+	            }
 			}
 		}
+		
 		
 	}
 }
