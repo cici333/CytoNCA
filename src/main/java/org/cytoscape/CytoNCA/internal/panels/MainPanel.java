@@ -67,7 +67,7 @@ import org.cytoscape.application.swing.CytoPanelName;
 
 
 
-public class MainPanel extends JPanel implements CytoPanelComponent {
+public class MainPanel extends JScrollPane implements CytoPanelComponent {
 	
 	private static final long serialVersionUID = 8292806967891823933L;
 	private CySwingApplication desktopApp;
@@ -77,6 +77,7 @@ public class MainPanel extends JPanel implements CytoPanelComponent {
 	private JPanel bottomPanel;
 	private OpenfilePanel openfilePanel;
 	private JPanel scopePanel;
+	private JPanel emPanel;
 	//private JPanel advancedOptionsPanel;
 	
 	private JCheckBox BCButton;
@@ -108,11 +109,13 @@ public class MainPanel extends JPanel implements CytoPanelComponent {
 
 	 public MainPanel(CySwingApplication swingApplication, ProteinUtil pUtil)
 	  {
-	    this.desktopApp = swingApplication;
+		super();
+		 this.desktopApp = swingApplication;
 	    this.pUtil = pUtil;
 	    this.actions = new ArrayList();
-	    setLayout(new BorderLayout());
-	    
+	  //  setLayout(new BorderLayout());
+	    emPanel = new JPanel();
+	    emPanel.setLayout(new BorderLayout());
 
 	    this.currentParamsCopy = this.pUtil.getCurrentParameters().getParamsCopy(null);
 	    this.currentParamsCopy.setDefaultParams();
@@ -125,17 +128,19 @@ public class MainPanel extends JPanel implements CytoPanelComponent {
 		uploadBioinfButton.addActionListener(new UploadBioinfoAciton());
 		
 	
-		this.add(algorithmPanel, BorderLayout.NORTH);
-		add(getBottomPanel(), BorderLayout.CENTER);
-		this.add(openfilePanel, BorderLayout.SOUTH);
+		emPanel.add(algorithmPanel, BorderLayout.NORTH);
+		emPanel.add(getBottomPanel(), BorderLayout.CENTER);
+		emPanel.add(openfilePanel, BorderLayout.SOUTH);
+
 		
 	//	getBottomPanel().add(uploadBioinfButton);
 		
+		emPanel.setVisible(true);
+		emPanel.setPreferredSize(new Dimension(300, 700));
+		
+		this.setViewportView(emPanel);
 		this.setVisible(true);
-		this.setPreferredSize(new Dimension(300, 700));
 
-	//	clusteringPanel.getContentPane().remove(clusteringContent);
-     //   clusteringPanel.getContentPane().add(customizeClusteringContent, BorderLayout.NORTH);
         
 	  }
 
@@ -195,18 +200,7 @@ public class MainPanel extends JPanel implements CytoPanelComponent {
         BCButton = new JCheckBox("without weight");
         ICButton = new JCheckBox("without weight");
         SelectAll= new JCheckBox("without weight");
-    /*    
-        CCButton.setToolTipText("Closeness Centrality (CC)");
-        DCButton.setToolTipText("Degree Centrality (DC)");
-        ECButton.setToolTipText("Eigenvector Centrality (EC)");
-        LACButton.setToolTipText("Local Average Connectivity-based method (LAC)");
-        NCButton.setToolTipText("Network Centrality (NC)");
-        SCButton.setToolTipText("Subgraph Centrality (SC)");
-        BCButton.setToolTipText("Betweeness Centrality (BC)");
-        ICButton.setToolTipText("Information Centrality (IC)");
-        SelectAll.setToolTipText("Select All Algorithms");
-*/
-     
+   
         CCButton.addItemListener(new AlgorithmAction());
         DCButton.addItemListener(new AlgorithmAction());
         ECButton.addItemListener(new AlgorithmAction());
@@ -412,6 +406,7 @@ public class MainPanel extends JPanel implements CytoPanelComponent {
     public void addAction(CyAction action, int name)
     {
     	if(name == ParameterSet.analyze){
+    		
     		JButton bt = new JButton(action);
     	    getBottomPanel().add(bt);
     	    getBottomPanel().add(uploadBioinfButton);
