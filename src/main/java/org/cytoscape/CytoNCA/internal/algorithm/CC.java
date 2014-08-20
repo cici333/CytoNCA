@@ -90,14 +90,7 @@ public class CC extends Algorithm {
 					if (D.get(yn) == Double.MAX_VALUE)
 						sum += nlength;
 					else
-						sum += D.get(yn);								
-					/*
-					CyNode yn = allNodes.get(y);
-					shortestpath[i][y] = D.get(yn);
-					shortestpath[y][i] = D.get(yn);
-	
-					//System.out.println(D.get(yn));
-					 */					 
+						sum += D.get(yn);									 
 				}			
 			}
 			
@@ -114,23 +107,6 @@ public class CC extends Algorithm {
             }
 		}
 
-		/*
-		for(int i = 0; i < nlength; i++){
-			Protein p = vertex.get(i);
-			sum = 0;
-			for(int y = 0; y < nlength; y++){
-				if(y != i){
-					if (shortestpath[i][y] == Double.MAX_VALUE)
-						sum += nlength;
-					else
-						sum += shortestpath[i][y];
-				}
-					
-			}
-		//	System.out.println("$$           "+sum);
-			p.setCC((nlength-1)/sum);
-		}
-		*/
 	}
 
 	
@@ -165,6 +141,14 @@ public class CC extends Algorithm {
 				
 				for(CyNode w : currentNetwork.getNeighborList(v, Type.ANY)){
 					double dis = currentNetwork.getRow(currentNetwork.getConnectingEdgeList(w, v, Type.ANY).get(0)).get("weight", Double.class);
+					/**
+					 * distance = 1 / weight;
+					 * @author TangYu
+					 * @date: 2014年8月20日 下午3:57:08
+					 */
+					if(dis !=0 )
+						dis = 1/ dis;  
+					
 					if(D.get(w) > D.get(v) + dis){
 						D.put(w, D.get(v)+dis);
 						if(QM.get(w) == 0){
@@ -181,7 +165,6 @@ public class CC extends Algorithm {
 					shortestpath[i][y] = D.get(yn);
 					shortestpath[y][i] = D.get(yn);
 					
-					//System.out.println(D.get(yn));
 				}
 				
 			}
@@ -208,7 +191,6 @@ public class CC extends Algorithm {
 				}
 					
 			}
-	//		System.out.println("@@           "+sum);
 			p.setCCW((nlength-1)/sum);
 		}
 		

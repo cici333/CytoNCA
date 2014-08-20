@@ -85,12 +85,8 @@ public class IC extends Algorithm {
 			}
 			
 		}
-		
-		
-	//	System.out.println(CMatrix.toString());
-		//System.out.println(CMatrix.toString());
+
 		x = CMatrix.invertGaussJordan(taskMonitor, x, allprocess);
-	//	System.out.println(CMatrix.toString());
 		
 		if(x != -1){
 			SmallMatrix IMatrix = new SmallMatrix(nlength);
@@ -121,13 +117,13 @@ public class IC extends Algorithm {
 					
 					
 					Protein p = vertex.get(i);
-				//	System.out.println(nlength +"    "+ sum);
+
 					p.setIC(nlength / sum);
 					
 					if (taskMonitor != null) {
 		                taskMonitor.setProgress((x) / allprocess);
 		                x++;
-		        //        System.out.println(x);
+		    
 		            }
 					
 					if (cancelled) {
@@ -143,13 +139,13 @@ public class IC extends Algorithm {
 					
 					
 					Protein p = vertex.get(i);
-				//	System.out.println(nlength +"    "+ sum);
+
 					p.setICW(nlength / sum);
 					
 					if (taskMonitor != null) {
 		                taskMonitor.setProgress((x) / allprocess);
 		                x++;
-		        //        System.out.println(x);
+		    
 		            }
 					
 					if (cancelled) {
