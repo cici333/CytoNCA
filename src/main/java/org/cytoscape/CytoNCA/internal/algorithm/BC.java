@@ -178,7 +178,7 @@ public class BC extends Algorithm {
 					CyNode w = (CyNode) itt.next();
 					double dis = currentNetwork.getRow(currentNetwork.getConnectingEdgeList(w, v, Type.ANY).get(0)).get("weight", Double.class);
 					if(dis !=0 )
-						dis = 1/ dis;
+						dis = 1/ dis;  //distance = 1 / weight;
 					else {
 						setCancelled(true);
 						return;
