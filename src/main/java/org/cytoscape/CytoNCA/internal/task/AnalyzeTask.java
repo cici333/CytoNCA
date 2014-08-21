@@ -404,8 +404,10 @@ public class AnalyzeTask implements Task {
 			    	algnames.remove(ParameterSet.IC);
 			    	IC algoIC = (IC)alg;
 				    algoIC.setTaskMonitor(taskMonitor, network.getSUID());			
-					taskMonitor.setProgress(0);
-					taskMonitor.setStatusMessage("IC Ranking...");
+				    taskMonitor.setProgress(0);
+					taskMonitor
+						.setStatusMessage("Step 1...");
+					taskMonitor.setTitle("IC [6 Steps] ");
 					algoIC.run(network, resultAll, false);	
 					
 					if (interrupted){				
@@ -418,8 +420,10 @@ public class AnalyzeTask implements Task {
 			    	algnames.remove(ParameterSet.ICW);
 			    	IC algoIC = (IC)alg;
 				    algoIC.setTaskMonitor(taskMonitor, network.getSUID());			
-					taskMonitor.setProgress(0);
-					taskMonitor.setStatusMessage("IC(weight) Ranking...");
+				    taskMonitor.setProgress(0);
+					taskMonitor
+						.setStatusMessage("Step 1...");
+					taskMonitor.setTitle("ICW [6 Steps] ");
 					algoIC.run(network, resultAll, true);	
 					
 					if (interrupted){

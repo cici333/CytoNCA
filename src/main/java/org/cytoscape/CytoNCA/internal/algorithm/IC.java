@@ -1,12 +1,15 @@
 package org.cytoscape.CytoNCA.internal.algorithm;
 
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
 import org.cytoscape.CytoNCA.internal.Protein;
 import org.cytoscape.CytoNCA.internal.ProteinUtil;
+import org.cytoscape.CytoNCA.internal.algorithm.javaalgorithm.LargeMatrix;
+import org.cytoscape.CytoNCA.internal.algorithm.javaalgorithm.Matrix;
 import org.cytoscape.CytoNCA.internal.algorithm.javaalgorithm.SmallMatrix;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -14,88 +17,109 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyEdge.Type;
 
 public class IC extends Algorithm {
+	float x = 0;
+	int len;
 	public IC(Long networkID,ProteinUtil pUtil){
 		super(networkID, pUtil);
 	}
 	
 	public ArrayList<Protein> run(CyNetwork inputNetwork, ArrayList<Protein> vertex, boolean isweight) {
+
 		currentNetwork = inputNetwork;
 		this.isweight = isweight;
 		this.vertex = vertex;
-		List<CyNode> allNodes = currentNetwork.getNodeList();
-		List<CyEdge> alledges = currentNetwork.getEdgeList();
-		int nlength = allNodes.size();
-		int elength = alledges.size();
-		float x = 0;
-		float allprocess =  elength + 10*nlength;
-		
-		float[] initial = new float[nlength * nlength];
-		
-		
-		for(int i=0; i <nlength*nlength; i++){
-			initial[i] = 1;
-		}	
-		SmallMatrix CMatrix = new SmallMatrix(nlength, initial);
-		
+		List<CyEdge> eList = inputNetwork.getEdgeList();
+		List<CyNode> nList = inputNetwork.getNodeList();
+		len=vertex.size();
+		boolean islarge = false;
+		int elen = eList.size();
 
-		for(int i = 0; i < nlength; i++){
-			float degree = currentNetwork.getNeighborList(allNodes.get(i), Type.ANY).size();
-			CMatrix.setElement(i, i, degree+1);
+		float allprocess =  elen + 10*len;		
+		Matrix mtxQ = null;
+	
+
+	//	try{
+			
+	//		mtxQ = new SmallMatrix(len);
+			
+	//	}catch(OutOfMemoryError e){
+		
+			try {
+				islarge = true;
+				mtxQ = new LargeMatrix(len, len, 1.0f);
+				pUtil.addDiskFile(((LargeMatrix) mtxQ).getFile());
+				
+			    
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			
+	//	}
+
+		// C = D - A + J;
+		for(int i = 0; i < len; i++){
+			float degree = currentNetwork.getNeighborList(nList.get(i), Type.ANY).size();
+			mtxQ.setElement(i, i, degree+1);
 		}
 		
 		if(!isweight){
-			for(Iterator<CyEdge> it = alledges.iterator(); it.hasNext();){
-				CyEdge e = it.next();
-				int a = allNodes.indexOf(e.getSource());
-				int b = allNodes.indexOf(e.getTarget());
-				CMatrix.setElement(a, b, 0);
-				CMatrix.setElement(b, a, 0);
+			for(CyEdge e : eList){
 				
-				if (taskMonitor != null) {
-	                taskMonitor.setProgress((x) / allprocess);
-	                x++;
-	            //    System.out.println(x);
-	            }
+				CyNode sn = e.getSource();
+				CyNode tn = e.getTarget();
+				int s = nList.indexOf(sn);
+				int t = nList.indexOf(tn);	
+				mtxQ.setElement(s, t, 0);
+				mtxQ.setElement(t, s, 0);
 				
-				if (cancelled) {
-	                break;
+				taskMonitor.setProgress(x / elen);
+	            x++;	  
+	            
+	            if (cancelled) {
+	                return null;
 	            }
 			
 			}
 		}else{
-			for(Iterator<CyEdge> it = alledges.iterator(); it.hasNext();){
-				CyEdge e = it.next();
-				int a = allNodes.indexOf(e.getSource());
-				int b = allNodes.indexOf(e.getTarget());
-				float dis = currentNetwork.getRow(e).get("weight", Double.class).floatValue();
+			for(CyEdge e : eList){
 				
-				CMatrix.setElement(a, b, dis-1);
-				CMatrix.setElement(b, a, dis-1);
+				CyNode sn = e.getSource();
+				CyNode tn = e.getTarget();
+				int s = nList.indexOf(sn);
+				int t = nList.indexOf(tn);
+
+				mtxQ.setElement(s, t, 1 -(inputNetwork.getRow(e).get("weight", Double.class)).floatValue());
+				mtxQ.setElement(t, s, 1 -(inputNetwork.getRow(e).get("weight", Double.class)).floatValue());
 				
-				if (taskMonitor != null) {
-	                taskMonitor.setProgress((x) / allprocess);
-	                x++;
-	            //    System.out.println(x);
-	            }
-				
-				if (cancelled) {
-	                break;
+				taskMonitor.setProgress(x / elen);
+	            x++;	  
+	            
+	            if (cancelled) {
+	                return null;
 	            }
 			
 			}
 			
 		}
 
-		x = CMatrix.invertGaussJordan(taskMonitor, x, allprocess);
+
 		
-		if(x != -1){
-			SmallMatrix IMatrix = new SmallMatrix(nlength);
-			for(int i = 0; i < nlength; i++){
-				for(int j = 0; j < nlength; j++){
+		if(mtxQ.invertGaussJordan(taskMonitor)){
+			
+			for(int i = 0; i < len; i++){
+				float sum = 0;
+				for(int j = 0; j < len; j++){
 					if(i != j){
-						float v = CMatrix.getElement(i, i) + CMatrix.getElement(j, j) - 2*CMatrix.getElement(i, j);
-						IMatrix.setElement(i, j, v);
+						sum += mtxQ.getElement(i, i) + mtxQ.getElement(j, j) - 2*mtxQ.getElement(i, j);
 					}
+				}
+				
+				Protein p = vertex.get(i);
+				if(!isweight){
+					p.setIC(len / sum);
+				}else{
+					p.setICW(len / sum);
 				}
 				
 				if (taskMonitor != null) {
@@ -107,57 +131,11 @@ public class IC extends Algorithm {
 	                break;
 	            }
 			}
-			
-			if(!isweight){
-				for(int i = 0; i < nlength; i++){
-					float sum = 0;
-					for(int j = 0; j < nlength; j++){
-						sum += IMatrix.getElement(i, j);
-					}
-					
-					
-					Protein p = vertex.get(i);
-
-					p.setIC(nlength / sum);
-					
-					if (taskMonitor != null) {
-		                taskMonitor.setProgress((x) / allprocess);
-		                x++;
-		    
-		            }
-					
-					if (cancelled) {
-		                break;
-		            }
-				}
-			}else{
-				for(int i = 0; i < nlength; i++){
-					float sum = 0;
-					for(int j = 0; j < nlength; j++){
-						sum += IMatrix.getElement(i, j);
-					}
-					
-					
-					Protein p = vertex.get(i);
-
-					p.setICW(nlength / sum);
-					
-					if (taskMonitor != null) {
-		                taskMonitor.setProgress((x) / allprocess);
-		                x++;
-		    
-		            }
-					
-					if (cancelled) {
-		                break;
-		            }
-				}
-			}
-			
+	
 			
 		}
 		else 
-			System.out.println("false!");
+			setCancelled(true);		
 		
 		return vertex;
 		

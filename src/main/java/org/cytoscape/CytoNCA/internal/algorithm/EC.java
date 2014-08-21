@@ -107,7 +107,8 @@ public class EC extends Algorithm {
 
 			}
 		}
-	
+
+		
 		float[] bArray2 = new float[len];
 		float[] cArray2 = new float[len];
 		
