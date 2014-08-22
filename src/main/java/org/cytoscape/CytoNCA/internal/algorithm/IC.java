@@ -23,6 +23,10 @@ public class IC extends Algorithm {
 		super(networkID, pUtil);
 	}
 	
+	/**
+	 * @author TangYu
+	 * @date: 2014年8月22日 下午5:52:24
+	 */
 	public ArrayList<Protein> run(CyNetwork inputNetwork, ArrayList<Protein> vertex, boolean isweight) {
 
 		currentNetwork = inputNetwork;
@@ -38,24 +42,23 @@ public class IC extends Algorithm {
 		Matrix mtxQ = null;
 	
 
-	//	try{
+		try{
 			
-	//		mtxQ = new SmallMatrix(len);
+			mtxQ = new SmallMatrix(len);
 			
-	//	}catch(OutOfMemoryError e){
+		}catch(OutOfMemoryError e){
 		
 			try {
 				islarge = true;
 				mtxQ = new LargeMatrix(len, len, 1.0f);
 				pUtil.addDiskFile(((LargeMatrix) mtxQ).getFile());
-				
-			    
+						    
 			} catch (IOException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 			
-	//	}
+		}
 
 		// C = D - A + J;
 		for(int i = 0; i < len; i++){
@@ -72,6 +75,8 @@ public class IC extends Algorithm {
 				int t = nList.indexOf(tn);	
 				mtxQ.setElement(s, t, 0);
 				mtxQ.setElement(t, s, 0);
+		//		mtxQ.setElement(s, t, -1);
+		//		mtxQ.setElement(t, s, -1);
 				
 				taskMonitor.setProgress(x / elen);
 	            x++;	  

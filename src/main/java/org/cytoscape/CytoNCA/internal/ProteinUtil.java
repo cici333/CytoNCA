@@ -818,7 +818,12 @@ public class ProteinUtil {
 		    return null;
 		  }
 	 
-	  
+	  /**
+	   * @author TangYu
+	   * @param current network n
+	   * @return a set containing parallel-edges and self-loops(edges and nodes)
+	   * @version 2.1
+	   */
 	  public ArrayList detectparalleledges(CyNetwork n){
 		 List<CyEdge> edges = n.getEdgeList(); 
 		 ArrayList<HashSet<Long>> tempa = new ArrayList<HashSet<Long>>();
@@ -850,7 +855,12 @@ public class ProteinUtil {
 		 return e;
 	  }
 	  
-	  
+	  /**
+	   * @author TangYu
+	   * @param current network n, the set containing edges and nodes to be removed
+	   * @return a set containing parallel-edges and self-loops(edges and nodes)
+	   * @version 2.1
+	   */
 	  public void deleteparalleledges(CyNetwork n,  ArrayList<CyIdentifiable> a){
 		
 		  

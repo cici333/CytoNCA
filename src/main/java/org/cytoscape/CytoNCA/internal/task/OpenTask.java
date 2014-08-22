@@ -45,8 +45,8 @@ public class OpenTask
 
       if (!this.pUtil.isOpened()) {
         mainPanel = new MainPanel(this.swingApplication, this.pUtil);
-        mainPanel.addAction(this.analyzeAction, ParameterSet.analyze);
-        mainPanel.addAction(this.openEplistAction, ParameterSet.openeplist);
+        mainPanel.addAction(this.analyzeAction, ParameterSet.ANALYZE);
+        mainPanel.addAction(this.openEplistAction, ParameterSet.OPENEPLIST);
         
 
         this.registrar.registerService(mainPanel, CytoPanelComponent.class, new Properties());

@@ -104,8 +104,6 @@ public class LargeMatrix extends Matrix implements Closeable {
 		long p = position(i, j) * 4;
 		int mapN = (int)p / MAPPING_SIZE;
 		int offN = (int)p % MAPPING_SIZE;
-		
-
 		return  ((MappedByteBuffer) mappings.get(mapN)).getFloat(offN);
 	}
 	
@@ -549,15 +547,12 @@ public float[] getLine(int i){
 	    for (k=0; k<=width-1; k++)
 	    { 
 			d=0.0f;
-		    
-	        	for (i=k; i<=width-1; i++)
+		    for (i=k; i<=width-1; i++)
 				{
-	        		line = getLine(i);
+	        	//	line = getLine(i);
 					for (j=k; j<=width-1; j++)
 					{ 
-						if( k == 0)
-							System.out.println(line[j]);
-						p=Math.abs(line[j]);
+						p=Math.abs(getElement(i, j));
 						
 						if (p>d) 
 						{ 
@@ -566,8 +561,7 @@ public float[] getLine(int i){
 							pnCol[k]=j;
 						}
 					}
-				}
-	        
+				}	        
 	        
 			// Ê§°Ü
 			if (d == 0.0f)
@@ -575,20 +569,14 @@ public float[] getLine(int i){
 				return false;
 			}
 			
-			line = getLine(k);
 			
 	        if (pnRow[k] != k)
 			{
 				for (j=0; j<=width-1; j++)
 				{ 
 			
-			//		p = getElement(k, j);
-			//		setElement(k, j, getElement(pnRow[k], j));
-			//		setElement(pnRow[k], j, p);
-	//				System.out.println(p);
-			
-					p = line[j];
-					line[j] = getElement(pnRow[k], j);
+					p = getElement(k, j);
+					setElement(k, j, getElement(pnRow[k], j));
 					setElement(pnRow[k], j, p);
 
 				}
@@ -605,33 +593,27 @@ public float[] getLine(int i){
 	            }
 			}
 
-	//		setElement(k, k, 1.0f/getElement(k, k));
-			line[k] = 1.0f / line[k];
+			setElement(k, k, 1.0f/getElement(k, k));
 			
 	        for (j=0; j<=width-1; j++)
 			{
 				if (j != k)
 	            { 
-				//	setElement(k, j, getElement(k, j)*getElement(k, k));
-					line[j] = line[j] * line[k];
+					setElement(k, j, getElement(k, j)*getElement(k, k));
 				}
 			}
-	        setLine(k, line);
 
 	        for (i=0; i<=width-1; i++)
 			{
 				if (i!=k)
 				{
-					line = getLine(i);
 					for (j=0; j<=width-1; j++)
 					{
 						if (j!=k)
 						{ 
-			//				setElement(i, j, getElement(i, j) - getElement(i, k) * getElement(k, j));
-							line[j] = line[j] - line[k] * getElement(k, j);
+							setElement(i, j, getElement(i, j) - getElement(i, k) * getElement(k, j));
 						}
 	                }
-					setLine(i, line);
 				}
 			}
 
@@ -657,19 +639,15 @@ public float[] getLine(int i){
 	    { 
 			if (pnCol[k]!=k)
 			{
-				line = getLine(k);
 				for (j=0; j<=width-1; j++)
 	            { 
 					
-			//		p = getElement(k, j);
-			//		setElement(k, j, getElement(pnCol[k], j));
-			//		setElement(pnCol[k], j, p);
-					p = line[j];
-					line[j] = getElement(pnCol[k], j);
+					p = getElement(k, j);
+					setElement(k, j, getElement(pnCol[k], j));
 					setElement(pnCol[k], j, p);
 					
 	            }
-				setLine(k, line);
+
 			}
 
 	        if (pnRow[k]!=k)

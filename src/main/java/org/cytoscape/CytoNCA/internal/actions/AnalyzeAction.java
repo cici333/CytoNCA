@@ -186,6 +186,11 @@ public class AnalyzeAction extends AbstractPAction
             		interruptedMessage, "Interrupted", JOptionPane.WARNING_MESSAGE);
         else{  
         
+        	/**
+        	 * @author TangYu
+        	 * @version 1.0
+        	 * @description detect the parallel edges and selfloops and remove them
+        	 */
         	/*
         	ArrayList de = this.pUtil.detectparalleledges(network);
         	
@@ -202,7 +207,18 @@ public class AnalyzeAction extends AbstractPAction
 					
 				 
 			 }
-     
+     		*/
+        	
+        	/**
+        	 * @author TangYu
+        	 * @version 2.1
+        	 * @description remove the parallel edges and selfloops
+        	 * @date: 2014年8月22日 下午6:51:43
+        	 */
+        	if(currentParamsCopy.isRemoveParAndSel()){
+        		pUtil.deleteparalleledges(network, pUtil.detectparalleledges(network));
+        	}
+        	
         	/*
         	 double num = network.getEdgeList().size();
         	 
@@ -214,7 +230,10 @@ public class AnalyzeAction extends AbstractPAction
         	}
         	network.removeEdges(edges);
         	*/
-        	//********************************//
+        	
+        	
+        	
+        	
         	
         	final int resultId = this.pUtil.getCurrentResultId();
         	

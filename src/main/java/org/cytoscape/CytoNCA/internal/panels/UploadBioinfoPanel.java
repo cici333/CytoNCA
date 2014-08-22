@@ -259,9 +259,9 @@ public class UploadBioinfoPanel extends JFrame{
 			 
 			
 			ChoosePanel(){
-				domainB = new JRadioButton(ParameterSet.domainNum);
-				slengthB = new JRadioButton(ParameterSet.sequencelength);
-				NweightB = new JRadioButton(ParameterSet.weight);
+				domainB = new JRadioButton(ParameterSet.DOMAINNUM);
+				slengthB = new JRadioButton(ParameterSet.SEQUENCELENGTH);
+				NweightB = new JRadioButton(ParameterSet.WEIGHT);
 				othersB = new JRadioButton("Others");
 				originalB = new JRadioButton("Keep original name");
 				aname = new JTextField("attribute name...");

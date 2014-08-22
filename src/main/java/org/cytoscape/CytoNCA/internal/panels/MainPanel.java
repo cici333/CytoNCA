@@ -75,6 +75,8 @@ public class MainPanel extends JScrollPane implements CytoPanelComponent {
 	private JScrollPane algorithmPanel;
 	private UploadBioinfoPanel uploadbioinfopanel;
 	private JButton uploadBioinfButton;
+	private JCheckBox isRemoveParAndSelButton;
+	
  
 
     
@@ -149,8 +151,20 @@ public class MainPanel extends JScrollPane implements CytoPanelComponent {
 	    if (this.bottomPanel == null) {
 	      this.bottomPanel = new JPanel();
 	      setPreferredSize(new Dimension(270, 100));
-	      this.bottomPanel.setLayout(new FlowLayout());
+	   //   this.bottomPanel.setLayout(new FlowLayout());
+	      this.bottomPanel.setLayout(new BoxLayout(this.bottomPanel, BoxLayout.Y_AXIS));
+	      
+	  //    JPanel tPanel = new JPanel();
+	//      tPanel.setPreferredSize(new Dimension(270, 50));
+	      
+	      isRemoveParAndSelButton = new JCheckBox("<html>Remove the parallel edges and <br> selfloops in network.</html>");
+	      isRemoveParAndSelButton.addItemListener(new removeParAndSelAction());
+	      
+	//      tPanel.add(isRemoveParAndSelButton);
+	//      this.bottomPanel.add(tPanel);
+	      this.bottomPanel.add(isRemoveParAndSelButton);
 	    //  this.bottomPanel.setLayout(new BoxLayout(this.bottomPanel, BoxLayout.X_AXIS));
+	      
 	    }
 
 	    return this.bottomPanel;
@@ -266,11 +280,7 @@ public class MainPanel extends JScrollPane implements CytoPanelComponent {
         choicePanel.add(icP);
         selectP.setBorder(BorderFactory.createTitledBorder("Select All Centralities"));
         choicePanel.add(selectP);
-        
-      //  choicePanel.setToolTipText("Please select one or more centralities.");
-        
-       
-  
+
         JPanel p=new JPanel();
         p.setLayout(new BorderLayout());
         
@@ -283,14 +293,6 @@ public class MainPanel extends JScrollPane implements CytoPanelComponent {
 	
 	
   
-
-    /**
-     * Creates a collapsible panel that holds a benchmark file input, placed within the cluster finding collapsible panel
-     *
-     * @param component the radio button that appears in the titled border of the panel
-     * @return A collapsible panel holding a file selection input
-     * @see CollapsiblePanel
-     */
 	private class OpenfilePanel extends JPanel{
 		JTextField filenamelabel = new JTextField();
 		
@@ -298,18 +300,15 @@ public class MainPanel extends JScrollPane implements CytoPanelComponent {
 			setPreferredSize(new Dimension(270, 120));
 			setBorder(BorderFactory.createTitledBorder("Evaluation"));
 	        this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-	       // panel2.setLayout(new BoxLayout(panel2, BoxLayout.X_AXIS));
 	        filenamelabel.setEditable(false);
 	        filenamelabel.setPreferredSize(new Dimension(270, 15));
 	        JLabel openfilelabel = new JLabel("Import essential protein information file");
 	        JButton openfileButton = new JButton("Choose file");
 	        openfileButton.addActionListener(new OpenfileAction());
-	    //    JButton openEplistButton = new JButton("Open Essential Protein List");
 	        this.add(openfilelabel);
 	        this.add(openfileButton);
 	        this.add(filenamelabel);
-	   //     openEplistButton.addActionListener(new OpenEplistAction());
-	    //    this.add(openEplistButton);
+
 	    }
 		
 		
@@ -343,7 +342,7 @@ public class MainPanel extends JScrollPane implements CytoPanelComponent {
 	    								"Upload essential protrin list success!", "", JOptionPane.WARNING_MESSAGE);
 	    						pUtil.setAlleprotein(eplist); 
 	    						filenamelabel.setText(f.getName());
-	    				//		pUtil.setEvaluation(true);
+	    	
 	    					}catch (IOException e1) {
 	    						// TODO Auto-generated catch block
 	    						e1.printStackTrace();
@@ -378,13 +377,13 @@ public class MainPanel extends JScrollPane implements CytoPanelComponent {
     
     public void addAction(CyAction action, int name)
     {
-    	if(name == ParameterSet.analyze){
+    	if(name == ParameterSet.ANALYZE){
     		
     		JButton bt = new JButton(action);
     	    getBottomPanel().add(bt);
     	    getBottomPanel().add(uploadBioinfButton);
     	}
-       	if(name == ParameterSet.openeplist){
+       	if(name == ParameterSet.OPENEPLIST){
        		JButton bt = new JButton(action);
     	    openfilePanel.add(bt);
        	}
@@ -559,6 +558,20 @@ public class MainPanel extends JScrollPane implements CytoPanelComponent {
 		}
 	   
    }
+    
+    private class removeParAndSelAction implements ItemListener{
+
+		@Override
+		public void itemStateChanged(ItemEvent e) {
+			// TODO Auto-generated method stub
+			if(isRemoveParAndSelButton.isSelected()){
+				currentParamsCopy.setRemoveParAndSel(true);
+			}else{
+				currentParamsCopy.setRemoveParAndSel(false);
+			}
+		}
+    	
+    }
 
 
 	public UploadBioinfoPanel getUploadbioinfopanel() {

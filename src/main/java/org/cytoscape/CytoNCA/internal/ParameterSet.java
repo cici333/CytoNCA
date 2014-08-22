@@ -32,14 +32,16 @@ public class ParameterSet
   public static String SCW = "Subgragh(Weight)";
   public static String ICW = "Information(Weight)";
   
-  public static String weight = "Weight of node";
-  public static String domainNum = "Domain numbers";
-  public static String sequencelength = "Sequence length";
+  public static String WEIGHT = "Weight of node";
+  public static String DOMAINNUM = "Domain numbers";
+  public static String SEQUENCELENGTH = "Sequence length";
   
-  public static int analyze = 1;
-  public static int openeplist = 2;
+  public static int ANALYZE = 1;
+  public static int OPENEPLIST = 2;
   
   private HashMap<String, Boolean> algorithmSet;
+  
+  private boolean isRemoveParAndSel = false;
   
   
   
@@ -99,6 +101,7 @@ public class ParameterSet
     newParam.setSelectedNodes(this.selectedNodes);
     newParam.setAlgorithmSet(this.algorithmSet);
     newParam.eprotein = this.eprotein;
+//    newParam.isRemoveParAndSel = this.isRemoveParAndSel;
  
     return newParam;
   }
@@ -154,6 +157,18 @@ public HashMap<String, Boolean> getAlgorithmSet() {
 
 public void setAlgorithmSet(HashMap<String, Boolean> algorithmSet) {
 	this.algorithmSet = algorithmSet;
+}
+
+
+
+public boolean isRemoveParAndSel() {
+	return isRemoveParAndSel;
+}
+
+
+
+public void setRemoveParAndSel(boolean isRemoveParAndSel) {
+	this.isRemoveParAndSel = isRemoveParAndSel;
 }
 
 
