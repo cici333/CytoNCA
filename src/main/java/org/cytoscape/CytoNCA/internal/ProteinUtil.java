@@ -65,6 +65,7 @@ import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.view.vizmap.mappings.BoundaryRangeValues;
 import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
+import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.cytoscape.CytoNCA.internal.CyActivator;
@@ -824,14 +825,17 @@ public class ProteinUtil {
 	   * @return a set containing parallel-edges and self-loops(edges and nodes)
 	   * @version 2.1
 	   */
-	  public ArrayList detectparalleledges(CyNetwork n){
+	  public ArrayList detectparalleledges(CyNetwork n, TaskMonitor taskMonitor){
 		 List<CyEdge> edges = n.getEdgeList(); 
 		 ArrayList<HashSet<Long>> tempa = new ArrayList<HashSet<Long>>();
 		 ArrayList<CyIdentifiable> e = new ArrayList<CyIdentifiable>();
+		 float taskCount = 0;
+		 int length = edges.size();
 		 
-		 Iterator i = edges.iterator();
-		 while(i.hasNext()){
-			 CyEdge temp = (CyEdge) i.next();
+		 taskMonitor.setProgress(0);
+		 taskMonitor.setStatusMessage("Detecting parallel edges and self loops...");
+		 
+		 for(CyEdge temp : edges){
 			 Long l = temp.getSource().getSUID();
 			 Long s = temp.getTarget().getSUID();
 			 HashSet<Long> a = new HashSet<Long>();
@@ -851,6 +855,7 @@ public class ProteinUtil {
 			 }
 			 else
 				 tempa.add(a); 	
+			 taskMonitor.setProgress( (++taskCount) / length);
 		 }
 		 return e;
 	  }
@@ -861,16 +866,19 @@ public class ProteinUtil {
 	   * @return a set containing parallel-edges and self-loops(edges and nodes)
 	   * @version 2.1
 	   */
-	  public void deleteparalleledges(CyNetwork n,  ArrayList<CyIdentifiable> a){
-		
+	  public void deleteparalleledges(CyNetwork n,  ArrayList<CyIdentifiable> a, TaskMonitor taskMonitor){
 		  
 		  ArrayList<CyEdge> b = new ArrayList<CyEdge>();
-		  Iterator it = a.iterator();
-		  
-		  while(it.hasNext()){
-			  CyIdentifiable nodeOrEdge = (CyIdentifiable) it.next();
+		  float taskCount = 0;
+		  int length = a.size();
+			 
+		  taskMonitor.setProgress(0);
+		  taskMonitor.setStatusMessage("Removing parallel edges and self loops...");
+		
+		  for(CyIdentifiable nodeOrEdge : a){
 			  if( nodeOrEdge instanceof CyEdge)
 				  b.add((CyEdge) nodeOrEdge);
+			  taskMonitor.setProgress( (++taskCount) / length); 
 		  }
 		  n.removeEdges(b);
 		  

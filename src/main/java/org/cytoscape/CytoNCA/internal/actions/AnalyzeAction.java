@@ -58,14 +58,14 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.Task;
+import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.TaskMonitor;
-
 import org.cytoscape.model.events.AddedEdgesEvent;
 import org.cytoscape.model.events.AddedEdgesListener;
 import org.cytoscape.model.events.AddedNodesEvent;
@@ -103,6 +103,7 @@ public class AnalyzeAction extends AbstractPAction
 	public static final int INTERRUPTION = 3;
 	private final CyServiceRegistrar registrar;
 	private final TaskManager taskManager;
+	private TaskIterator taskIterator;
 	private Map<Long, Boolean>  dirtyNetworks;
 	private ResultPanel resultsPanel;
 	
@@ -216,7 +217,18 @@ public class AnalyzeAction extends AbstractPAction
         	 * @date: 2014年8月22日 下午6:51:43
         	 */
         	if(currentParamsCopy.isRemoveParAndSel()){
-        		pUtil.deleteparalleledges(network, pUtil.detectparalleledges(network));
+        	//	AbstractTask removeParAndSel = 
+				taskIterator = new TaskIterator(
+					new AbstractTask() {
+						@Override
+						public void run(TaskMonitor taskMonitor) throws Exception {
+							// TODO Auto-generated method stub
+							taskMonitor.setTitle("Remove parallel edges and self loops");
+							pUtil.deleteparalleledges(network, pUtil.detectparalleledges(network, taskMonitor), taskMonitor);
+						}
+					}
+				);
+				
         	}
         	
         	/*
@@ -526,8 +538,8 @@ public class AnalyzeAction extends AbstractPAction
                   
         		AnalyzeTaskFactory analyzeTaskFactory = new AnalyzeTaskFactory(network, this.analyze, resultId, alg, 
                     this.pUtil, listener, alg2);
-            
-        		this.taskManager.execute(analyzeTaskFactory.createTaskIterator());
+        		analyzeTaskFactory.addTask(taskIterator);
+        		this.taskManager.execute(taskIterator);
         	
         	//	resultsPanel.selectProteins(pg.getSubNetwork());
             

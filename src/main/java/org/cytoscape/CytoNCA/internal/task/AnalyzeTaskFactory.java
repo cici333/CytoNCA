@@ -32,9 +32,17 @@ public class AnalyzeTaskFactory
     this.algnames = algnames;
   }
 
-  public TaskIterator createTaskIterator()
+  public TaskIterator addTask(TaskIterator taskIterator)
   {
-    return new TaskIterator(new Task[] { new AnalyzeTask(this.network, this.analyze, this.resultId, algSet, this.pUtil, this.listener, this.algnames) });
+	  if(taskIterator != null){
+		  taskIterator.append(new AnalyzeTask(this.network, this.analyze, this.resultId, algSet, this.pUtil, this.listener, this.algnames));
+	  }else{
+		  taskIterator = new TaskIterator(new AnalyzeTask(this.network, this.analyze, this.resultId, algSet, this.pUtil, this.listener, this.algnames));
+	  }
+	  
+	  return taskIterator;
+	  
+	//  return new TaskIterator(new Task[] { new AnalyzeTask(this.network, this.analyze, this.resultId, algSet, this.pUtil, this.listener, this.algnames) });
   }
 
   public boolean isReady()
@@ -45,4 +53,10 @@ public class AnalyzeTaskFactory
 	  return isR;*/
     return true;
   }
+
+@Override
+public TaskIterator createTaskIterator() {
+	// TODO Auto-generated method stub
+	return null;
+}
 }
