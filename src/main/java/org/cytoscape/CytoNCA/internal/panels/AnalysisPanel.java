@@ -338,44 +338,63 @@ public class AnalysisPanel extends JPanel implements CytoPanelComponent{
 			
 		}
 		
+		/**
+		 * @version 2.1.2
+		 * @author TangYu
+		 * @date: 2014年9月5日 下午4:57:09
+		 *
+		 */
 		private class SelectByNamesAction extends AbstractAction{
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				// TODO Auto-generated method stub
 				List<Protein> temp = new ArrayList<Protein>();
-				List<Protein> tproteins = pUtil.copyList(sortResults.get(curalg));
-				
-				for(int i = 0; i < namesT.getLineCount()-1; i++){
-					try {
-						String name = namesT.getText(namesT.getLineStartOffset(i),namesT.getLineEndOffset(i) - namesT.getLineStartOffset(i)-1);
-						for(Protein p : tproteins){
+				int lastLineIndex = namesT.getLineCount()-1;
+				int nameNum = lastLineIndex + 1;							
+				try {
+					for(int i = 0; i < lastLineIndex; i++){
+						if(namesT.getLineEndOffset(i) - namesT.getLineStartOffset(i)  == 1){
+							nameNum--;
+							continue;
+						}
+						String name = namesT.getText(namesT.getLineStartOffset(i), 
+										namesT.getLineEndOffset(i) - namesT.getLineStartOffset(i) -1);						
+						for(Protein p : sortResults.get(curalg)){
 							if(p.getName().equals(name)){
-								tproteins.remove(p);
 								temp.add(p);
 								break;
 							}
 						}
-					} catch (BadLocationException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
 					}
+					
+					if(namesT.getLineStartOffset(lastLineIndex) == namesT.getLineEndOffset(lastLineIndex)){
+						nameNum--;					
+					}else{
+						String name = namesT.getText(namesT.getLineStartOffset(lastLineIndex), 
+										namesT.getLineEndOffset(lastLineIndex) - namesT.getLineStartOffset(lastLineIndex));					
+						for(Protein p : sortResults.get(curalg)){
+							if(p.getName().equals(name)){
+								temp.add(p);							
+								break;
+							}
+						}
+					}			
+				} catch (BadLocationException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
 				}
-				
-				if(!temp.isEmpty()){
-				
+				if(!temp.isEmpty()){			
 					sproteins.clear();
 					sproteins.addAll(temp);
 					pUtil.sortVertex(sproteins, curalg);
-					System.out.println(id +"&&&");
 					pUtil.getResultPanel(id).browserPanel.updateTable(null);
 					pUtil.getResultPanel(id).browserPanel.changeSortingRange(false);
 					curSetName = "Self-select proteins";
-					
-				}
-				
-			}
-			
+				}				
+				JOptionPane.showMessageDialog(null,
+						nameNum + " node names have been uploaded, "+temp.size()+" nodes have been selected.", "Result", JOptionPane.WARNING_MESSAGE);				
+			}			
 		}
 	
 	
@@ -487,7 +506,9 @@ public class AnalysisPanel extends JPanel implements CytoPanelComponent{
 								r = (int) Math.round(red/s);
 								g = (int) Math.round(green/s);
 								b = (int) Math.round(blue/s);
-
+								System.out.println(red+" *  "+green+" * "+blue);
+								System.out.println(s);
+								System.out.println(r+"  "+g+" "+b);
 								mixc = new Color(r, g, b);
 								
 								networkView.getNodeView(n).setVisualProperty(BasicVisualLexicon.NODE_FILL_COLOR, mixc);
