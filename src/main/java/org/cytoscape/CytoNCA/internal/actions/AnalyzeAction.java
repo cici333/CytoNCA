@@ -38,7 +38,8 @@ import org.cytoscape.CytoNCA.internal.algorithm.NC;
 import org.cytoscape.CytoNCA.internal.algorithm.SC;
 import org.cytoscape.CytoNCA.internal.panels.EvaluationPanel;
 import org.cytoscape.CytoNCA.internal.panels.ResultPanel;
-import org.cytoscape.CytoNCA.internal.task.AnalyzeTaskFactory;
+import org.cytoscape.CytoNCA.internal.task.AnalyzeTask;
+
 
 
 
@@ -536,9 +537,16 @@ public class AnalyzeAction extends AbstractPAction
         			}
         		};
                   
-        		AnalyzeTaskFactory analyzeTaskFactory = new AnalyzeTaskFactory(network, this.analyze, resultId, alg, 
-                    this.pUtil, listener, alg2);
-        		analyzeTaskFactory.addTask(taskIterator);
+        	//	AnalyzeTaskFactory analyzeTaskFactory = new AnalyzeTaskFactory(network, this.analyze, resultId, alg, 
+            //        this.pUtil, listener, alg2);
+        		
+        	//	analyzeTaskFactory.addTask(taskIterator);
+        		
+        		 if(taskIterator != null){
+        			  taskIterator.append(new AnalyzeTask(network, this.analyze, resultId, alg, this.pUtil, listener, alg2));
+        		  }else{
+        			  taskIterator = new TaskIterator(new AnalyzeTask(network, this.analyze, resultId, alg, this.pUtil, listener, alg2));
+        		  }
         		this.taskManager.execute(taskIterator);
         	
         	//	resultsPanel.selectProteins(pg.getSubNetwork());
