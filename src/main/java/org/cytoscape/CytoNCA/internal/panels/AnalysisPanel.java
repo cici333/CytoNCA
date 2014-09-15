@@ -90,6 +90,7 @@ public class AnalysisPanel extends JPanel implements CytoPanelComponent{
 	private String curSetName;
 	private static int Ylocation;
 	private static boolean ismixcolor;
+	private static int SETINDEX;
 	
 	
 	public AnalysisPanel(int resultid, CyNetwork network, CyNetworkView networkView, HashMap<String, List<Protein>> sortResults, ProteinUtil pUtil, ArrayList<String> eplist, String curalg, List<Protein> sproteins, String curSetName){
@@ -108,6 +109,7 @@ public class AnalysisPanel extends JPanel implements CytoPanelComponent{
 		this.eplist = eplist;
 		this.curSetName = curSetName;
 		this.ismixcolor = true;
+		this.SETINDEX = 0;
 		
 		this.add(selectPanel);
 		this.add(paintPanel);
@@ -390,7 +392,7 @@ public class AnalysisPanel extends JPanel implements CytoPanelComponent{
 					pUtil.sortVertex(sproteins, curalg);
 					pUtil.getResultPanel(id).browserPanel.updateTable(null);
 					pUtil.getResultPanel(id).browserPanel.changeSortingRange(false);
-					curSetName = "Self-select proteins";
+					curSetName = "Self-select proteins ("+ ++SETINDEX +")" ;
 				}				
 				JOptionPane.showMessageDialog(null,
 						nameNum + " node names have been uploaded, "+temp.size()+" nodes have been selected.", "Result", JOptionPane.WARNING_MESSAGE);				
