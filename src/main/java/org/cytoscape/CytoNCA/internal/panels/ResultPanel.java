@@ -27,6 +27,7 @@ import java.util.Dictionary;
 import java.util.Enumeration;
 import java.util.EventObject;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -39,6 +40,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -87,7 +89,6 @@ import org.cytoscape.CytoNCA.internal.SpringEmbeddedLayouter;
 import org.cytoscape.CytoNCA.internal.Resources.ImageName;
 import org.cytoscape.CytoNCA.internal.actions.DiscardResultAction;
 import org.cytoscape.CytoNCA.internal.algorithm.Algorithm;
-
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelComponent;
@@ -103,6 +104,7 @@ import org.cytoscape.model.CyTable;
 import org.cytoscape.model.SavePolicy;
 import org.cytoscape.model.CyEdge.Type;
 import org.cytoscape.model.events.RemovedNodesEvent;
+import org.cytoscape.model.events.RemovedNodesListener;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
@@ -123,7 +125,7 @@ import org.jfree.data.category.DefaultCategoryDataset;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ResultPanel extends JPanel implements CytoPanelComponent{
+public class ResultPanel extends JPanel implements CytoPanelComponent, RemovedNodesListener{
 
 
 	private final int resultId;
@@ -156,6 +158,7 @@ public class ResultPanel extends JPanel implements CytoPanelComponent{
 	public static JComboBox<String> algselect;
 	public boolean issortwholenet = true;
 	private String curSetName;
+	private static boolean NETWOKRMODIFIED;
 	
 	public ResultPanel(ArrayList<Protein> resultL, ArrayList<String> alg,
 			ProteinUtil pUtil, CyNetwork network, CyNetworkView networkView,
@@ -165,6 +168,7 @@ public class ResultPanel extends JPanel implements CytoPanelComponent{
 		this.pUtil = pUtil;
 		this.alg = alg;
 		this.curalg = alg.get(0);
+		NETWOKRMODIFIED = false;
 		
 	
 		
@@ -1236,7 +1240,40 @@ public class ResultPanel extends JPanel implements CytoPanelComponent{
 			return chartdata;
 		}
 	}
-	
+
+
+	@Override
+	public void handleEvent(RemovedNodesEvent e) {
+		// TODO Auto-generated method stub
+		if(e.getSource().getSUID() == network.getSUID()){
+			NETWOKRMODIFIED = true;
+		}
+	}
+	/**
+	 * @decription: synchronize protein list with network after nodes have been removed;
+	 * @author TangYu
+	 * @date: 2014年9月17日 下午5:05:09
+	 */
+	private void synchronizeProteinListWithNetwork(){
+		HashSet<Protein> deletedProteins = new HashSet<Protein>();
+		List<CyNode> currentNodeList = network.getNodeList();
+		
+		for(Protein p: sortResults.get(curalg)){
+			if(!currentNodeList.contains(p.getN())){
+				deletedProteins.add(p);
+			}
+		}
+		
+		for(List<Protein> list: sortResults.values()){
+			list.removeAll(deletedProteins);
+		}
+		
+		for(Protein p: deletedProteins){
+			if(sproteins.contains(p)){
+				sproteins.remove(p);
+			}
+		}
+	}
 
 	
 	

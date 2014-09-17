@@ -66,6 +66,8 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.SavePolicy;
+import org.cytoscape.model.events.RemovedNodesEvent;
+import org.cytoscape.model.events.RemovedNodesListener;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
@@ -91,6 +93,7 @@ public class AnalysisPanel extends JPanel implements CytoPanelComponent{
 	private static int Ylocation;
 	private static boolean ismixcolor;
 	private static int SETINDEX;
+	private static boolean NETWOKRMODIFIED;
 	
 	
 	public AnalysisPanel(int resultid, CyNetwork network, CyNetworkView networkView, HashMap<String, List<Protein>> sortResults, ProteinUtil pUtil, ArrayList<String> eplist, String curalg, List<Protein> sproteins, String curSetName){
@@ -110,6 +113,7 @@ public class AnalysisPanel extends JPanel implements CytoPanelComponent{
 		this.curSetName = curSetName;
 		this.ismixcolor = true;
 		this.SETINDEX = 0;
+		NETWOKRMODIFIED = false;
 		
 		this.add(selectPanel);
 		this.add(paintPanel);
@@ -277,7 +281,6 @@ public class AnalysisPanel extends JPanel implements CytoPanelComponent{
 			
 			public void paintview(ArrayList<HashSet<String>> t,Color c, boolean flag){
 				
-				System.out.println("$$$");
 				for(CyEdge e : network.getEdgeList()){
 					HashSet<String> th = new HashSet<String>();
 					th.add(network.getRow(e.getSource()).get("name", String.class));
@@ -353,7 +356,8 @@ public class AnalysisPanel extends JPanel implements CytoPanelComponent{
 				// TODO Auto-generated method stub
 				List<Protein> temp = new ArrayList<Protein>();
 				int lastLineIndex = namesT.getLineCount()-1;
-				int nameNum = lastLineIndex + 1;							
+				int nameNum = lastLineIndex + 1;	
+				int duplicateNum = 0;
 				try {
 					for(int i = 0; i < lastLineIndex; i++){
 						if(namesT.getLineEndOffset(i) - namesT.getLineStartOffset(i)  == 1){
@@ -364,7 +368,11 @@ public class AnalysisPanel extends JPanel implements CytoPanelComponent{
 										namesT.getLineEndOffset(i) - namesT.getLineStartOffset(i) -1);						
 						for(Protein p : sortResults.get(curalg)){
 							if(p.getName().equals(name)){
-								temp.add(p);
+								if(temp.contains(p)){
+									duplicateNum++;
+								}else{
+									temp.add(p);									
+								}	
 								break;
 							}
 						}
@@ -392,10 +400,10 @@ public class AnalysisPanel extends JPanel implements CytoPanelComponent{
 					pUtil.sortVertex(sproteins, curalg);
 					pUtil.getResultPanel(id).browserPanel.updateTable(null);
 					pUtil.getResultPanel(id).browserPanel.changeSortingRange(false);
-					curSetName = "Self-select proteins ("+ ++SETINDEX +")" ;
+					curSetName = "Self-select proteins (No. "+ ++SETINDEX +")" ;
 				}				
 				JOptionPane.showMessageDialog(null,
-						nameNum + " node names have been uploaded, "+temp.size()+" nodes have been selected.", "Result", JOptionPane.WARNING_MESSAGE);				
+						nameNum + " node names have been uploaded, "+ duplicateNum + " duplicated values, "+temp.size()+" nodes have been selected.", "Result", JOptionPane.WARNING_MESSAGE);				
 			}			
 		}
 	
@@ -507,10 +515,7 @@ public class AnalysisPanel extends JPanel implements CytoPanelComponent{
 								}
 								r = (int) Math.round(red/s);
 								g = (int) Math.round(green/s);
-								b = (int) Math.round(blue/s);
-								System.out.println(red+" *  "+green+" * "+blue);
-								System.out.println(s);
-								System.out.println(r+"  "+g+" "+b);
+								b = (int) Math.round(blue/s);					
 								mixc = new Color(r, g, b);
 								
 								networkView.getNodeView(n).setVisualProperty(BasicVisualLexicon.NODE_FILL_COLOR, mixc);
@@ -553,8 +558,7 @@ public class AnalysisPanel extends JPanel implements CytoPanelComponent{
 					jj.setAlignmentX(Component.LEFT_ALIGNMENT);
 					if(!mixColors.isEmpty()){
 						
-						for(Entry<String, Color>  mix : mixColors.entrySet()){
-							System.out.println(mix.getKey());
+						for(Entry<String, Color>  mix : mixColors.entrySet()){						
 							jj.add(new JLabel(mix.getKey(), createColorIcon(mix.getValue()), SwingConstants.LEFT));
 							jj.setBounds(10, Ylocation,300,25);
 							Ylocation += 30;
@@ -612,9 +616,8 @@ public class AnalysisPanel extends JPanel implements CytoPanelComponent{
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				// TODO Auto-generated method stub
-				System.out.println("GGG"+curalg);
 				for(Protein p : sortResults.get(curalg)){
-					if(p.getSelectGroups() != null && !p.getSelectGroups().isEmpty()){
+					if(p.getSelectGroups() != null && !p.getSelectGroups().isEmpty() ){
 						networkView.getNodeView(p.getN()).setVisualProperty(BasicVisualLexicon.NODE_FILL_COLOR, p.getOriginColor());
 						networkView.getNodeView(p.getN()).setVisualProperty(BasicVisualLexicon.NODE_TOOLTIP, "");
 						p.getSelectGroups().clear();
@@ -626,6 +629,7 @@ public class AnalysisPanel extends JPanel implements CytoPanelComponent{
 				labelPanel.removeAll();
 				labelPanel.repaint();
 				networkView.updateView();
+				SETINDEX = 0;
 			}
 			
 		}
@@ -672,13 +676,11 @@ public class AnalysisPanel extends JPanel implements CytoPanelComponent{
 					}
 				
 					if(!temp.isEmpty()){
-						
-						System.out.println("###");
+					
 						clearB.doClick();
 						sproteins.clear();
 						sproteins.addAll(temp);
 						pUtil.sortVertex(sproteins, curalg);
-						System.out.println("id   " +id);
 						pUtil.getResultPanel(id).browserPanel.updateTable(null);
 						curSetName = "Overlapping Nodes";					
 					}else{
@@ -810,10 +812,8 @@ public class AnalysisPanel extends JPanel implements CytoPanelComponent{
 									if (eplist.contains(name)) {
 										nv.setVisualProperty(
 												BasicVisualLexicon.NODE_FILL_COLOR,
-												java.awt.Color.RED);
-										System.out.println(name + "        RED");
-									} else {
-										System.out.println(name + "        BLUE");
+												java.awt.Color.RED);										
+									} else {									
 										nv.setVisualProperty(
 												BasicVisualLexicon.NODE_FILL_COLOR,
 												java.awt.Color.BLUE);
@@ -921,8 +921,7 @@ public class AnalysisPanel extends JPanel implements CytoPanelComponent{
 						columnNames[4+i*5] = "Ave("+s+")";
 						columnNames[5+i*5] = "Max("+s+")";
 						columnNames[6+i*5] = "Min("+s+")";
-						i++;
-						System.out.println(s);
+						i++;			
 						listIt(sproteins);
 						
 					}
@@ -1085,7 +1084,6 @@ public class AnalysisPanel extends JPanel implements CytoPanelComponent{
 	public void updateNet(String curalg, String curSetName) {
 		List<CyNode> nodes = new ArrayList();
 		Iterator i = sproteins.iterator();
-		System.out.println(sproteins.size()+"!!!");
 		while (i.hasNext()) {
 			Protein p = (Protein) i.next();
 			nodes.add(p.getN());
@@ -1117,6 +1115,9 @@ public class AnalysisPanel extends JPanel implements CytoPanelComponent{
 					inf.dispose();	
 		paintPanel.clearB.doClick();
 	}
+
+
+
 
 
 }
