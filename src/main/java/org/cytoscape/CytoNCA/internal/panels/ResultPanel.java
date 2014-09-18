@@ -125,7 +125,7 @@ import org.jfree.data.category.DefaultCategoryDataset;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ResultPanel extends JPanel implements CytoPanelComponent, RemovedNodesListener{
+public class ResultPanel extends JPanel implements CytoPanelComponent{
 
 
 	private final int resultId;
@@ -158,7 +158,7 @@ public class ResultPanel extends JPanel implements CytoPanelComponent, RemovedNo
 	public static JComboBox<String> algselect;
 	public boolean issortwholenet = true;
 	private String curSetName;
-	private static boolean NETWOKRMODIFIED;
+	
 	
 	public ResultPanel(ArrayList<Protein> resultL, ArrayList<String> alg,
 			ProteinUtil pUtil, CyNetwork network, CyNetworkView networkView,
@@ -168,7 +168,6 @@ public class ResultPanel extends JPanel implements CytoPanelComponent, RemovedNo
 		this.pUtil = pUtil;
 		this.alg = alg;
 		this.curalg = alg.get(0);
-		NETWOKRMODIFIED = false;
 		
 	
 		
@@ -987,20 +986,19 @@ public class ResultPanel extends JPanel implements CytoPanelComponent, RemovedNo
 			selectednodes.clear();
 			
 			int[] sr = browserPanel.getTable().getSelectedRows();
-			if(sr.length != 0)
-			for(int i=0 ; i<sr.length; i++){
-				int selectedRow = sr[i];
+			if(sr.length != 0){
+				for(int i=0 ; i<sr.length; i++){
+					int selectedRow = sr[i];
 				
-				Protein p = sproteins.get(selectedRow);
-				CyNode n = p.getN();
-				selectednodes.add(n);
-				pUtil.setSelected(selectednodes, network);
-    		 
-				networkView.fitContent();
-				networkView.updateView();
-				
+					Protein p = sproteins.get(selectedRow);
+					CyNode n = p.getN();
+					selectednodes.add(n);
+					pUtil.setSelected(selectednodes, network);
+					
+					networkView.fitContent();
+					networkView.updateView();
+				}
 			}
-			
 		}	
 	}
 	
@@ -1242,19 +1240,14 @@ public class ResultPanel extends JPanel implements CytoPanelComponent, RemovedNo
 	}
 
 
-	@Override
-	public void handleEvent(RemovedNodesEvent e) {
-		// TODO Auto-generated method stub
-		if(e.getSource().getSUID() == network.getSUID()){
-			NETWOKRMODIFIED = true;
-		}
-	}
+	
 	/**
 	 * @decription: synchronize protein list with network after nodes have been removed;
 	 * @author TangYu
 	 * @date: 2014年9月17日 下午5:05:09
 	 */
-	private void synchronizeProteinListWithNetwork(){
+	/*
+	private void synchronizeWithNetwork(){
 		HashSet<Protein> deletedProteins = new HashSet<Protein>();
 		List<CyNode> currentNodeList = network.getNodeList();
 		
@@ -1274,7 +1267,7 @@ public class ResultPanel extends JPanel implements CytoPanelComponent, RemovedNo
 			}
 		}
 	}
-
+*/
 	
 	
 

@@ -40,6 +40,8 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.SavePolicy;
+import org.cytoscape.model.events.RemovedNodesEvent;
+import org.cytoscape.model.events.RemovedNodesListener;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.model.subnetwork.CySubNetwork;
@@ -71,7 +73,7 @@ import org.slf4j.LoggerFactory;
 import org.cytoscape.CytoNCA.internal.CyActivator;
 
 
-public class ProteinUtil {
+public class ProteinUtil implements RemovedNodesListener{
 
     private static boolean INTERRUPTED = false;
     private static Image placeHolderImage = null;
@@ -111,6 +113,8 @@ public class ProteinUtil {
 	private ArrayList<String> Alleprotein;
 	private ArrayList<String> bioinfoColumnNames;
 	private ArrayList<File> DiskFileList;
+	
+	private HashSet<Long> modifiedNetworkSet;
 	
 	private static final Logger logger = LoggerFactory.getLogger(org.cytoscape.CytoNCA.internal.ProteinUtil.class);
 
@@ -262,11 +266,11 @@ public class ProteinUtil {
     * Save results to node table
     *
     * @param allalg     The list of all algorithms.
-    * @param eproteins  The list of proteins to be output.
+    * @param proteins  The list of proteins to be output.
     * @param network    The network source of the nodes
     * 
     *   */
-   public void SaveInTable(ArrayList<String > allalg, List<Protein> eproteins, CyNetwork network) throws IllegalArgumentException {
+   public void SaveInTable(ArrayList<String > allalg, List<Protein> proteins, CyNetwork network) throws IllegalArgumentException, NullPointerException {
 	   
 	   CyTable c = network.getTable(CyNode.class, CyNetwork.DEFAULT_ATTRS);
        
@@ -279,9 +283,11 @@ public class ProteinUtil {
  
        }
        
-       for (int i = 0; i < eproteins.size(); i++) {         	
-       	Protein p = (Protein)eproteins.get(i);
+       for (Protein p: proteins) {         	
        	for(String alg : allalg){
+       		try{
+       			
+       		}
        		network.getRow(p.getN()).set(alg, p.getPara(alg));
            }
        	}
@@ -665,24 +671,29 @@ public class ProteinUtil {
 	
 	public void setSelected(Collection elements, CyNetwork network)
 	{
-		Collection allElements = new ArrayList(network.getNodeList());
+		Collection<CyIdentifiable> allElements = new ArrayList(network.getNodeList());
 		allElements.addAll(network.getEdgeList());
-		CyIdentifiable nodeOrEdge;
+		
 		boolean select;
-		if(elements != null){
-			for (Iterator iterator = allElements.iterator(); iterator.hasNext(); network.getRow(nodeOrEdge).set("selected", Boolean.valueOf(select)))
-			{
-				nodeOrEdge = (CyIdentifiable)iterator.next();
-				select = elements.contains(nodeOrEdge);
+		
+		if(!modifiedNetworkSet.contains(network.getSUID())){
+			if(elements != null){
+				for (CyIdentifiable nodeOrEdge : allElements)
+				{
+					select = elements.contains(nodeOrEdge);
+					network.getRow(nodeOrEdge).set("selected", Boolean.valueOf(select));
+				}
 			}
-		}
-		else{
-			for (Iterator iterator = allElements.iterator(); iterator.hasNext(); )
-			{
-				nodeOrEdge = (CyIdentifiable)iterator.next();
+			else{
+				for (CyIdentifiable nodeOrEdge : allElements)
+				{
 					network.getRow(nodeOrEdge).set("selected", false);
+				}
 			}
+		}else{
+			
 		}
+		
 		
 		eventHelper.flushPayloadEvents();
 		Collection netViews = networkViewMgr.getNetworkViews(network);
@@ -1275,6 +1286,17 @@ public class ProteinUtil {
 			}
 		System.out.println(DiskFileList.size()+"      ############");	
 		}
+	}
+
+
+
+	@Override
+	public void handleEvent(RemovedNodesEvent e) {
+		// TODO Auto-generated method stub
+		if(modifiedNetworkSet == null){
+			modifiedNetworkSet = new HashSet<Long>();
+		}
+		modifiedNetworkSet.add(e.getSource().getSUID());
 	}
 	
 

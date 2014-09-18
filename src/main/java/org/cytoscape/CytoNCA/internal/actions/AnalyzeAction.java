@@ -222,7 +222,7 @@ public class AnalyzeAction extends AbstractPAction
 				taskIterator = new TaskIterator(
 					new AbstractTask() {
 						@Override
-						public void run(TaskMonitor taskMonitor) throws Exception {
+						public void run(TaskMonitor taskMonitor){
 							// TODO Auto-generated method stub
 							taskMonitor.setTitle("Remove parallel edges and self loops");
 							pUtil.deleteparalleledges(network, pUtil.detectparalleledges(network, taskMonitor), taskMonitor);
