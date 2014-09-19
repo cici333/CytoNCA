@@ -448,15 +448,8 @@ public class AnalyzeAction extends AbstractPAction
         				resultsPanel = null;
         				boolean resultFound = false;
         				AnalyzeAction.this.setDirty(network, false);
-        				
-        				
-        					
-        				
-        				if (e.isSuccessful()) {
-        					
-        						
-        					
-        					if ((e.getProteins() != null) && (!e.getProteins().isEmpty())) {  
+         				if (e.isSuccessful()) {       					       					
+        					if ((e.getProteins() != null) && (!e.getProteins().isEmpty()) && !e.getSuccessfelalgnames().isEmpty()) {  
         						resultFound = true;
         						AnalyzeAction.this.pUtil.addNetworkResult(network.getSUID().longValue());
         						
@@ -500,7 +493,9 @@ public class AnalyzeAction extends AbstractPAction
         								AnalyzeAction.this.registrar, 
         								AnalyzeAction.this.pUtil);
 
-        						resultsPanel = new ResultPanel(e.getProteins(), alg2, AnalyzeAction.this.pUtil, network, networkView, 
+        				//		resultsPanel = new ResultPanel(e.getProteins(), alg2, AnalyzeAction.this.pUtil, network, networkView, 
+        				//				resultId, discardResultAction);
+        						resultsPanel = new ResultPanel(e.getProteins(), e.getSuccessfelalgnames(), AnalyzeAction.this.pUtil, network, networkView, 
         								resultId, discardResultAction);
         						AnalyzeAction.this.registrar.registerService(resultsPanel, CytoPanelComponent.class, new Properties());
         						
@@ -513,7 +508,8 @@ public class AnalyzeAction extends AbstractPAction
         					} 
         					else {
         						JOptionPane.showMessageDialog(AnalyzeAction.this.swingApplication.getJFrame(), 
-        								"Ranking ERROR!", 
+        							//	"Ranking ERROR!",  
+        								e.getResults(),
         								"No Results", 
         								2);
         					}

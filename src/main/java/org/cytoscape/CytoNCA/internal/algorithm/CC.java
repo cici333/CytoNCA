@@ -140,14 +140,18 @@ public class CC extends Algorithm {
 				QM.put(v, 0);
 				
 				for(CyNode w : currentNetwork.getNeighborList(v, Type.ANY)){
-					double dis = currentNetwork.getRow(currentNetwork.getConnectingEdgeList(w, v, Type.ANY).get(0)).get("weight", Double.class);
+					double dis = currentNetwork.getRow(currentNetwork.getConnectingEdgeList(w, v, Type.ANY).get(0)).get("weight", Double.class);					
 					/**
 					 * distance = 1 / weight;
 					 * @author TangYu
 					 * @date: 2014年8月20日 下午3:57:08
 					 */
-					if(dis !=0 )
-						dis = 1/ dis;  
+					if(dis <= 0){
+						setCancelled(true);
+						return;
+					}				
+						dis = 1/ dis;  //distance = 1 / weight;
+					
 					
 					if(D.get(w) > D.get(v) + dis){
 						D.put(w, D.get(v)+dis);

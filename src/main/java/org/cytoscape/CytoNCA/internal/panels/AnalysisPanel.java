@@ -93,7 +93,7 @@ public class AnalysisPanel extends JPanel implements CytoPanelComponent{
 	private static int Ylocation;
 	private static boolean ismixcolor;
 	private static int SETINDEX;
-	private static boolean NETWOKRMODIFIED;
+	
 	
 	
 	public AnalysisPanel(int resultid, CyNetwork network, CyNetworkView networkView, HashMap<String, List<Protein>> sortResults, ProteinUtil pUtil, ArrayList<String> eplist, String curalg, List<Protein> sproteins, String curSetName){
@@ -113,7 +113,6 @@ public class AnalysisPanel extends JPanel implements CytoPanelComponent{
 		this.curSetName = curSetName;
 		this.ismixcolor = true;
 		this.SETINDEX = 0;
-		NETWOKRMODIFIED = false;
 		
 		this.add(selectPanel);
 		this.add(paintPanel);
@@ -481,62 +480,108 @@ public class AnalysisPanel extends JPanel implements CytoPanelComponent{
 				
 				if(currentc != null){
 					pUtil.setSelected(null, network);
-					for(Protein p: sproteins){
-						
-							
-						CyNode n = p.getN();
-						SetColorMap.put(curSetName, currentc);
-						if(p.getSelectGroups() == null || p.getSelectGroups().isEmpty()){
-							
-							p.setOriginColor(networkView.getNodeView(n).getVisualProperty(BasicVisualLexicon.NODE_FILL_COLOR));
-									
-							p.setSelectGroups(new ArrayList<String>());	
-							p.getSelectGroups().add(curSetName);
-							networkView.getNodeView(n).setVisualProperty(BasicVisualLexicon.NODE_FILL_COLOR, currentc);
-							networkView.getNodeView(n).setVisualProperty(BasicVisualLexicon.NODE_TOOLTIP, curSetName);
-							
-						}else{
-							
-							if(ismixcolor){
-								p.getSelectGroups().add(curSetName);
-								String mixname = "";
-								double blue = 0, red = 0, green = 0, s = p.getSelectGroups().size();
-								int r,g,b;
-								int i = 0;
-								for(String set : p.getSelectGroups()){
-									blue += SetColorMap.get(set).getBlue();
-									red += SetColorMap.get(set).getRed();
-									green += SetColorMap.get(set).getGreen();
-									if(i==0)
-										mixname += set;
-									else
-										mixname += " + "+set;
-									i++;
-								}
-								r = (int) Math.round(red/s);
-								g = (int) Math.round(green/s);
-								b = (int) Math.round(blue/s);					
-								mixc = new Color(r, g, b);
+					if(pUtil.modifiedNetworkSet != null && !pUtil.modifiedNetworkSet.contains(network.getSUID())){
+						for(Protein p: sproteins){													
+							CyNode n = p.getN();
+							SetColorMap.put(curSetName, currentc);
+							if(p.getSelectGroups() == null || p.getSelectGroups().isEmpty()){
 								
-								networkView.getNodeView(n).setVisualProperty(BasicVisualLexicon.NODE_FILL_COLOR, mixc);
-								networkView.getNodeView(n).setVisualProperty(BasicVisualLexicon.NODE_TOOLTIP , mixname);
-								mixColors.put(mixname, mixc);
-							}else{
-								
-							//	p.setOriginColor(networkView.getNodeView(n).getVisualProperty(BasicVisualLexicon.NODE_FILL_COLOR));
-								
-								
+								p.setOriginColor(networkView.getNodeView(n).getVisualProperty(BasicVisualLexicon.NODE_FILL_COLOR));
+										
+								p.setSelectGroups(new ArrayList<String>());	
 								p.getSelectGroups().add(curSetName);
 								networkView.getNodeView(n).setVisualProperty(BasicVisualLexicon.NODE_FILL_COLOR, currentc);
 								networkView.getNodeView(n).setVisualProperty(BasicVisualLexicon.NODE_TOOLTIP, curSetName);
-							}
-							
-							
+								
+							}else{
+								
+								if(ismixcolor){
+									p.getSelectGroups().add(curSetName);
+									String mixname = "";
+									double blue = 0, red = 0, green = 0, s = p.getSelectGroups().size();
+									int r,g,b;
+									int i = 0;
+									for(String set : p.getSelectGroups()){
+										blue += SetColorMap.get(set).getBlue();
+										red += SetColorMap.get(set).getRed();
+										green += SetColorMap.get(set).getGreen();
+										if(i==0)
+											mixname += set;
+										else
+											mixname += " + "+set;
+										i++;
+									}
+									r = (int) Math.round(red/s);
+									g = (int) Math.round(green/s);
+									b = (int) Math.round(blue/s);					
+									mixc = new Color(r, g, b);
+									
+									networkView.getNodeView(n).setVisualProperty(BasicVisualLexicon.NODE_FILL_COLOR, mixc);
+									networkView.getNodeView(n).setVisualProperty(BasicVisualLexicon.NODE_TOOLTIP , mixname);
+									mixColors.put(mixname, mixc);
+								}else{
+									
+								//	p.setOriginColor(networkView.getNodeView(n).getVisualProperty(BasicVisualLexicon.NODE_FILL_COLOR));
+									
+									
+									p.getSelectGroups().add(curSetName);
+									networkView.getNodeView(n).setVisualProperty(BasicVisualLexicon.NODE_FILL_COLOR, currentc);
+									networkView.getNodeView(n).setVisualProperty(BasicVisualLexicon.NODE_TOOLTIP, curSetName);
+								}														
+							}																														
 						}
-						
-												
-												
+					}else{
+						for(Protein p: sproteins){													
+							CyNode n = p.getN();
+							if(!network.containsNode(n)){
+								continue;
+							}
+							SetColorMap.put(curSetName, currentc);
+							if(p.getSelectGroups() == null || p.getSelectGroups().isEmpty()){
+								
+								p.setOriginColor(networkView.getNodeView(n).getVisualProperty(BasicVisualLexicon.NODE_FILL_COLOR));
+										
+								p.setSelectGroups(new ArrayList<String>());	
+								p.getSelectGroups().add(curSetName);
+								networkView.getNodeView(n).setVisualProperty(BasicVisualLexicon.NODE_FILL_COLOR, currentc);
+								networkView.getNodeView(n).setVisualProperty(BasicVisualLexicon.NODE_TOOLTIP, curSetName);
+								
+							}else{
+								
+								if(ismixcolor){
+									p.getSelectGroups().add(curSetName);
+									String mixname = "";
+									double blue = 0, red = 0, green = 0, s = p.getSelectGroups().size();
+									int r,g,b;
+									int i = 0;
+									for(String set : p.getSelectGroups()){
+										blue += SetColorMap.get(set).getBlue();
+										red += SetColorMap.get(set).getRed();
+										green += SetColorMap.get(set).getGreen();
+										if(i==0)
+											mixname += set;
+										else
+											mixname += " + "+set;
+										i++;
+									}
+									r = (int) Math.round(red/s);
+									g = (int) Math.round(green/s);
+									b = (int) Math.round(blue/s);					
+									mixc = new Color(r, g, b);
+									
+									networkView.getNodeView(n).setVisualProperty(BasicVisualLexicon.NODE_FILL_COLOR, mixc);
+									networkView.getNodeView(n).setVisualProperty(BasicVisualLexicon.NODE_TOOLTIP , mixname);
+									mixColors.put(mixname, mixc);
+								}else{								
+								//	p.setOriginColor(networkView.getNodeView(n).getVisualProperty(BasicVisualLexicon.NODE_FILL_COLOR));																		
+									p.getSelectGroups().add(curSetName);
+									networkView.getNodeView(n).setVisualProperty(BasicVisualLexicon.NODE_FILL_COLOR, currentc);
+									networkView.getNodeView(n).setVisualProperty(BasicVisualLexicon.NODE_TOOLTIP, curSetName);
+								}														
+							}																														
+						}
 					}
+
 					
 					JPanel jp = new JPanel();
 					jp.setLayout(new BoxLayout(jp, BoxLayout.X_AXIS));
@@ -616,14 +661,26 @@ public class AnalysisPanel extends JPanel implements CytoPanelComponent{
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				// TODO Auto-generated method stub
-				for(Protein p : sortResults.get(curalg)){
-					if(p.getSelectGroups() != null && !p.getSelectGroups().isEmpty() ){
-						networkView.getNodeView(p.getN()).setVisualProperty(BasicVisualLexicon.NODE_FILL_COLOR, p.getOriginColor());
-						networkView.getNodeView(p.getN()).setVisualProperty(BasicVisualLexicon.NODE_TOOLTIP, "");
-						p.getSelectGroups().clear();
+				if(pUtil.modifiedNetworkSet!= null && !pUtil.modifiedNetworkSet.contains(network.getSUID())){
+					for(Protein p : sortResults.get(curalg)){
+						if(p.getSelectGroups() != null && !p.getSelectGroups().isEmpty() ){
+							networkView.getNodeView(p.getN()).setVisualProperty(BasicVisualLexicon.NODE_FILL_COLOR, p.getOriginColor());
+							networkView.getNodeView(p.getN()).setVisualProperty(BasicVisualLexicon.NODE_TOOLTIP, "");
+							p.getSelectGroups().clear();
+						}
+						
 					}
-					
+				}else{
+					for(Protein p : sortResults.get(curalg)){					
+						if(network.containsNode(p.getN()) && p.getSelectGroups() != null && !p.getSelectGroups().isEmpty() ){
+							networkView.getNodeView(p.getN()).setVisualProperty(BasicVisualLexicon.NODE_FILL_COLOR, p.getOriginColor());
+							networkView.getNodeView(p.getN()).setVisualProperty(BasicVisualLexicon.NODE_TOOLTIP, "");
+							p.getSelectGroups().clear();
+						}
+						
+					}
 				}
+				
 				SetColorMap.clear();
 				selectedSets.clear();
 				labelPanel.removeAll();
@@ -1082,27 +1139,28 @@ public class AnalysisPanel extends JPanel implements CytoPanelComponent{
 	
 	
 	public void updateNet(String curalg, String curSetName) {
-		List<CyNode> nodes = new ArrayList();
-		Iterator i = sproteins.iterator();
-		while (i.hasNext()) {
-			Protein p = (Protein) i.next();
+		HashSet<CyNode> nodes = new HashSet<CyNode>();
+		
+		for(Protein p: sproteins){
 			nodes.add(p.getN());
 		}
+		
 		pg = pUtil.createGraph(network, nodes);
-		selectProteins(pg.getSubNetwork());
+	//	selectProteins(pg.getSubNetwork());
+		this.pUtil.setSelected(nodes, network);
 		this.curalg = curalg;
 		this.curSetName = curSetName;
 
 	}
+	/*
 	public void selectProteins(CyNetwork custerNetwork) {
 		if (custerNetwork != null) {
 			this.pUtil.setSelected(custerNetwork.getNodeList(), this.network);
 		} else {
-			this.pUtil.setSelected(new ArrayList(), this.network);
+		//	this.pUtil.setSelected(new ArrayList(), this.network);
 		}
 	}
-	
-	
+	*/
 	public void discard(){
 		
 		if(chartfs !=null && !chartfs.isEmpty())

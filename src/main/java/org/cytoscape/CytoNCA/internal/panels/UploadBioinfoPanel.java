@@ -417,8 +417,7 @@ public class UploadBioinfoPanel extends JFrame{
 				public void actionPerformed(ActionEvent e) {
 					// TODO Auto-generated method stub
 					JComboBox<String> jcb = (JComboBox<String>) e.getSource();
-					EdgeWeight = network.getDefaultEdgeTable().getColumn((String) jcb.getSelectedItem());	
-					System.out.println(EdgeWeight.getName()+"$$$$$$");
+					EdgeWeight = network.getDefaultEdgeTable().getColumn((String) jcb.getSelectedItem());					
 				}
 				
 			}
@@ -426,7 +425,7 @@ public class UploadBioinfoPanel extends JFrame{
 		class OkAction extends AbstractAction{
 
 			@Override
-			public void actionPerformed(ActionEvent e) throws IllegalArgumentException{
+			public void actionPerformed(ActionEvent e){
 				// TODO Auto-generated method stub
 	
 				if(!EdgeWeight.getType().equals(Double.class) && !EdgeWeight.getType().equals(Integer.class)){
@@ -437,24 +436,11 @@ public class UploadBioinfoPanel extends JFrame{
 				}					
 				else{					
 					
-					try{
-						
-					/*	if(EdgeWeight.getType().equals(Integer.class)){
-							
-							Integer i;
-							network.getDefaultEdgeTable().createColumn("weight", Double.class, false);
-							for(CyEdge edge : network.getEdgeList()){
-								i = network.getRow(edge).get(EdgeWeight.getName(), Integer.class);
-								network.getRow(edge).set("weight", i.doubleValue());
-							}	
-							network.getDefaultEdgeTable().deleteColumn(EdgeWeight.getName());
-						}else{*/
+					try{				
 							EdgeWeight.setName("weight");
-					//	}
 					}
 					catch(IllegalArgumentException ie){
-						
-						
+												
 						JOptionPane.showMessageDialog(null,
 	    	            		"There already exist an attribute named weight!", "Interrupted", JOptionPane.WARNING_MESSAGE);
 						return;

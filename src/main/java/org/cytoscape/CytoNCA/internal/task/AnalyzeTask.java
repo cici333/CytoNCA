@@ -65,7 +65,7 @@ public class AnalyzeTask implements Task {
 		this.listener = listener;
 		this.Successfelalgnames = algnames;
 		this.algnames = (ArrayList<String>) algnames.clone(); 
-		results = "";
+		results = "<html>";
 	}
 
 	public void run(TaskMonitor taskMonitor) throws Exception {
@@ -95,10 +95,14 @@ public class AnalyzeTask implements Task {
 							algoCC.run(network, resultAll, false);
 							
 						
-							if (interrupted){
-								
+							if (interrupted){								
 								success = false;
 								return;	
+							}
+							
+							if(algoCC.isCancelled()){								
+								Successfelalgnames.remove(ParameterSet.CC);
+								results += "Can't calculate" + ParameterSet.CC + ". </br>";    
 							}
 				    	
 					}
@@ -117,17 +121,14 @@ public class AnalyzeTask implements Task {
 								success = false;
 								return;	
 							}
+							
+							if(algoCC.isCancelled()){
+								Successfelalgnames.remove(ParameterSet.CCW);
+								results += "Can't calculate" + ParameterSet.CCW + ": it can be calculated only if edge weights are greater then zero. </br>";  
+							}
 				    	
 				 }
-					
-					
-					
-											
-
-
-						
-						
-					} 
+				} 
 			else if (alg instanceof DC)
 			{
 			    if(algnames.contains(ParameterSet.DC)){
@@ -141,10 +142,13 @@ public class AnalyzeTask implements Task {
 						
 					
 						
-						if (interrupted){
-							
+						if (interrupted){						
 							success = false;
 							return;	
+						}
+						if(algoDC.isCancelled()){
+							Successfelalgnames.remove(ParameterSet.DC);
+							results += "Can't calculate" + ParameterSet.DC + ". </br>";  
 						}
 			    }
 			    else if(algnames.contains(ParameterSet.DCW)){
@@ -154,14 +158,17 @@ public class AnalyzeTask implements Task {
 						taskMonitor.setProgress(0);
 						taskMonitor
 								.setStatusMessage("DC Ranking...");
-						algoDC.run(network, resultAll, true);	
-						
-					
+						algoDC.run(network, resultAll, true);
 						
 						if (interrupted){
 							success = false;
 							return;	
 						}
+						if(algoDC.isCancelled()){
+							Successfelalgnames.remove(ParameterSet.DCW);
+							results += "Can't calculate" + ParameterSet.DCW + ". </br>";  
+						}
+						
 			    }
 			    
 				
@@ -179,14 +186,12 @@ public class AnalyzeTask implements Task {
 						algoEC.run(network, resultAll, false);
 					
 					
-						if (interrupted){
-							
+						if (interrupted){							
 							success = false;
 							return;	
 						}
 						
-						if(algoEC.isCancelled()){
-							
+						if(algoEC.isCancelled()){							
 							Successfelalgnames.remove(ParameterSet.EC);
 							results += "Can't calculate" + ParameterSet.EC + ": fail to compute eigenvector. </br>";  
 						}
@@ -208,10 +213,9 @@ public class AnalyzeTask implements Task {
 							return;	
 						}
 						
-						if(algoEC.isCancelled()){
-							
-							Successfelalgnames.remove(ParameterSet.EC);
-							results += "Can't calculate" + ParameterSet.EC + ": fail to compute eigenvector. </br>";  
+						if(algoEC.isCancelled()){							
+							Successfelalgnames.remove(ParameterSet.ECW);
+							results += "Can't calculate" + ParameterSet.ECW + ": fail to compute eigenvector. </br>";  
 						}
 						
 			    	
@@ -230,13 +234,14 @@ public class AnalyzeTask implements Task {
 						taskMonitor
 								.setStatusMessage("LAC Ranking...");
 						algoLAC.run(network, resultAll, false);	
-					
-					
 						
-						if (interrupted){
-							
+						if (interrupted){							
 							success = false;
 							return;	
+						}
+						if(algoLAC.isCancelled()){
+							Successfelalgnames.remove(ParameterSet.LAC);
+							results += "Can't calculate" + ParameterSet.LAC + ". </br>";  
 						}
 			    	
 			 }
@@ -252,6 +257,11 @@ public class AnalyzeTask implements Task {
 						if (interrupted){
 							success = false;
 							return;	
+						}
+						
+						if(algoLAC.isCancelled()){
+							Successfelalgnames.remove(ParameterSet.LACW);
+							results += "Can't calculate" + ParameterSet.LACW + ". </br>";  
 						}
 			    	
 			 }
@@ -271,10 +281,13 @@ public class AnalyzeTask implements Task {
 						algoNC.run(network, resultAll, false);
 					
 						
-						if (interrupted){
-							
+						if (interrupted){							
 							success = false;
 							return;	
+						}
+						if(algoNC.isCancelled()){
+							Successfelalgnames.remove(ParameterSet.NC);
+							results += "Can't calculate" + ParameterSet.NC + ". </br>";  
 						}
 			    	
 				}
@@ -285,12 +298,14 @@ public class AnalyzeTask implements Task {
 						taskMonitor.setProgress(0);
 						taskMonitor
 								.setStatusMessage("NC(weight) Ranking...");
-						algoNC.run(network, resultAll, true);
-					
-						
+						algoNC.run(network, resultAll, true);										
 						if (interrupted){
 							success = false;
 							return;	
+						}
+						if(algoNC.isCancelled()){
+							Successfelalgnames.remove(ParameterSet.NCW);
+							results += "Can't calculate" + ParameterSet.NCW + ". </br>";  
 						}
 			    	
 			 	}
@@ -315,17 +330,15 @@ public class AnalyzeTask implements Task {
 					taskMonitor.setTitle("SC [6 Steps] ");
 					algoSC.run(network, resultAll, false);	
 			
-					if (interrupted){
-					
+					if (interrupted){					
 						success = false;
 						return;	
 					}
 					
-					if(algoSC.isCancelled()){
-						
-							Successfelalgnames.remove(ParameterSet.SC);
-							results += "Can't calculate" + ParameterSet.SC + ": fail to compute eigenvector. </br>";  
-						}
+					if(algoSC.isCancelled()){					
+						Successfelalgnames.remove(ParameterSet.SC);
+						results += "Can't calculate" + ParameterSet.SC + ": fail to compute eigenvector. </br>";  
+					}
 			    	
 				}
 			 else if(algnames.contains(ParameterSet.SCW)){
@@ -342,8 +355,7 @@ public class AnalyzeTask implements Task {
 						success = false;
 						return;	
 					}
-					if(algoSC.isCancelled()){
-						
+					if(algoSC.isCancelled()){					
 						Successfelalgnames.remove(ParameterSet.SCW);
 						results += "Can't calculate" + ParameterSet.SCW + ": fail to compute eigenvector. </br>";  
 					}
@@ -369,7 +381,8 @@ public class AnalyzeTask implements Task {
 							return;	
 						}
 						if(algoBC.isCancelled()){
-							cancelForSingleAlg(algoBC);
+							Successfelalgnames.remove(ParameterSet.BC);
+							results += "Can't calculate" + ParameterSet.BC + ". </br>";  
 						}
 				    	
 				 }
@@ -386,8 +399,6 @@ public class AnalyzeTask implements Task {
 							return;	
 						}
 						if(algoBC.isCancelled()){
-							
-						//	cancelForSingleAlg(algoBC);
 							Successfelalgnames.remove(ParameterSet.BCW);
 							results += "Can't calculate" + ParameterSet.BCW + ": it can be calculated only if edge weights are greater then zero. </br>";  
 						}
@@ -414,6 +425,10 @@ public class AnalyzeTask implements Task {
 						success = false;
 						return;	
 					}
+					if(algoIC.isCancelled()){
+						Successfelalgnames.remove(ParameterSet.IC);
+						results += "Can't calculate" + ParameterSet.IC + ". </br>";  
+					}
 			    	
 				}
 			 else if(algnames.contains(ParameterSet.ICW)){
@@ -430,21 +445,13 @@ public class AnalyzeTask implements Task {
 						success = false;
 						return;	
 					}
-			    	
-			 	}
-				
-				
-			} 
-			
-			
-			
-	
-				
-				
-				
-				
-			}
-			
+					if(algoIC.isCancelled()){
+						Successfelalgnames.remove(ParameterSet.ICW);
+						results += "Can't calculate" + ParameterSet.ICW + ". </br>";  
+					}			    	
+			 	}				
+			} 			
+		}
 			
 
 		} catch (Exception e) {
@@ -454,10 +461,10 @@ public class AnalyzeTask implements Task {
 			outofmemory = true;
 			System.out.println("out of mem...");
 		}finally {
-
+			results += "</html>";
 			if (this.listener != null)
 				this.listener.handleEvent(new AnalysisCompletedEvent(success, 
-						resultAll, results, outofmemory));
+						resultAll, results, outofmemory, Successfelalgnames));
 		}
 	}
 	
@@ -478,8 +485,5 @@ public class AnalyzeTask implements Task {
 		return "Analysis";
 	}
 	
-	public void cancelForSingleAlg(Algorithm alg){
-		algSet.remove(alg);
 	
-	}
 }

@@ -114,7 +114,7 @@ public class ProteinUtil implements RemovedNodesListener{
 	private ArrayList<String> bioinfoColumnNames;
 	private ArrayList<File> DiskFileList;
 	
-	private HashSet<Long> modifiedNetworkSet;
+	public HashSet<Long> modifiedNetworkSet;
 	
 	private static final Logger logger = LoggerFactory.getLogger(org.cytoscape.CytoNCA.internal.ProteinUtil.class);
 
@@ -270,10 +270,10 @@ public class ProteinUtil implements RemovedNodesListener{
     * @param network    The network source of the nodes
     * 
     *   */
-   public void SaveInTable(ArrayList<String > allalg, List<Protein> proteins, CyNetwork network) throws IllegalArgumentException, NullPointerException {
+   public void SaveInTable(ArrayList<String > allalg, Collection<Protein> proteins, CyNetwork network){
 	   
 	   CyTable c = network.getTable(CyNode.class, CyNetwork.DEFAULT_ATTRS);
-       
+	   
        for(String alg : allalg){       
        		try{
        			c.createColumn(alg, Double.class, false);
@@ -283,14 +283,23 @@ public class ProteinUtil implements RemovedNodesListener{
  
        }
        
-       for (Protein p: proteins) {         	
-       	for(String alg : allalg){
-       		try{
-       			
-       		}
-       		network.getRow(p.getN()).set(alg, p.getPara(alg));
-           }
-       	}
+       if(modifiedNetworkSet !=null && !modifiedNetworkSet.contains(network.getSUID())){
+    	   for (Protein p: proteins) {         	
+    	       	for(String alg : allalg){
+    	       		network.getRow(p.getN()).set(alg, p.getPara(alg));
+    	           }
+    	       	}
+       }else{
+    	   for(Protein p: proteins){
+    		   if(network.containsNode(p.getN())){
+    			   for(String alg : allalg){
+       	       		network.getRow(p.getN()).set(alg, p.getPara(alg));
+       	           }
+    		   }
+    	   }
+    	   
+       }
+       
 	   
 	 
 	   
@@ -506,17 +515,15 @@ public class ProteinUtil implements RemovedNodesListener{
 	}
 
 
-	public  ProteinGraph createGraph(CyNetwork net, List<CyNode> nodes)
+	public  ProteinGraph createGraph(CyNetwork net, Collection<CyNode> nodes)
 	{
 		CyRootNetwork root = rootNetworkMgr.getRootNetwork(net);
 		Set edges = new HashSet();
-		for (Iterator iterator = nodes.iterator(); iterator.hasNext();)
+		for (CyNode n: nodes)
 		{
-			CyNode n = (CyNode)iterator.next();
-			Set adjacentEdges = new HashSet(net.getAdjacentEdgeList(n, org.cytoscape.model.CyEdge.Type.ANY));
-			for (Iterator iterator1 = adjacentEdges.iterator(); iterator1.hasNext();)
+			HashSet<CyEdge> adjacentEdges = new HashSet(net.getAdjacentEdgeList(n, org.cytoscape.model.CyEdge.Type.ANY));
+			for (CyEdge e: adjacentEdges)
 			{
-				CyEdge e = (CyEdge)iterator1.next();
 				if (nodes.contains(e.getSource()) && nodes.contains(e.getTarget()))
 					edges.add(e);
 			}
@@ -676,22 +683,18 @@ public class ProteinUtil implements RemovedNodesListener{
 		
 		boolean select;
 		
-		if(!modifiedNetworkSet.contains(network.getSUID())){
-			if(elements != null){
-				for (CyIdentifiable nodeOrEdge : allElements)
-				{
-					select = elements.contains(nodeOrEdge);
-					network.getRow(nodeOrEdge).set("selected", Boolean.valueOf(select));
-				}
+		if(elements != null){
+			for (CyIdentifiable nodeOrEdge : allElements)
+			{
+				select = elements.contains(nodeOrEdge);
+				network.getRow(nodeOrEdge).set("selected", Boolean.valueOf(select));
 			}
-			else{
-				for (CyIdentifiable nodeOrEdge : allElements)
-				{
-					network.getRow(nodeOrEdge).set("selected", false);
-				}
+		}
+		else{
+			for (CyIdentifiable nodeOrEdge : allElements)
+			{
+				network.getRow(nodeOrEdge).set("selected", false);
 			}
-		}else{
-			
 		}
 		
 		

@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 
 
+
 import org.cytoscape.model.CyNode;
 
 public class AnalysisCompletedEvent
@@ -12,13 +13,15 @@ public class AnalysisCompletedEvent
   private final ArrayList<Protein> proteins;
   private final String results;
   private final boolean outofmemory;
+  private final ArrayList<String> Successfelalgnames;
 
-  public AnalysisCompletedEvent(boolean successful, ArrayList<Protein> proteins, String results, boolean outofmemory)
+  public AnalysisCompletedEvent(boolean successful, ArrayList<Protein> proteins, String results, boolean outofmemory, ArrayList<String> Successfelalgnames)
   {
     this.successful = successful;
     this.proteins = proteins;
     this.results = results;
     this.outofmemory = outofmemory;
+    this.Successfelalgnames = Successfelalgnames;
   }
 
   public boolean isSuccessful()
@@ -37,6 +40,10 @@ public class AnalysisCompletedEvent
 
 public boolean isOutofmemory() {
 	return outofmemory;
+}
+
+public ArrayList<String> getSuccessfelalgnames() {
+	return Successfelalgnames;
 }
   
 }
